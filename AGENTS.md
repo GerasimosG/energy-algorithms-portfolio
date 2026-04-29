@@ -82,11 +82,12 @@ Energy_Algorithms/
 - ✅ Portfolio optimization (mean-variance with scipy)
 - ✅ Backtesting with correct risk metrics
 - ✅ Vectorized engine (no look-ahead bias)
-- ✅ Unit tests (pytest, 16 tests passing)
+- ✅ Unit tests (pytest, 26 tests passing)
 - ✅ Clean git history with meaningful commits
 - ✅ pyproject.toml for pip-installable package
-- ❌ README needs Euphemia whitepaper-style expansion
-- ❌ No CI/CD pipeline yet
+- ✅ CI/CD pipeline (`.github/workflows/test.yml`, Python 3.11–3.13)
+- ✅ README with Euphemia whitepaper-style depth (problem formulation, algorithm walkthrough)
+- ✅ LICENSE (MIT)
 
 ## Git Workflow
 

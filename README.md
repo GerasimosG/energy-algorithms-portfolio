@@ -55,19 +55,79 @@ pytest tests/ -v
 
 ## ★ Energy Markets Module — Euphemia Connection
 
-The `energy_markets/` module demonstrates understanding of the **PCR (Pan-European Coupling)** market clearing algorithm that powers Euphemia — the algorithm Euphemia   develops for 25+ European power exchanges.
+The `energy_markets/` module demonstrates deep understanding of the **PCR (Pan-European Coupling)** market clearing algorithm that powers **Euphemia** — the algorithm Euphemia   develops for 25+ European power exchanges. This section presents it as a mini-whitepaper: problem formulation, algorithm walkthrough, and honest limitations.
 
-### What's Implemented
+### Problem Formulation
 
-| Concept | Implementation | Real Euphemia |
-|---------|---------------|---------------|
-| Social welfare max | LP objective (PuLP) | MIP objective |
-| Supply/demand curves | Piecewise linear | Step functions from order books |
-| Block orders | Binary (all-or-nothing) | Full block order support |
-| Linked blocks | Equality constraints (`group=`) | Cascading hydro, multi-unit plants |
-| Exclusive blocks | Sum-≤1 constraints (`excl_*`) | Mutually exclusive configurations |
-| Multi-zone coupling | ATC-constrained flows | 25+ zones with FBMC |
-| MCP pricing | max(accepted prices) | IP pricing (non-convexity aware) |
+The market coupling problem is a **social welfare optimization**:
+
+**Given:**
+- Supply step orders from generators: `(p_i^s, q_i^s)` — price and quantity offered
+- Demand step orders from consumers: `(p_j^d, q_j^d)` — price and quantity bid
+- Binary block orders: `(p_k^b, q_k^b, y_k ∈ {0,1})` — all-or-nothing
+- Inter-zonal ATC: `ATC_{z1,z2}` — max flow between zones
+
+**Find** acceptance variables `x_i^s ∈ [0,1]`, `x_j^d ∈ [0,1]`, `y_k ∈ {0,1}` that:
+
+```
+max Σ_j(p_j^d · q_j^d · x_j^d) − Σ_i(p_i^s · q_i^s · x_i^s) − Σ_k(p_k^b · q_k^b · y_k)
+```
+
+**Subject to:**
+- **Energy balance:** `Σ_i(q_i^s · x_i^s) + Σ_k(q_k^b · y_k) = Σ_j(q_j^d · x_j^d)` (supply = demand, exact match)
+- **Linked blocks:** `y_a = y_b` for blocks a,b in same `group` (cascading hydro cannot partially accept)
+- **Exclusive blocks:** `Σ_{k ∈ group} y_k ≤ 1` (at most one configuration selected)
+- **Zonal flow:** `|flow_{z1→z2}| ≤ ATC_{z1,z2}`
+- **Domain:** `x_i^s, x_j^d ∈ [0,1]`, `y_k ∈ {0,1}`
+
+**Market Clearing Price:** `MCP = max({p | x > 0})` — highest accepted price sets the uniform clearing price.
+
+### Algorithm Walkthrough
+
+```
+1. BUILD ORDER STACKS
+   Supply orders sorted ascending by price (cheapest first)
+   Demand orders sorted descending (highest willingness-to-pay first)
+   → Forms the classic "merit order" supply curve
+
+2. FORMULATE LP
+   Objective: maximize social welfare
+   Constraints: energy balance, block group constraints, ATC limits
+
+3. SOLVE (PuLP → CBC solver)
+   Returns: continuous acceptance fractions + binary block decisions
+
+4. EXTRACT MCP
+   Scan all accepted supply orders
+   MCP = highest accepted supply price
+   (Real Euphemia: IP pricing for non-convex block orders)
+
+5. COMPUTE SURPLUS
+   Consumer surplus = area between demand curve and MCP
+   Producer surplus = area between MCP and supply curve
+   Social welfare = consumer + producer surplus
+```
+
+### Implementation → Real Euphemia Mapping
+
+| Concept | This Implementation | Real Euphemia | Gap |
+|---------|-------------------|---------------|-----|
+| Social welfare max | LP with continuous vars | MIP with integer vars | Model complexity |
+| Supply/demand curves | Piecewise linear from step orders | Full order book step functions | Fidelity |
+| Block orders | Binary (all-or-nothing) | Full: simple, linked, exclusive, flexible | No flexible blocks |
+| Linked blocks | Equality constraints (`group=`) | Complex dependency graphs | Our model is simpler |
+| Exclusive blocks | Sum-≤1 constraints (`excl_*`) | Mutually exclusive configurations | Equivalent approach |
+| Multi-zone coupling | ATC-constrained flows | FBMC (flow-based) | ATC simpler than FBMC |
+| MCP pricing | `max(accepted_prices)` | IP pricing (non-convexity aware) | No make-whole payments |
+| Unit commitment | Separate MIP (`scheduling.py`) | Integrated into welfare max | Modular vs monolithic |
+
+### Why This Matters for Euphemia  
+
+- **Domain fluency:** You can discuss PCR, Euphemia, social welfare, block orders, IP pricing, FBMC vs ATC, and PUN pricing from first principles — not just from reading papers, but from implementing them.
+- **MIP competence:** Unit commitment with binary variables, ramp rates, min up/down, and initial conditions in `scheduling.py` mirrors the Euphemia   workload of building optimization models.
+- **Honest about gaps:** Interviewers respect candidates who know what they don't know. The known limitations below are documented for interview transparency.
+
+> See `energy_markets/EUPHEMIA_INTERVIEW.md` for the full interview question bank and talking points.
 
 ### Known Limitations (Documented for Interview Transparency)
 

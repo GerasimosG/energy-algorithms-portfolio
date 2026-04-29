@@ -1,5 +1,20 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-29 23:55 CEST — Final polish: LICENSE, README whitepaper expansion, checklist cleanup
+
+**What changed:**
+- **LICENSE** — Added MIT license file (README badge now resolves correctly)
+- **README expansion** — Rewrote "Energy Markets Module" section as mini-whitepaper:
+  - Mathematical problem formulation (objective function, constraints, notation)
+  - Algorithm walkthrough (5-step clearing process)
+  - Implementation → Real Euphemia mapping table with gap analysis
+  - "Why This Matters for Euphemia  " section with domain fluency, MIP competence, gap honesty
+  - Cross-reference to `EUPHEMIA_INTERVIEW.md`
+- **AGENTS.md** — Updated Euphemia   Interview Readiness Checklist: all items now ✅, added LICENSE entry, corrected test count (16 → 26), stale CI/CD and whitepaper items resolved
+
+**Tests:** 26/26 passing
+**Git:** Pushed to `GerasimosG/Energy_Algorithms` (private)
+
 ## 2026-04-29 23:30 CEST — Re-audit + Public repo research + Major polish
 
 **What changed:**
