@@ -142,6 +142,19 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 | `energy_data/fetcher.py` | ⭐ Market data | ⭐⭐⭐ Core — Data infrastructure |
 | `strategies/*` | — | ⭐⭐⭐ Core — Trading signals |
 
+## 📖 Framework Documentation
+
+A comprehensive **FRAMEWORK.md** document explains everything in detail:
+- Architecture overview and design principles
+- Data flow and solve pipeline with timing benchmarks
+- Module deep-dives (each optimization's formulation, constraints, edge cases)
+- Competitor comparison tables (pomato, PyPSA, energy-py-linear)
+- Benchmark methodology and competitor benchmarks to beat
+- Edge cases and defensive patterns across all modules
+- Iteration history and extension guide
+
+> The framework docs auto-update with each iteration. Run `./scripts/update_framework_metrics.sh` before committing.
+
 ## 📦 Architecture
 
 ```
