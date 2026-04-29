@@ -1,0 +1,107 @@
+"""Tests for energy_markets PCR model."""
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+import pytest
+from energy_markets.pcr_model import PCRModel
+
+
+def test_simple_clearing():
+    """Simple market clears with correct MCP and welfare."""
+    model = PCRModel("test")
+    model.add_supply("Cheap", 10, 100)
+    model.add_supply("Expensive", 80, 100)
+    model.add_demand("Buyer", 150, 150)
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    assert r["mcp"] == 80  # Expensive is marginal
+    assert r["traded"] == 150.0
+
+
+def test_block_accepted():
+    """Cheap block order is accepted."""
+    model = PCRModel("test")
+    model.add_supply("Gas", 80, 100)
+    model.add_supply("Solar", 10, 60)
+    model.add_demand("Industry", 150, 120)
+    model.add_block("Nuclear", 40, 80)
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    assert r["orders"]["blocks"]["Nuclear"]["accepted"] is True
+
+
+def test_block_rejected():
+    """Expensive block order is rejected."""
+    model = PCRModel("test")
+    model.add_supply("Wind", 5, 200)
+    model.add_supply("Solar", 10, 100)
+    model.add_demand("Grid", 100, 250)
+    model.add_block("ExpensivePeaker", 120, 40)
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    assert r["orders"]["blocks"]["ExpensivePeaker"]["accepted"] is False
+
+
+def test_exclusive_blocks():
+    """Exclusive blocks: at most one accepted."""
+    model = PCRModel("test_excl")
+    model.add_supply("Wind", 5, 100)
+    model.add_demand("Grid", 150, 80)
+    model.add_block("Option_A", 30, 50, group="excl_choice")
+    model.add_block("Option_B", 45, 50, group="excl_choice")
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    accepted = [b for b in r["orders"]["blocks"].values() if b["accepted"]]
+    assert len(accepted) <= 1  # At most one exclusive block accepted
+
+
+def test_linked_blocks():
+    """Linked blocks: all accepted or all rejected together."""
+    model = PCRModel("test_link")
+    model.add_supply("Gas", 80, 200)
+    model.add_supply("Solar", 10, 100)
+    model.add_demand("Grid", 150, 250)
+    model.add_block("Block_A", 35, 60, group="cascade")
+    model.add_block("Block_B", 35, 50, group="cascade")
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    a = r["orders"]["blocks"]["Block_A"]["accepted"]
+    b = r["orders"]["blocks"]["Block_B"]["accepted"]
+    assert a == b  # Both accepted or both rejected
+
+
+def test_energy_balance_exact():
+    """Energy balance constraint is equality (supply == demand)."""
+    model = PCRModel("test_bal")
+    model.add_supply("Gas", 50, 100)
+    model.add_demand("Buyer", 100, 80)
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    assert r["traded"] == 80.0
+    # Over-generation should not happen: supply == demand
+    total_supplied = sum(o["filled_qty"] for o in r["orders"]["supply"].values())
+    assert abs(total_supplied - r["traded"]) < 0.01
+
+
+def test_mcp_with_block():
+    """MCP includes block order prices when block is marginal."""
+    model = PCRModel("test_mcp")
+    model.add_supply("Solar", 10, 60)
+    model.add_demand("Grid", 150, 100)
+    model.add_block("GasBlock", 80, 50)
+    r = model.solve()
+    assert r["status"] == "Optimal"
+    # If GasBlock is accepted (it should be since Solar only supplies 60 and demand is 100),
+    # MCP should be at least 80 (the block's price)
+    if r["orders"]["blocks"]["GasBlock"]["accepted"]:
+        assert r["mcp"] >= 80
+
+
+def test_no_trades_zero_demand():
+    """Zero demand results in no trades or infeasible (energy balance == 0 supply == 0 demand)."""
+    model = PCRModel("test_zero")
+    model.add_supply("Gas", 50, 100)
+    model.add_demand("Nobody", 100, 0)
+    r = model.solve()
+    # Either Optimal with 0 trades, or Infeasible (cannot have 0 supply == 0 demand with min constraints)
+    assert r["status"] in ("Optimal", "Infeasible")

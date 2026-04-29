@@ -1,5 +1,4 @@
-"""
-Block Order Examples for PCR Market Clearing.
+"""Block Order Examples for PCR Market Clearing.
 
 Demostrates different types of complex orders supported by Euphemia:
 - Simple block: all-or-nothing (must-run minimum load)
@@ -34,7 +33,7 @@ def scenario_linked_block() -> dict:
     Linked blocks: several blocks must all be accepted or all rejected.
 
     Used for cascading hydro plants or multi-unit power stations.
-    We model this with a shared binary variable via the PCR model.
+    Both blocks share the same group="cascade", enforcing identical binary value.
     """
     model = PCRModel("CH")
     model.add_supply("Coal", 60, 200)
@@ -43,8 +42,8 @@ def scenario_linked_block() -> dict:
     model.add_demand("Grid", 150, 400)
 
     # Two hydro units that must operate together (same river cascade)
-    model.add_block("Hydro_Upper", 25, 50)
-    model.add_block("Hydro_Lower", 25, 60)
+    model.add_block("Hydro_Upper", 25, 50, group="cascade")
+    model.add_block("Hydro_Lower", 25, 60, group="cascade")
 
     return model.solve()
 
@@ -53,36 +52,23 @@ def scenario_exclusive_block() -> dict:
     """
     Exclusive blocks: at most one of a set can be selected.
 
+    Uses a single model with identical supply curves for both options.
+    The exclusive group constraint (group='excl_X') ensures at most one
+    block is accepted — the solver picks the welfare-maximizing choice.
     Used for mutually exclusive investment decisions or
     different generator configurations.
-    We model this by running two scenarios and comparing.
     """
-    # Scenario A: coal plant
-    model_a = PCRModel("Scenario_A_Coal")
-    model_a.add_supply("Gas", 70, 200)
-    model_a.add_supply("Solar", 10, 100)
-    model_a.add_demand("Consumers", 160, 250)
-    model_a.add_block("CoalPlant_A", 35, 80)
+    model = PCRModel("Exclusive")
+    # Identical supply curves for both options
+    model.add_supply("Gas", 70, 200)
+    model.add_supply("Solar", 10, 100)
+    model.add_demand("Consumers", 160, 250)
 
-    # Scenario B: gas plant instead
-    model_b = PCRModel("Scenario_B_Gas")
-    model_b.add_supply("Solar", 10, 100)
-    model_b.add_demand("Consumers", 160, 250)
-    model_b.add_block("GasPlant_B", 45, 80)
+    # Mutually exclusive blocks with identical supply curves
+    model.add_block("CoalPlant", 35, 80, group="excl_1")
+    model.add_block("GasPlant", 45, 80, group="excl_1")
 
-    result_a = model_a.solve()
-    result_b = model_b.solve()
-
-    return {
-        "scenarios": {
-            "Coal plant option": result_a,
-            "Gas plant option": result_b,
-        },
-        "recommendation": (
-            "Coal" if result_a["welfare"] >= result_b["welfare"]
-            else "Gas"
-        ),
-    }
+    return model.solve()
 
 
 def run_all() -> list[tuple[str, dict]]:
@@ -90,10 +76,16 @@ def run_all() -> list[tuple[str, dict]]:
     results = [
         ("Simple Block (Nuclear must-run)", scenario_simple_block()),
         ("Linked Block (Cascade hydro)", scenario_linked_block()),
+        ("Exclusive Block (Coal vs Gas)", scenario_exclusive_block()),
     ]
     return results
 
 
 def run_exclusive() -> dict:
-    """Run exclusive block comparison."""
-    return scenario_exclusive_block()
+    """Run exclusive block comparison (single model with exclusive group constraint)."""
+    result = scenario_exclusive_block()
+    accepted = [bid for bid, info in result["orders"]["blocks"].items() if info["accepted"]]
+    return {
+        "result": result,
+        "recommendation": accepted[0] if accepted else "None",
+    }

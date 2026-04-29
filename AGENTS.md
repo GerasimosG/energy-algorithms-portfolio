@@ -1,91 +1,83 @@
-# AGENTS.md — Optimization Portfolio
+# AGENTS.md — Energy Algorithms
 
 **Repo:** `/home/gerryberrypi/optimization-portfolio/`
-**Remote:** `git@github.com:GerasimosG/optimization-portfolio.git`
-**Purpose:** Public portfolio for Euphemia   Junior Optimization Engineer & energy/quant roles
+**Remote:** `git@github.com:GerasimosG/Energy_Algorithms.git`
+**Purpose:** Public portfolio for Euphemia   Junior Optimization Engineer & energy/quant roles (currently private)
 
 ## Identity
 
-This repo is GerryBerry's public portfolio demonstrating optimization modeling, energy market domain knowledge (Euphemia/PCR), and algorithmic trading. The **energy_markets** module is the hero piece — it's what differentiates this from generic quant repos.
+This repo is GerryBerry's public portfolio demonstrating optimization modeling, energy market domain knowledge (Euphemia/PCR), and algorithmic trading. The **energy_markets** module is the hero piece — what differentiates this from generic quant repos. Targeted at **Euphemia  ** (Euphemia algorithm) and **Industry** (power market optimization) roles.
 
 ## Architecture
 
 ```
-optimization-portfolio/
+Energy_Algorithms/
 ├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack
 ├── lp_optimization/      Core LP/MIP — transportation, portfolio, unit commitment
 ├── backtester/           Vectorized backtesting engine + risk metrics
 ├── strategies/           3 signal-based trading strategies
 ├── market_data/          yfinance → SQLite pipeline
+├── tests/                Unit tests (pytest)
 └── notebooks/            Jupyter exploration
 ```
 
 ## Critical Conventions
 
-### Directory Names
-Use **underscores** for module directories (valid Python package names). No hyphens.
+- **Underscore** directory names for valid Python packages
+- Import via `sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))`
+- Timezone: **Europe/Brussels** (CET/CEST)
+- Run: `.venv/bin/python -m energy_markets.demo`
+- **Repo kept private** for now per user instruction
 
-### Import Strategy
-Each demo.py adds the repo root to sys.path with:
-```python
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-```
+## Status After Audit (2026-04-29)
 
-### Running
-```bash
-.venv/bin/python -m energy_markets.demo    # From repo root
-```
+### ✅ Fixed (10 issues resolved)
 
-### Timezone
-All timestamps: Europe/Brussels (CET/CEST).
+| # | What | Fix |
+|---|------|-----|
+| 1 | Linked blocks not linked | Added `group` parameter, equality constraints on shared group binary vars |
+| 2 | MCP ignores block orders | MCP = max(accepted_supply_prices + accepted_block_prices) |
+| 3 | Energy balance `>=` | Changed to `==` (exact match) |
+| 4 | Exclusive blocks | Group mechanism: `sum(b_i) <= 1` for `excl_*` groups |
+| 5 | Reserve/demand conflated | Split into energy_balance `==` and reserve `>=` constraints |
+| 6 | No UC initial conditions | Added `init_status`, min up/down from t=0 |
+| 7 | Horizon-end UC constraints | Min up/down enforced through final period |
+| 8 | Zero unit tests | `tests/` with 16 pytest tests |
+| 9 | No pyproject.toml | Added with dependencies, pytest config |
+| 10 | Hardcoded momentum threshold | Parameterized as `threshold=` arg |
 
-## Known Issues (from code audit 2026-04-29)
+### 🟡 Remaining Low-Priority
 
-### Critical — Fix Before Push
-1. **portfolio.py:81-95** — Risk constraint is completely missing. PuLP can't do QP. Either use scipy.optimize or implement MAD linearization.
-2. **market_clearing.py** — `find_equilibrium()` returns wrong MCP when supply is below demand (returns €120 instead of €80).
-3. **engine.py:59-80** — Trade log mislabels flat transitions as trades.
-4. **store.py:72-73** — `conn.total_changes > 0` falsely counts duplicates.
+- Consumer/producer surplus shading (cosmetic)
+- Market clearing NaN edge cases
+- `__init__.py` exports for all modules
+- Jupyter notebook walkthrough
 
-### High — Fix Before Taking Public
-5. **block_orders.py** — "Linked blocks" aren't actually linked. Each block has independent binary variable.
-6. **metrics.py:20-23** — Sortino uses `np.std(downside)` instead of downside deviation.
-7. **engine.py:44-48** — Same-day signal/return creates forward-looking bias. Shift signals by one period.
-8. **PCR model** — MCP calculation ignores block orders entirely.
+## Euphemia   Interview Readiness Checklist
 
-### Medium
-9. **scheduling.py:72** — Reserve margin conflated with demand in single constraint.
-10. **scheduling.py:53-55** — No initial conditions, min up/down bypassable at t=0.
-11. **portfolio.py** — Docstring claims risk constraint exists but it doesn't.
-12. **momentum.py:42** — Hardcoded 2% threshold, not parameterized.
-
-## Requirements for Euphemia   Role Readiness
-
-### Must-Have (blocking)
-- [ ] Fix portfolio risk constraint (use scipy QP or MAD)
-- [ ] Fix market_clearing equilibrium MCP calculation
-- [ ] Fix engine.py trade log (flat transitions)
-- [ ] Fix store.py total_changes counter
-- [ ] Add proper linked block constraint to PCRModel
-- [ ] Add error handling for NaN volume in store.py
-- [ ] Shift signals by 1 period to remove look-ahead bias
-
-### Nice-to-Have
-- [ ] Write unit tests (currently zero test coverage)
-- [ ] Add pyproject.toml for `pip install -e .`
-- [ ] Parameterize momentum threshold
-- [ ] Add terminal constraints for UC horizon-end
-- [ ] Add notebooks/energy-markets-demo.ipynb
-- [ ] Clean up comment drift in portfolio.py
+- ✅ LP/MIP formulation (PuLP, scipy)
+- ✅ Energy market domain (PCR, Euphemia, block orders)
+- ✅ Linked + exclusive block constraints
+- ✅ Unit commitment with min up/down, ramp rates
+- ✅ Portfolio optimization (mean-variance with scipy)
+- ✅ Backtesting with correct risk metrics
+- ✅ Vectorized engine (no look-ahead bias)
+- ✅ Unit tests (pytest, 16 tests passing)
+- ✅ Clean git history with meaningful commits
+- ✅ pyproject.toml for pip-installable package
+- ❌ README needs Euphemia whitepaper-style expansion
+- ❌ No CI/CD pipeline yet
 
 ## Git Workflow
 
 ```bash
-# Commit per module with descriptive messages
-git add energy_markets/ && git commit -m "energy_markets: PCR model, block orders, market clearing"
+git remote set-url origin git@github.com:GerasimosG/Energy_Algorithms.git
+git add -A && git commit -m "message"
 git push origin main
 ```
 
-## Model Configuration
+**Key:** `id_ed25519` is the account SSH key. Run `ssh-add ~/.ssh/id_ed25519` if auth fails.
 
-The agent currently runs on `opencode-go` provider with `deepseek-v4-flash`. For model overrides, verify model ID exists on provider before setting. The `deepseek-v4-pro-max` model ID may not exist on this provider — use `hermes model` to check available models interactively.
+## Model Setting
+
+`model.default` set to `deepseek-v4-pro` on `opencode-go` provider. Takes effect on next session (`/new`).

@@ -1,5 +1,4 @@
-"""
-PCR (Pan-European Coupling) Market Clearing Model.
+"""PCR (Pan-European Coupling) Market Clearing Model.
 
 Simplified version of the Euphemia social welfare maximization LP.
 Supports supply/demand curves and block orders (all-or-nothing).
@@ -21,8 +20,10 @@ class PCRModel:
     Subject to:
         - Supply ≤ available quantity
         - Demand ≤ bid quantity
-        - Supply + block_output ≥ Demand (energy balance)
+        - Supply + block_output == Demand (energy balance)
         - Block orders are binary (all-or-nothing)
+        - Linked blocks (same non-None group) share the same binary value
+        - Exclusive blocks (group='excl_*'): at most one accepted per group
     """
 
     def __init__(self, area: str = "IT"):
@@ -38,8 +39,8 @@ class PCRModel:
     def add_demand(self, oid: str, price: float, qty: float) -> None:
         self.demand_orders.append({"id": oid, "price": price, "quantity": qty})
 
-    def add_block(self, oid: str, price: float, qty: float) -> None:
-        self.block_orders.append({"id": oid, "price": price, "quantity": qty})
+    def add_block(self, oid: str, price: float, qty: float, group: str = None) -> None:
+        self.block_orders.append({"id": oid, "price": price, "quantity": qty, "group": group})
 
     def solve(self, verbose: bool = False) -> dict:
         Ns = len(self.supply_orders)
@@ -65,14 +66,30 @@ class PCRModel:
         )
         prob += welfare
 
-        # Energy balance: supply + block ≥ demand
+        # Energy balance: supply + block == demand
         total_supply = pulp.lpSum(
             self.supply_orders[i]["quantity"] * s_vars[i] for i in range(Ns))
         total_block = pulp.lpSum(
             self.block_orders[i]["quantity"] * b_vars[i] for i in range(Nb))
         total_demand = pulp.lpSum(
             self.demand_orders[i]["quantity"] * d_vars[i] for i in range(Nd))
-        prob += total_supply + total_block >= total_demand
+        prob += total_supply + total_block == total_demand
+
+        # Block group constraints
+        groups: dict[str, list[int]] = {}
+        for i, block in enumerate(self.block_orders):
+            g = block.get("group")
+            if g is not None:
+                groups.setdefault(g, []).append(i)
+        for g, indices in groups.items():
+            if g.startswith("excl_"):
+                # Exclusive group: at most one block can be accepted
+                prob += pulp.lpSum(b_vars[i] for i in indices) <= 1
+            else:
+                # Linked group: all blocks must have the same binary value
+                anchor = indices[0]
+                for i in indices[1:]:
+                    prob += b_vars[i] == b_vars[anchor]
 
         prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
 
@@ -82,7 +99,10 @@ class PCRModel:
 
         accepted_supply = [self.supply_orders[i]
                            for i in range(Ns) if pulp.value(s_vars[i]) > 0.001]
-        mcp = max(o["price"] for o in accepted_supply) if accepted_supply else 0.0
+        accepted_blocks = [self.block_orders[i]
+                           for i in range(Nb) if pulp.value(b_vars[i]) > 0.5]
+        mcp_prices = [o["price"] for o in accepted_supply] + [b["price"] for b in accepted_blocks]
+        mcp = max(mcp_prices) if mcp_prices else 0.0
         traded = float(pulp.value(total_demand))
 
         orders = {
@@ -90,8 +110,8 @@ class PCRModel:
                 self.supply_orders[i]["id"]: {
                     "price": self.supply_orders[i]["price"],
                     "qty": self.supply_orders[i]["quantity"],
-                    "filled_frac": float(pulp.value(s_vars[i])),
-                    "filled_qty": self.supply_orders[i]["quantity"] * float(pulp.value(s_vars[i])),
+                    "filled_frac": float(pulp.value(s_vars[i]) or 0.0),
+                    "filled_qty": self.supply_orders[i]["quantity"] * float(pulp.value(s_vars[i]) or 0.0),
                 }
                 for i in range(Ns)
             },
@@ -99,8 +119,8 @@ class PCRModel:
                 self.demand_orders[i]["id"]: {
                     "price": self.demand_orders[i]["price"],
                     "qty": self.demand_orders[i]["quantity"],
-                    "filled_frac": float(pulp.value(d_vars[i])),
-                    "filled_qty": self.demand_orders[i]["quantity"] * float(pulp.value(d_vars[i])),
+                    "filled_frac": float(pulp.value(d_vars[i]) or 0.0),
+                    "filled_qty": self.demand_orders[i]["quantity"] * float(pulp.value(d_vars[i]) or 0.0),
                 }
                 for i in range(Nd)
             },
@@ -109,6 +129,7 @@ class PCRModel:
                     "price": self.block_orders[i]["price"],
                     "qty": self.block_orders[i]["quantity"],
                     "accepted": bool(pulp.value(b_vars[i]) > 0.5),
+                    "group": self.block_orders[i].get("group"),
                 }
                 for i in range(Nb)
             },
@@ -143,7 +164,8 @@ class PCRModel:
             for oid, o in items.items():
                 if kind == "blocks":
                     mark = "✓" if o["accepted"] else "✗"
-                    print(f"    {mark} {oid}: €{o['price']:.1f} × {o['qty']:.0f} MWh")
+                    group_info = f" [group: {o['group']}]" if o.get("group") else ""
+                    print(f"    {mark} {oid}: €{o['price']:.1f} × {o['qty']:.0f} MWh{group_info}")
                 else:
                     mark = "✓" if o["filled_frac"] > 0 else "✗"
                     print(f"    {mark} {oid}: €{o['price']:.1f} × {o['filled_qty']:.0f}/{o['qty']:.0f} MWh")

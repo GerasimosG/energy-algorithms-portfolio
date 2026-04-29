@@ -63,9 +63,13 @@ def main():
     print("  4. Exclusive Block Comparison (mutually exclusive)")
     print(f"{'─' * 65}")
     excl = run_exclusive()
-    for scenario, result in excl["scenarios"].items():
-        welfare = result.get("welfare", 0)
-        print(f"  {scenario}: Welfare = €{welfare:>10,.2f}")
+    result = excl["result"]
+    print(f"  Status: {result['status']}")
+    print(f"  Welfare: €{result['welfare']:>10,.2f}")
+    print(f"  MCP: €{result['mcp']:.2f}/MWh")
+    for bname, b in result["orders"]["blocks"].items():
+        mark = "✓" if b["accepted"] else "✗"
+        print(f"  Block '{bname}': {mark} {'ACCEPTED' if b['accepted'] else 'REJECTED'}")
     print(f"  → Recommended: {excl['recommendation']} plant")
 
     # 5. Supply/Demand Stack

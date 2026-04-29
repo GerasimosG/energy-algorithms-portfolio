@@ -7,6 +7,8 @@ Models a day-ahead dispatch with:
 - Ramp rate limits
 - Demand balance
 - Reserve margin
+- Initial conditions (status, uptime, downtime)
+- Horizon-end min up/down enforcement
 """
 
 import pulp
@@ -16,6 +18,9 @@ def solve_unit_commitment(
     demand: list[float],
     generators: list[dict],
     reserve_margin: float = 0.1,
+    init_status: list[int] | None = None,
+    init_uptime: list[int] | None = None,
+    init_downtime: list[int] | None = None,
     verbose: bool = False,
 ) -> dict:
     """
@@ -28,6 +33,12 @@ def solve_unit_commitment(
         'name', 'min_output', 'max_output', 'cost_per_mwh',
         'startup_cost', 'min_up', 'min_down', 'ramp_rate'
     reserve_margin : fraction of demand to hold as reserve
+    init_status : list of initial on/off status for each generator (0 or 1).
+        Default: all off.
+    init_uptime : list of periods each generator has already been on at t=0.
+        Only meaningful if init_status[g] == 1. Default: 0.
+    init_downtime : list of periods each generator has already been off at t=0.
+        Only meaningful if init_status[g] == 0. Default: 0.
 
     Returns
     -------
@@ -36,6 +47,14 @@ def solve_unit_commitment(
     T = len(demand)
     G = len(generators)
     gen_names = [g["name"] for g in generators]
+
+    # Default initial conditions: all off
+    if init_status is None:
+        init_status = [0] * G
+    if init_uptime is None:
+        init_uptime = [0] * G
+    if init_downtime is None:
+        init_downtime = [0] * G
 
     prob = pulp.LpProblem("Unit_Commitment", pulp.LpMinimize)
 
@@ -50,27 +69,35 @@ def solve_unit_commitment(
             gn = gen_names[g]
             p[g, t] = pulp.LpVariable(f"p_{gn}_{t}", lowBound=0)
             u[g, t] = pulp.LpVariable(f"u_{gn}_{t}", cat="Binary")
-            if t > 0:
-                su[g, t] = pulp.LpVariable(f"su_{gn}_{t}", cat="Binary")
-                sd[g, t] = pulp.LpVariable(f"sd_{gn}_{t}", cat="Binary")
+            # su/sd for all t (including t=0 for initial transitions)
+            su[g, t] = pulp.LpVariable(f"su_{gn}_{t}", cat="Binary")
+            sd[g, t] = pulp.LpVariable(f"sd_{gn}_{t}", cat="Binary")
 
     # Objective: minimize total cost (fuel + startup)
     total_cost = pulp.lpSum(
         generators[g]["cost_per_mwh"] * p[g, t]
         for g in range(G) for t in range(T)
     )
-    # Add startup costs
+    # Add startup costs (including t=0)
     for g in range(G):
-        for t in range(1, T):
+        for t in range(T):
             total_cost += generators[g]["startup_cost"] * su[g, t]
 
     prob += total_cost
 
-    # 1. Demand balance
+    # ── Fix 1a: Energy balance (generation must exactly match demand) ──────────
     for t in range(T):
         prob += (
-            pulp.lpSum(p[g, t] for g in range(G)) >= demand[t] * (1 + reserve_margin),
-            f"demand_{t}",
+            pulp.lpSum(p[g, t] for g in range(G)) == demand[t],
+            f"energy_balance_{t}",
+        )
+
+    # ── Fix 1b: Reserve constraint (committed capacity covers demand + reserve) ─
+    for t in range(T):
+        prob += (
+            pulp.lpSum(generators[g]["max_output"] * u[g, t] for g in range(G))
+            >= demand[t] * (1 + reserve_margin),
+            f"reserve_{t}",
         )
 
     # 2. Generation limits
@@ -86,32 +113,98 @@ def solve_unit_commitment(
             prob += p[g, t] - p[g, t - 1] <= max_ramp
             prob += p[g, t - 1] - p[g, t] <= max_ramp
 
-    # 4. Startup/shutdown logic: su - sd = u_t - u_{t-1}
+    # ── Fix 2: Startup/shutdown logic at t=0 (from init_status) ────────────────
+    for g in range(G):
+        # t=0: transition from initial status
+        prob += (
+            su[g, 0] - sd[g, 0] == u[g, 0] - init_status[g],
+            f"init_transition_{gen_names[g]}",
+        )
+        prob += su[g, 0] + sd[g, 0] <= 1
+
+    # 4. Startup/shutdown logic for t >= 1: su - sd = u_t - u_{t-1}
     for g in range(G):
         for t in range(1, T):
             prob += su[g, t] - sd[g, t] == u[g, t] - u[g, t - 1]
             prob += su[g, t] + sd[g, t] <= 1
 
-    # 5. Minimum uptime: if started at t, must stay on for min_up periods
+    # ── Fix 3a: Initial minimum uptime (honour pre-t=0 uptime) ─────────────────
+    # When a generator starts the horizon already ON but hasn't fulfilled min_up
     for g in range(G):
         min_up = generators[g]["min_up"]
         if min_up <= 0:
             continue
-        for t in range(1, T - min_up + 1):
-            prob += (
-                pulp.lpSum(u[g, tau] for tau in range(t, t + min_up))
-                >= min_up * su[g, t]
-            )
+        if init_status[g] == 1:
+            remaining_up = min_up - init_uptime[g]
+            if remaining_up > 0:
+                bound = min(remaining_up, T)
+                prob += (
+                    pulp.lpSum(u[g, tau] for tau in range(bound)) >= bound,
+                    f"init_min_up_{gen_names[g]}",
+                )
 
-    # 6. Minimum downtime: if shut down at t, must stay off for min_down periods
+    # ── Fix 3b: Initial minimum downtime (honour pre-t=0 downtime) ─────────────
+    # When a generator starts the horizon already OFF but hasn't fulfilled min_down
     for g in range(G):
         min_down = generators[g]["min_down"]
         if min_down <= 0:
             continue
-        for t in range(1, T - min_down + 1):
+        if init_status[g] == 0:
+            remaining_down = min_down - init_downtime[g]
+            if remaining_down > 0:
+                bound = min(remaining_down, T)
+                prob += (
+                    pulp.lpSum(1 - u[g, tau] for tau in range(bound)) >= bound,
+                    f"init_min_down_{gen_names[g]}",
+                )
+
+    # 5. Minimum uptime (standard constraint for interior + t=0 startups)
+    for g in range(G):
+        min_up = generators[g]["min_up"]
+        if min_up <= 0:
+            continue
+        for t in range(0, T - min_up + 1):
+            prob += (
+                pulp.lpSum(u[g, tau] for tau in range(t, t + min_up))
+                >= min_up * su[g, t],
+                f"min_up_{gen_names[g]}_{t}",
+            )
+
+    # ── Fix 4a: Horizon-end minimum uptime ─────────────────────────────────────
+    # If a startup occurs too close to T, enforce remaining periods
+    for g in range(G):
+        min_up = generators[g]["min_up"]
+        if min_up <= 0:
+            continue
+        for t in range(max(0, T - min_up + 1), T):
+            remaining = T - t
+            prob += (
+                pulp.lpSum(u[g, tau] for tau in range(t, T)) >= remaining * su[g, t],
+                f"horizon_min_up_{gen_names[g]}_{t}",
+            )
+
+    # 6. Minimum downtime (standard constraint for interior + t=0 shutdowns)
+    for g in range(G):
+        min_down = generators[g]["min_down"]
+        if min_down <= 0:
+            continue
+        for t in range(0, T - min_down + 1):
             prob += (
                 pulp.lpSum(1 - u[g, tau] for tau in range(t, t + min_down))
-                >= min_down * sd[g, t]
+                >= min_down * sd[g, t],
+                f"min_down_{gen_names[g]}_{t}",
+            )
+
+    # ── Fix 4b: Horizon-end minimum downtime ───────────────────────────────────
+    for g in range(G):
+        min_down = generators[g]["min_down"]
+        if min_down <= 0:
+            continue
+        for t in range(max(0, T - min_down + 1), T):
+            remaining = T - t
+            prob += (
+                pulp.lpSum(1 - u[g, tau] for tau in range(t, T)) >= remaining * sd[g, t],
+                f"horizon_min_down_{gen_names[g]}_{t}",
             )
 
     # Solve
@@ -125,7 +218,10 @@ def solve_unit_commitment(
     for t in range(T):
         period = {gen_names[g]: float(pulp.value(p[g, t])) for g in range(G)}
         period["_demand"] = demand[t]
-        period["_reserve"] = sum(period[g] for g in gen_names) - demand[t]
+        period["_reserve"] = (
+            sum(generators[g]["max_output"] * float(pulp.value(u[g, t])) for g in range(G))
+            - demand[t]
+        )
         period["_online"] = [gen_names[g] for g in range(G) if pulp.value(u[g, t]) > 0.5]
         schedule[f"t={t}"] = period
 
@@ -137,7 +233,7 @@ def solve_unit_commitment(
 
 
 def demo_uc() -> dict:
-    """Run a 12-period unit commitment with 3 generators."""
+    """Run a 12-period unit commitment with 3 generators, all initially off."""
     demand = [
         500, 480, 460, 450, 460, 500,
         600, 750, 900, 950, 980, 1000,
@@ -168,4 +264,9 @@ def demo_uc() -> dict:
         demand=demand,
         generators=generators,
         reserve_margin=0.1,
+        # All generators initially off; downtime set high enough so min_down
+        # is already satisfied and units can start when needed.
+        init_status=[0, 0, 0],
+        init_uptime=[0, 0, 0],
+        init_downtime=[99, 99, 99],
     )
