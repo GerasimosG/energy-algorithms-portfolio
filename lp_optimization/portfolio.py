@@ -1,14 +1,131 @@
 """
-Portfolio Optimization — Mean-variance with linear constraints via PuLP.
+Portfolio Optimization — Mean-variance with linear constraints via PuLP (fallback)
+and proper QP via scipy.optimize.minimize (recommended).
 
-Extends Markowitz with real-world constraints:
+Includes:
 - Sector exposure limits
 - Min/max individual weights
-- Cardinality constraint (binary selection variables)
+- Cardinality constraint (via top-N selection in scipy version)
 """
 
 import pulp
 import numpy as np
+from scipy.optimize import minimize
+
+
+def optimize_portfolio_scipy(
+    expected_returns: list[float],
+    cov_matrix: list[list[float]],
+    risk_target: float | None = None,
+    target_return: float | None = None,
+    sector_map: list[str] | None = None,
+    sector_limits: dict[str, tuple[float, float]] | None = None,
+    weight_bounds: tuple[float, float] = (0.0, 0.3),
+    cardinality: int | None = None,
+    verbose: bool = False,
+) -> dict:
+    """
+    Mean-variance portfolio optimization using scipy SLSQP.
+
+    Solves: min  w^T Σ w  (variance)
+    subject to:
+      - w^T μ = target_return   (if target_return given)
+      - sum(w) = 1
+      - sector exposure limits
+      - per-asset weight bounds
+      - cardinality via top-N heuristic (largest weights kept, others set to 0)
+
+    When target_return is None, maximizes Sharpe ratio (min variance subject
+    to sum(w)=1 and bounds).
+
+    Parameters
+    ----------
+    expected_returns : list of asset expected returns
+    cov_matrix : covariance matrix (n × n)
+    risk_target : ignored in this formulation (kept for API compat)
+    target_return : desired portfolio return (None → min variance)
+    sector_map : sector label per asset
+    sector_limits : dict {sector: (min_frac, max_frac)}
+    weight_bounds : (min_weight, max_weight) per asset
+    cardinality : max number of assets (top-N heuristic post-solve)
+    verbose : print solver output
+
+    Returns
+    -------
+    dict with weights, return, risk, status
+    """
+    n = len(expected_returns)
+    mu = np.array(expected_returns, dtype=float)
+    cov = np.array(cov_matrix, dtype=float)
+
+    # ---- Build constraints ----
+    constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]  # budget
+
+    if target_return is not None:
+        constraints.append(
+            {"type": "eq", "fun": lambda w: np.dot(w, mu) - target_return}
+        )
+
+    # Sector constraints
+    if sector_map is not None and sector_limits is not None:
+        sectors = list(set(sector_map))
+        for sector in sectors:
+            idx = [i for i in range(n) if sector_map[i] == sector]
+            min_f, max_f = sector_limits.get(sector, (0.0, 1.0))
+            if min_f > 0:
+                constraints.append(
+                    {"type": "ineq", "fun": lambda w, i=idx, m=min_f: np.sum(w[i]) - m}
+                )
+            if max_f < 1.0:
+                constraints.append(
+                    {"type": "ineq", "fun": lambda w, i=idx, m=max_f: m - np.sum(w[i])}
+                )
+
+    # Bounds
+    bounds = [weight_bounds for _ in range(n)]
+
+    # ---- Objective: minimize variance ----
+    def variance(w):
+        return np.dot(w.T, np.dot(cov, w))
+
+    # Initial guess: equal weight
+    w0 = np.ones(n) / n
+
+    result = minimize(
+        variance,
+        w0,
+        method="SLSQP",
+        bounds=bounds,
+        constraints=constraints,
+        options={"disp": verbose, "ftol": 1e-9},
+    )
+
+    if not result.success:
+        return {"status": result.message, "weights": None}
+
+    weights = result.x
+
+    # ---- Cardinality heuristic: zero out smallest weights, re-normalize ----
+    if cardinality is not None and cardinality < n:
+        sorted_idx = np.argsort(np.abs(weights))[::-1]
+        keep = sorted_idx[:cardinality]
+        w_card = np.zeros(n)
+        w_card[keep] = weights[keep]
+        # Re-normalize to sum = 1
+        if np.sum(w_card) > 0:
+            w_card = w_card / np.sum(w_card)
+        weights = w_card
+
+    port_return = float(np.dot(weights, mu))
+    port_risk = float(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
+
+    return {
+        "status": "Optimal",
+        "weights": weights,
+        "return": round(port_return, 4),
+        "risk": round(port_risk, 4),
+        "n_assets_selected": int(np.sum(weights > 0.001)),
+    }
 
 
 def optimize_portfolio(
@@ -24,8 +141,14 @@ def optimize_portfolio(
     """
     Portfolio optimization with linear constraints (PuLP).
 
+    ⚠ NOTE: PuLP does NOT support quadratic constraints. The risk_target
+    parameter is accepted but NOT enforced in this version. The portfolio
+    risk is reported post-hoc for informational purposes.
+
+    For proper mean-variance (Markowitz) optimization with a risk constraint,
+    use ``optimize_portfolio_scipy()`` instead.
+
     Maximize expected return subject to:
-    - Portfolio variance ≤ risk_target²
     - Sector exposure limits
     - Per-asset weight bounds
     - Optional cardinality (max N assets selected)
@@ -34,7 +157,7 @@ def optimize_portfolio(
     ----------
     expected_returns : list of asset expected returns
     cov_matrix : covariance matrix (n × n)
-    risk_target : max acceptable standard deviation
+    risk_target : ⚠ NOT ENFORCED — use scipy version for proper risk control
     sector_map : sector label per asset
     sector_limits : dict {sector: (min_frac, max_frac)}
     weight_bounds : (min_weight, max_weight) per asset
@@ -78,21 +201,12 @@ def optimize_portfolio(
     # Objective: maximize expected return
     prob += pulp.lpSum(expected_returns[i] * w[i] for i in range(n))
 
-    # Risk constraint: w^T Σ w ≤ risk_target²
-    # We approximate with: sum of pairwise terms. PuLP handles quadratic via QP? No.
-    # PuLP is linear only. For a proper quadratic constraint we need scipy.
-    # Here we use a linear proxy: minimize variance via objective trade-off.
-    # Actually, let's handle this differently: use PuLP for linear constraints,
-    # and note that true QP uses scipy.optimize.
-    # The linear proxy: minimize absolute deviation from risk budget via
-    # piecewise linear. For simplicity we skip the quadratic constraint
-    # in the PuLP version and add a Lagrange-style penalty.
-
-    # Actually, PuLP doesn't support quadratic constraints.
-    # Let me restructure: use a linear objective and show the constraint
-    # as a hard boundary that we estimate via first-order approximation.
-    # For the demo, we'll maximize return with linear constraints only
-    # and compute the resulting portfolio risk afterwards.
+    # ── Risk constraint ──────────────────────────────────────────────
+    # PuLP is linear-only; it cannot enforce w^T Σ w ≤ risk_target².
+    # The risk_target parameter is accepted for API compatibility but
+    # effectively ignored. Use optimize_portfolio_scipy() (above) for
+    # proper Markowitz mean-variance optimization with scipy SLSQP.
+    # ─────────────────────────────────────────────────────────────────
 
     prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
 
@@ -113,7 +227,7 @@ def optimize_portfolio(
 
 
 def demo_portfolio() -> dict:
-    """Run portfolio optimization on 6 assets across 3 sectors."""
+    """Run portfolio optimization on 6 assets across 3 sectors (scipy version)."""
     expected_returns = [0.12, 0.10, 0.08, 0.15, 0.09, 0.11]
     np.random.seed(42)
     n = 6
@@ -134,10 +248,10 @@ def demo_portfolio() -> dict:
         "Health": (0.1, 0.4),
     }
 
-    return optimize_portfolio(
+    return optimize_portfolio_scipy(
         expected_returns=expected_returns,
         cov_matrix=cov.tolist(),
-        risk_target=0.18,
+        target_return=0.127,  # target ~12.7% return, let scipy minimize variance
         sector_map=sector_map,
         sector_limits=sector_limits,
         weight_bounds=(0.0, 0.35),

@@ -35,17 +35,23 @@ def backtest(
     signals = np.asarray(signals, dtype=int)
     n = len(prices)
 
+    # ── Shift signals by 1 to remove look-ahead bias ─────────────────
+    # signal[t] (generated from data through close[t]) should trade on
+    # open[t+1].  We approximate by applying signal[t-1] to return[t].
+    signals_shifted = np.zeros(n, dtype=int)
+    signals_shifted[1:] = signals[:-1]
+
     # 1. Position changes (only when signal changes)
-    prev_signal = np.roll(signals, 1)
+    prev_signal = np.roll(signals_shifted, 1)
     prev_signal[0] = 0
-    position_changes = signals - prev_signal
+    position_changes = signals_shifted - prev_signal
 
     # 2. Daily returns from price moves
     daily_returns = np.zeros(n)
     daily_returns[1:] = np.diff(prices) / prices[:-1]
 
     # 3. Strategy returns: position * daily_return
-    strategy_returns = signals * daily_returns
+    strategy_returns = signals_shifted * daily_returns
 
     # 4. Transaction costs at each change
     trade_cost = np.abs(position_changes) * (commission + slippage)
@@ -55,29 +61,44 @@ def backtest(
     equity = initial_capital * np.cumprod(1 + net_returns)
     equity_curve = pd.Series(equity, name="equity")
 
-    # 6. Trades log
-    trade_dates = np.where(position_changes != 0)[0]
+    # 6. Trades log — only record actual position entries and flips
+    #    Skip transitions that go TO flat (exits).
     trades = []
-    for i, idx in enumerate(trade_dates):
-        direction = int(position_changes[idx])
-        entry_price = prices[idx]
-        # Find exit: next trade change or end
-        exit_idx = trade_dates[i + 1] if i + 1 < len(trade_dates) else n - 1
-        exit_price = prices[exit_idx]
-        ret = (exit_price / entry_price - 1) * (
-            1 if signals[idx] > 0 else -1
-        )
-        ret -= (commission + slippage) * 2  # entry + exit cost
-        trades.append(
-            {
-                "entry": int(idx),
-                "exit": int(exit_idx),
-                "direction": "long" if direction > 0 else "short",
-                "entry_price": round(float(entry_price), 2),
-                "exit_price": round(float(exit_price), 2),
-                "return": round(float(ret), 4),
-            }
-        )
+    i = 0
+    while i < n:
+        # Movement is an entry if prev_signal[i] == 0 and signals_shifted[i] != 0
+        # OR a flip (sign changes without going flat).
+        cur = signals_shifted[i]
+        prev = prev_signal[i]
+        if cur != 0 and cur != prev:
+            # This is either an entry (0 → ±1) or a flip (±1 → ∓1)
+            direction = "long" if cur > 0 else "short"
+            entry_price = float(prices[i])
+            entry_idx = i
+            # Find the exit: next index where signal changes again
+            exit_idx = n - 1
+            for j in range(i + 1, n):
+                if signals_shifted[j] != cur:
+                    exit_idx = j
+                    break
+            exit_price = float(prices[exit_idx])
+            # Gross return for this leg
+            ret = (exit_price / entry_price - 1) * (1 if cur > 0 else -1)
+            ret -= (commission + slippage) * 2  # entry + exit cost
+            trades.append(
+                {
+                    "entry": entry_idx,
+                    "exit": exit_idx,
+                    "direction": direction,
+                    "entry_price": round(entry_price, 2),
+                    "exit_price": round(exit_price, 2),
+                    "return": round(float(ret), 4),
+                }
+            )
+            # Jump to exit for next iteration
+            i = exit_idx
+            continue
+        i += 1
 
     # 7. Performance stats
     total_return = equity[-1] / equity[0] - 1

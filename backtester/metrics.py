@@ -17,10 +17,12 @@ def sortino_ratio(returns: np.ndarray, rf: float = 0.0, periods: int = 252) -> f
     if len(returns) < 2:
         return 0.0
     excess = returns - rf / periods
-    downside = returns[returns < 0]
-    if len(downside) < 2 or np.std(downside) == 0:
+    # Downside deviation: sqrt(mean(min(0, r)²))
+    downside = np.minimum(0, returns)
+    downside_dev = np.sqrt(np.mean(downside ** 2))
+    if downside_dev == 0:
         return 0.0
-    return float(np.mean(excess) / np.std(downside) * np.sqrt(periods))
+    return float(np.mean(excess) / downside_dev * np.sqrt(periods))
 
 
 def max_drawdown(equity: np.ndarray) -> float:

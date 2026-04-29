@@ -47,8 +47,18 @@ def find_equilibrium(
         clearing_price = float((sup_at_q[idx] + dem_at_q[idx]) / 2)
         clearing_volume = float(q_grid[idx])
     elif np.all(sup_at_q <= dem_at_q):
-        clearing_price = float(sup_prices[-1])
-        clearing_volume = float(q_max)
+        # All supply is cheaper than demand — equilibrium at total demand volume.
+        # The marginal price is the supply price at the total demand quantity,
+        # i.e. the last (most expensive) unit needed to satisfy demand.
+        total_demand_qty = float(dem_cum_qty[-1])
+        clearing_volume = total_demand_qty
+        # Find the supply price corresponding to this quantity
+        clearing_price = float(np.interp(
+            total_demand_qty,
+            np.insert(sup_cum_qty, 0, 0),
+            np.insert(sup_prices, 0, 0),
+            left=0, right=sup_prices[-1]
+        ))
     else:
         clearing_price = float(dem_prices[0])
         clearing_volume = 0.0

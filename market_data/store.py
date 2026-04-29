@@ -54,6 +54,7 @@ def insert_ohlcv(conn: sqlite3.Connection, records: list[dict]) -> int:
             else:
                 date_str = str(date_str)[:10]
 
+            before = conn.total_changes
             conn.execute(
                 """
                 INSERT OR IGNORE INTO daily_ohlcv (ticker, date, open, high, low, close, volume)
@@ -69,7 +70,7 @@ def insert_ohlcv(conn: sqlite3.Connection, records: list[dict]) -> int:
                     int(r["volume"]) if r["volume"] else 0,
                 ),
             )
-            if conn.total_changes > 0:
+            if conn.total_changes > before:
                 inserted += 1
         except Exception as e:
             print(f"  [SKIP] {r.get('ticker', '?')} {r.get('date', '?')}: {e}")
