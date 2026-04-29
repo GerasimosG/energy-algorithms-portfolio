@@ -4,6 +4,15 @@
 **Remote:** `git@github.com:GerasimosG/Energy_Algorithms.git`
 **Purpose:** Public portfolio for Euphemia   Junior Optimization Engineer & energy/quant roles (currently private)
 
+## Skills
+
+When working on this repo, load these skills:
+
+- `writing-plans` — plan before coding
+- `test-driven-development` — RED-GREEN-REFACTOR
+- `systematic-debugging` — understand before fixing
+- `github-pr-workflow` — branch, commit, PR, merge
+
 ## Identity
 
 This repo is GerryBerry's public portfolio demonstrating optimization modeling, energy market domain knowledge (Euphemia/PCR), and algorithmic trading. The **energy_markets** module is the hero piece — what differentiates this from generic quant repos. Targeted at **Euphemia  ** (Euphemia algorithm) and **Industry** (power market optimization) roles.
