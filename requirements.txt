@@ -1,0 +1,7 @@
+numpy==2.2.5
+scipy==1.15.2
+pandas==2.2.3
+matplotlib==3.10.1
+pulp==3.0.2
+yfinance==0.2.55
+requests==2.32.3
