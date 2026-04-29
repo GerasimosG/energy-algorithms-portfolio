@@ -105,12 +105,16 @@ def plot_supply_demand_stack(
                label=f"Volume: {cv:.0f} MWh")
 
     # Shading for consumer and producer surplus
-    # Consumer surplus: area above MCP under demand curve
-    # Producer surplus: area below MCP above supply curve
-    ax.fill_betweenx([0, cp], 0, cv, alpha=0.05, color="forestgreen",
-                     label="Producer surplus")
-    ax.fill_betweenx([cp, max(eq["demand_prices"]) * 1.1], 0, cv,
-                     alpha=0.05, color="coral", label="Consumer surplus")
+    # Producer surplus: area between supply curve and price line (0 to cv)
+    ax.fill_between(sup_x[:len(sup_x)-1], sup_y[:len(sup_x)-1], cp,
+                    where=(cp >= sup_y[:len(sup_x)-1]),
+                    step="post", alpha=0.08, color="forestgreen",
+                    label="Producer surplus")
+    # Consumer surplus: area between demand curve and price line (0 to cv)
+    ax.fill_between(dem_x[:len(dem_x)-1], cp, dem_y[:len(dem_x)-1],
+                    where=(dem_y[:len(dem_x)-1] >= cp),
+                    step="post", alpha=0.08, color="coral",
+                    label="Consumer surplus")
 
     ax.set_xlabel("Quantity (MWh)", fontsize=11)
     ax.set_ylabel("Price (€/MWh)", fontsize=11)

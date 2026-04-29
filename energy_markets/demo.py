@@ -29,7 +29,10 @@ def main():
     model.add_demand("Industry", 150, 120)
     model.add_demand("Residential", 100, 80)
     result = model.solve()
-    model.report()
+    if result.get("status") != "Optimal":
+        print(f"  ⚠ Solve returned {result.get('status')}, skipping report")
+    else:
+        model.report()
 
     # 2. PCR with Block Order
     print(f"\n\n{'─' * 65}")
@@ -42,8 +45,11 @@ def main():
     model2.add_demand("Industry", 200, 150)
     model2.add_demand("Residential", 120, 100)
     model2.add_block("NuclearBaseload", 45, 80)
-    model2.solve()
-    model2.report()
+    result2 = model2.solve()
+    if result2.get("status") != "Optimal":
+        print(f"  ⚠ Solve returned {result2.get('status')}, skipping report")
+    else:
+        model2.report()
 
     # 3. Block Order Scenarios
     print(f"\n\n{'─' * 65}")

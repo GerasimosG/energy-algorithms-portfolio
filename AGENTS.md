@@ -38,9 +38,9 @@ Energy_Algorithms/
 - Run: `.venv/bin/python -m energy_markets.demo`
 - **Repo kept private** for now per user instruction
 
-## Status After Audit (2026-04-29)
+## Status After Audit (2026-04-29 23:30 CEST)
 
-### ✅ Fixed (10 issues resolved)
+### ✅ Fixed (13 issues resolved)
 
 | # | What | Fix |
 |---|------|-----|
@@ -51,16 +51,27 @@ Energy_Algorithms/
 | 5 | Reserve/demand conflated | Split into energy_balance `==` and reserve `>=` constraints |
 | 6 | No UC initial conditions | Added `init_status`, min up/down from t=0 |
 | 7 | Horizon-end UC constraints | Min up/down enforced through final period |
-| 8 | Zero unit tests | `tests/` with 16 pytest tests |
+| 8 | Zero unit tests | `tests/` with 26 pytest tests (3 modules) |
 | 9 | No pyproject.toml | Added with dependencies, pytest config |
 | 10 | Hardcoded momentum threshold | Parameterized as `threshold=` arg |
+| 11 | Surplus shading wrong | Proper area-between-curves shading |
+| 12 | Demo ignores non-optimal | Status check before report() |
+| 13 | Empty `__init__.py` | All modules have `__all__` exports |
+
+### 🆕 New in This Iteration
+
+- **Multi-zone coupling** (`multi_zone.py`): ATC-constrained inter-zonal LP
+- **Euphemia   interview prep** (`EUPHEMIA_INTERVIEW.md`): Euphemia concepts + question bank
+- **CI workflow** (`.github/workflows/test.yml`): Python 3.11-3.13 matrix
+- **README**: Badges, architecture, metrics table, known limitations, references
+- **Tests**: 26 total (was 16) — transportation, portfolio, UC all tested
 
 ### 🟡 Remaining Low-Priority
 
-- Consumer/producer surplus shading (cosmetic)
-- Market clearing NaN edge cases
-- `__init__.py` exports for all modules
-- Jupyter notebook walkthrough
+- Hardcoded acceptance tolerance 0.001 (cosmetic)
+- Incomplete type hints (cosmetic)
+- `__init__.py` exports for all modules (done ✓)
+- IP pricing documentation added (done ✓ in EUPHEMIA_INTERVIEW.md)
 
 ## Euphemia   Interview Readiness Checklist
 
