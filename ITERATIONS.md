@@ -1,5 +1,31 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 01:40 CEST — Framework documentation, competitor gap analysis, auto-update
+
+**What changed:**
+- **📖 FRAMEWORK.md** (350+ lines, 24KB) — Comprehensive framework documentation:
+  - Architecture overview with ASCII diagram
+  - Data flow and solve pipeline with timing benchmarks (measured on rPi 4)
+  - Module deep-dives with mathematical formulations for all 11 modules
+  - Competitor comparison tables vs pomato, PyPSA, energy-py-linear
+  - Benchmark methodology with competitor numbers to beat (pomato's 98% CBCO reduction, PyPSA's 60+ tests)
+  - Edge case documentation across all modules
+  - Iteration history table (auto-updatable)
+  - Extension guide for adding new modules
+- **🤖 Auto-update script** (`scripts/update_framework_metrics.sh`):
+  - Counts modules, files, lines, tests
+  - Runs benchmarks on all solve functions
+  - Regenerates FRAMEWORK.md metrics header
+  - Can be used as pre-commit hook
+- **📋 Competitor gap analysis** (FRAMEWORK.md section):
+  - pomato: P1=FBMC coupling + LODF impact screening, P2=Clarkson + GSK strategies
+  - energy-py-linear: P1=OneInterval pattern, P2=known-optimal tests + invariant validation
+  - PyPSA: P2=accessor pattern, P3=solver-agnostic config + extra_functionality hook
+- **README** updated with Framework Documentation section linking to FRAMEWORK.md
+
+**New files:** `FRAMEWORK.md`, `scripts/update_framework_metrics.sh`
+**Git:** Pushed to `GerasimosG/Energy_Algorithms` (private)
+
 ## 2026-04-30 00:15 CEST — 5 pending items implemented: BESS, intraday, ENTSO-E, type hints, notebook
 
 **What changed:**
