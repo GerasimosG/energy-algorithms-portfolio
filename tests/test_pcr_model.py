@@ -105,3 +105,63 @@ def test_no_trades_zero_demand():
     r = model.solve()
     # Either Optimal with 0 trades, or Infeasible (cannot have 0 supply == 0 demand with min constraints)
     assert r["status"] in ("Optimal", "Infeasible")
+
+
+# ── Intraday ────────────────────────────────────────────────────────
+
+from energy_markets.intraday import simulate_intraday, demo_intraday
+
+
+def test_intraday_demo():
+    """Demo intraday simulation returns valid result."""
+    r = demo_intraday()
+    assert r["status"] == "completed"
+    assert len(r["trades"]) > 0
+    assert r["total_volume"] > 0
+
+
+def test_intraday_match_buy_sell():
+    """A buy order at 100 matches a sell order at 100."""
+    orders = [
+        {"time": 0, "type": "sell", "price": 100, "qty": 10},
+        {"time": 1, "type": "buy", "price": 100, "qty": 10},
+    ]
+    r = simulate_intraday(orders)
+    assert len(r["trades"]) == 1
+    assert r["trades"][0]["qty"] == 10
+
+
+def test_intraday_no_match():
+    """Buy at 80 doesn't match sell at 100."""
+    orders = [
+        {"time": 0, "type": "sell", "price": 100, "qty": 10},
+        {"time": 1, "type": "buy", "price": 80, "qty": 10},
+    ]
+    r = simulate_intraday(orders)
+    assert len(r["trades"]) == 0
+    assert len(r["unfilled_orders"]) == 2
+
+
+def test_intraday_partial_fill():
+    """Buy for 20 MW where only 10 MW available → partial fill."""
+    orders = [
+        {"time": 0, "type": "sell", "price": 50, "qty": 10},
+        {"time": 1, "type": "buy", "price": 50, "qty": 20},
+    ]
+    r = simulate_intraday(orders)
+    assert len(r["trades"]) == 1
+    assert r["trades"][0]["qty"] == 10
+    # 10 MW of buy order remains unfilled
+    assert len(r["unfilled_orders"]) == 1
+
+
+def test_intraday_vwap():
+    """VWAP reflects price×volume weighting."""
+    orders = [
+        {"time": 0, "type": "sell", "price": 50, "qty": 5},
+        {"time": 1, "type": "sell", "price": 60, "qty": 5},
+        {"time": 2, "type": "buy", "price": 70, "qty": 10},
+    ]
+    r = simulate_intraday(orders)
+    # Two trades at 50 and 60, VWAP = (50*5 + 60*5)/10 = 55
+    assert abs(r["vwap"] - 55.0) < 0.01

@@ -21,13 +21,14 @@ This repo is GerryBerry's public portfolio demonstrating optimization modeling, 
 
 ```
 Energy_Algorithms/
-├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack
-├── lp_optimization/      Core LP/MIP — transportation, portfolio, unit commitment
+├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack, intraday
+├── lp_optimization/      Core LP/MIP — transportation, portfolio, unit commitment, BESS storage
+├── energy_data/           ENTSO-E Transparency Platform API client
 ├── backtester/           Vectorized backtesting engine + risk metrics
 ├── strategies/           3 signal-based trading strategies
 ├── market_data/          yfinance → SQLite pipeline
-├── tests/                Unit tests (pytest)
-└── notebooks/            Jupyter exploration
+├── tests/                Unit tests (pytest, 40 tests)
+└── notebooks/            Walkthrough notebook for Euphemia   demo
 ```
 
 ## Critical Conventions

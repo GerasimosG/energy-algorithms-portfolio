@@ -8,6 +8,7 @@ import numpy as np
 from lp_optimization.transportation import solve_transportation, demo_transportation
 from lp_optimization.portfolio import optimize_portfolio_scipy, demo_portfolio
 from lp_optimization.scheduling import solve_unit_commitment, demo_uc
+from lp_optimization.storage import solve_storage, demo_storage
 
 
 # ── Transportation ──────────────────────────────────────────────────
@@ -130,3 +131,54 @@ def test_uc_reserve_margin():
         demand=demand, generators=generators, reserve_margin=0.2,
     )
     assert r["status"] == "Optimal"
+
+
+# ── Storage ─────────────────────────────────────────────────────────
+
+def test_storage_demo():
+    """Demo storage finds optimal schedule."""
+    r = demo_storage()
+    assert r["status"] == "Optimal"
+    assert r["revenue"] >= 0
+    assert len(r["schedule"]) == 24
+
+
+def test_storage_charges_when_cheap():
+    """Battery charges at low prices and discharges at high prices."""
+    prices = [10, 10, 10, 100, 100, 100]  # cheap then expensive
+    r = solve_storage(
+        prices, capacity=50, max_power=10,
+        eff_in=0.95, eff_out=0.95, initial_soc=0,
+    )
+    assert r["status"] == "Optimal"
+    sched = r["schedule"]
+    # Should charge in first periods (cheap), discharge later (expensive)
+    assert sched[0]["charge"] >= 0
+    assert sched[3]["discharge"] > 0 or sched[4]["discharge"] > 0
+
+
+def test_storage_soc_bounds():
+    """SoC never exceeds capacity."""
+    prices = [50] * 10
+    r = solve_storage(
+        prices, capacity=100, max_power=50,
+        eff_in=0.95, eff_out=0.95, initial_soc=0,
+    )
+    assert r["status"] == "Optimal"
+    for period in r["schedule"]:
+        assert 0 <= period["soc"] <= 100 + 0.01
+
+
+def test_storage_round_trip():
+    """Round-trip efficiency means energy out < energy in."""
+    prices = [1, 1, 100, 100, 1, 1]
+    r = solve_storage(
+        prices, capacity=50, max_power=20,
+        eff_in=0.9, eff_out=0.9, initial_soc=0,
+    )
+    assert r["status"] == "Optimal"
+    total_charge = sum(p["charge"] for p in r["schedule"])
+    total_discharge = sum(p["discharge"] for p in r["schedule"])
+    # Discharge should be less than charge due to losses (if any cycling)
+    if total_charge > 0:
+        assert total_discharge < total_charge

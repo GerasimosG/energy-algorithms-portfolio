@@ -17,20 +17,26 @@ A portfolio demonstrating **optimization modeling**, **energy market domain know
 
 ```
 Energy_Algorithms/
-├── energy_markets/        ★ HERO — PCR coupling, block orders, multi-zone, Euphemia context
+├── energy_markets/        ★ HERO — PCR coupling, block orders, multi-zone, intraday, Euphemia context
 │   ├── pcr_model.py       LP: social welfare maximization with binary block orders
 │   ├── multi_zone.py      Multi-zone coupling with ATC constraints
 │   ├── block_orders.py    Linked, exclusive, and simple block order scenarios
+│   ├── intraday.py        Continuous intraday trading simulation with order matching ★ new
 │   ├── market_clearing.py Supply/demand stack equilibrium + visualization
 │   └── EUPHEMIA_INTERVIEW.md  Interview prep: Euphemia concepts, question bank
 ├── lp_optimization/        Core LP/MIP skills
 │   ├── transportation.py  Classic transportation LP
 │   ├── portfolio.py       Mean-variance (scipy SLSQP) + linear (PuLP)
-│   └── scheduling.py      Unit commitment MIP with min up/down, ramp rates, reserve
+│   ├── scheduling.py      Unit commitment MIP with min up/down, ramp rates, reserve
+│   └── storage.py         BESS battery storage optimization LP ★ new
+├── energy_data/            European electricity market data ★ new
+│   ├── fetcher.py         ENTSO-E Transparency Platform API client
+│   └── demo.py            Demo with realistic Belgian market data
 ├── backtester/             Vectorized backtesting engine + 7 risk metrics
 ├── strategies/             3 signal-based strategies (momentum, mean-reversion, SMA)
 ├── market_data/            Yahoo Finance → SQLite pipeline
-├── tests/                  28 pytest tests across all modules
+├── tests/                  40 pytest tests across 4 modules ★ 26→40
+├── notebooks/              Walkthrough notebook for Euphemia   demo ★ new
 └── .github/workflows/      CI: Python 3.11–3.13, tests + demo verification
 ```
 
@@ -141,12 +147,13 @@ max Σ_j(p_j^d · q_j^d · x_j^d) − Σ_i(p_i^s · q_i^s · x_i^s) − Σ_k(p_k
 
 | Metric | Value |
 |--------|-------|
-| Python modules | 8 |
-| Total source files | 18 |
-| Test files | 3 |
-| Test cases | 28 (all passing) |
+| Python modules | 11 |
+| Total source files | 24 |
+| Test files | 4 |
+| Test cases | 40 (all passing) |
 | Risk metrics | 7 (Sharpe, Sortino, maxDD, Calmar, VaR95, VaR99, Kelly) |
 | Optimization solvers | 2 (PuLP/CBC, scipy SLSQP) |
+| New in this iteration | BESS storage, intraday trading, ENTSO-E pipeline, notebook walkthrough |
 
 ## 🧪 Testing
 

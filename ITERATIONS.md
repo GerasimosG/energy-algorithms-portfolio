@@ -1,5 +1,19 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 00:15 CEST — 5 pending items implemented: BESS, intraday, ENTSO-E, type hints, notebook
+
+**What changed:**
+- **🔋 BESS storage optimization** (`lp_optimization/storage.py`): Battery energy storage LP maximizing revenue over 24h price forecast. Charge at low prices, discharge at high. SoC constraints, efficiency losses, power limits. Demo: 100MWh/25MW battery, €7,773 revenue.
+- **⏱️ Intraday trading simulation** (`energy_markets/intraday.py`): Continuous intraday electricity market with order book matching. Price-time priority matching, partial fills, VWAP. OrderBook class with `add()`, `_match()`, `get_depth()`. Demo: 20 orders, 16 trades, 110 MW volume.
+- **📡 ENTSO-E data pipeline** (`energy_data/`): Full ENTSO-E Transparency Platform REST API client (`EntsoeClient`). XML parsing for day-ahead prices, generation mix, load forecasts. Supports all 27 EU bidding zones. Demo with realistic Belgian market data (no API key needed). PSR type mapping for 20 generation types.
+- **🔤 Type hints**: All functions across all modules confirmed to have complete parameter and return type annotations (no changes needed — already well-typed).
+- **📓 Notebook walkthrough** (`notebooks/walkthrough.ipynb`): 24-cell Jupyter notebook demonstrating all modules. Setup, energy markets (PCR, blocks, multi-zone, intraday), LP/MIP (transportation, portfolio, UC, BESS), backtesting, ENTSO-E data. Ready for Euphemia   interview review.
+- **pyproject.toml**: Added `energy_data*` to package includes.
+
+**New files:** `lp_optimization/storage.py`, `energy_markets/intraday.py`, `energy_data/` (3 files), `notebooks/walkthrough.ipynb`, `tests/test_energy_data.py`
+**Tests:** 26 → 40 (+14: 4 storage + 5 intraday + 5 energy_data)
+**Git:** Pending push
+
 ## 2026-04-29 23:55 CEST — Final polish: LICENSE, README whitepaper expansion, checklist cleanup
 
 **What changed:**
