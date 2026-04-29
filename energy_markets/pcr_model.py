@@ -144,6 +144,112 @@ class PCRModel:
         }
         return self._result
 
+    def solve_with_ip_pricing(self, verbose: bool = False) -> dict:
+        """Solve with IP (Integer Programming) pricing for block orders.
+
+        Simplified IP pricing that handles non-convexities from block orders.
+        First solves the welfare-maximizing MIP, then computes the uniform
+        price that minimizes make-whole payments while preserving the optimal
+        dispatch.
+
+        Real Euphemia IP pricing is significantly more complex — this
+        implements the core concept of minimizing make-whole payments.
+
+        Parameters
+        ----------
+        verbose : bool
+            Pass through to PuLP solver.
+
+        Returns
+        -------
+        dict
+            Same keys as solve() plus:
+            - pricing_method : 'ip'
+            - ip_price : float — IP uniform clearing price
+            - mcp : float — marginal clearing price (for comparison)
+            - make_whole_payments : dict — block_id -> {'type': str, 'payment': float}
+        """
+        # 1. Solve the welfare-maximizing MIP (same as solve())
+        result = self.solve(verbose=verbose)
+        if result["status"] != "Optimal":
+            result["pricing_method"] = "ip"
+            self._result = result
+            return result
+
+        mcp = result["mcp"]
+
+        # If there are no block orders, IP pricing is degenerate — use MCP
+        if not self.block_orders:
+            result["pricing_method"] = "ip"
+            result["ip_price"] = mcp
+            result["make_whole_payments"] = {}
+            self._result = result
+            return result
+
+        # 2. Determine the feasible IP price range.
+        #    The IP price must be >= all accepted continuous supply prices
+        #    (so non-block suppliers remain profitable) and <= all accepted
+        #    demand bid prices (so demand is not priced out).
+        acc_supply_prices = [
+            o["price"] for o in result["orders"]["supply"].values()
+            if o["filled_frac"] > 0.001
+        ]
+        acc_demand_prices = [
+            o["price"] for o in result["orders"]["demand"].values()
+            if o["filled_frac"] > 0.001
+        ]
+        lower_bound = max(acc_supply_prices) if acc_supply_prices else 0.0
+        upper_bound = min(acc_demand_prices) if acc_demand_prices else float("inf")
+
+        # 3. Build candidate IP prices from all relevant price points.
+        candidates: set[float] = {lower_bound, upper_bound, mcp}
+        candidates.update(acc_supply_prices)
+        candidates.update(acc_demand_prices)
+        for binfo in result["orders"]["blocks"].values():
+            candidates.add(binfo["price"])
+        candidates = sorted(
+            p for p in candidates if lower_bound - 1e-9 <= p <= upper_bound + 1e-9
+        )
+
+        # 4. Find the IP price that minimizes make-whole payments.
+        best_ip = mcp
+        best_mwp = float("inf")
+
+        for ip in candidates:
+            mwp = 0.0
+            for bid, binfo in result["orders"]["blocks"].items():
+                if binfo["accepted"] and binfo["price"] > ip + 1e-9:
+                    # Paradoxically accepted block: gets IP but offered higher
+                    mwp += (binfo["price"] - ip) * binfo["qty"]
+                elif not binfo["accepted"] and binfo["price"] < ip - 1e-9:
+                    # Paradoxically rejected block: would be profitable at IP
+                    mwp += (ip - binfo["price"]) * binfo["qty"]
+            if mwp < best_mwp - 1e-9:
+                best_mwp = mwp
+                best_ip = ip
+
+        # 5. Compute make-whole payments at the optimal IP price.
+        make_whole: dict[str, dict] = {}
+        for bid, binfo in result["orders"]["blocks"].items():
+            if binfo["accepted"] and binfo["price"] > best_ip + 1e-9:
+                mwp = (binfo["price"] - best_ip) * binfo["qty"]
+                make_whole[bid] = {
+                    "type": "paradoxically_accepted",
+                    "payment": round(mwp, 2),
+                }
+            elif not binfo["accepted"] and binfo["price"] < best_ip - 1e-9:
+                mwp = (best_ip - binfo["price"]) * binfo["qty"]
+                make_whole[bid] = {
+                    "type": "paradoxically_rejected",
+                    "payment": round(mwp, 2),
+                }
+
+        result["pricing_method"] = "ip"
+        result["ip_price"] = best_ip
+        result["make_whole_payments"] = make_whole
+        self._result = result
+        return result
+
     def report(self) -> None:
         """Pretty-print results."""
         if not self._result:
@@ -153,6 +259,13 @@ class PCRModel:
         print(f"\n  Area: {self.area}")
         print(f"  Status: {r['status']}")
         print(f"  Market Clearing Price: €{r['mcp']:.2f}/MWh")
+        if r.get("pricing_method") == "ip":
+            print(f"  IP Price:              €{r['ip_price']:.2f}/MWh")
+            mwp = r.get("make_whole_payments", {})
+            if mwp:
+                print(f"  Make-Whole Payments:")
+                for bid, info in mwp.items():
+                    print(f"    {bid}: €{info['payment']:,.2f} ({info['type']})")
         print(f"  Total Traded: {r['traded']:.1f} MWh")
         print(f"  Social Welfare: €{r['welfare']:>12,.2f}")
 
