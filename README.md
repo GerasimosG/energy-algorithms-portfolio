@@ -21,9 +21,9 @@ This portfolio is laser-targeted at two specific roles. Below is a detailed brea
 | Requirement | What Interviewers Look For | This Repo's Answer |
 |---|---|---|
 | **LP/MIP formulation** | Can you translate a business problem into mathematical constraints? | `pcr_model.py` — social welfare LP with binary block orders. `scheduling.py` — unit commitment MIP with min up/down, ramp rates, reserve. `storage.py` — BESS revenue-maximizing LP |
-| **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `block_orders.py` — linked + exclusive group mechanisms |
+| **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `fbmc.py` — FBMC with PTDF/RAM (the real Euphemia algorithm). `block_orders.py` — linked + exclusive group mechanisms |
 | **Solver experience** | Have you used optimization solvers? Understand their limitations? | PuLP/CBC used throughout. README documents PuLP's quadratic limitation (why scipy handles portfolio risk). Honest about CBC vs commercial solvers |
-| **Python + software engineering** | Can you write production code, not just notebooks? | 40 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
+| **Python + software engineering** | Can you write production code, not just notebooks? | 51 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
 | **Non-convexity awareness** | Do you know that block orders make the problem non-convex? | Explicitly documented: MCP vs IP pricing gap, make-whole payments, PUN pricing. The README's "Implementation → Real Euphemia Mapping" table shows exactly where we simplify |
 
 #### Edge Cases — What Separates Good from Exceptional
@@ -77,7 +77,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 | **Quantitative modeling** | Can you build and validate statistical models? | 3 strategy types (momentum, mean-reversion, SMA crossover) with parameterized thresholds. Portfolio optimization with cardinality constraints |
 | **Risk management** | Do you understand VaR, drawdown, Sharpe, Sortino, Kelly? | `metrics.py` — 7 metrics. Kelly fraction properly bounded. Sortino uses downside deviation only |
 | **Market data pipelines** | Can you build reliable data infrastructure? | `market_data/` — Yahoo Finance → SQLite. `energy_data/` — ENTSO-E Transparency Platform API client with proper error handling |
-| **Domain knowledge** | Do you understand electricity markets specifically? | Intraday simulation with order book matching, ENTSO-E pipeline, PCR/Euphemia understanding |
+| **Domain knowledge** | Do you understand electricity markets specifically? | Intraday simulation with order book matching, ENTSO-E pipeline, PCR/Euphemia understanding, FBMC flow-based coupling |
 
 #### Edge Cases — What Separates Good from Exceptional
 
