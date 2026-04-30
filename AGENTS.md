@@ -21,13 +21,13 @@ This repo is GerryBerry's public portfolio demonstrating optimization modeling, 
 
 ```
 Energy_Algorithms/
-├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack, intraday
+├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack, intraday, FBMC
 ├── lp_optimization/      Core LP/MIP — transportation, portfolio, unit commitment, BESS storage
-├── energy_data/           ENTSO-E Transparency Platform API client
+├── energy_data/           ENTSO-E Transparency Platform API client (+ config with API key)
 ├── backtester/           Vectorized backtesting engine + risk metrics
 ├── strategies/           3 signal-based trading strategies
 ├── market_data/          yfinance → SQLite pipeline
-├── tests/                Unit tests (pytest, 40 tests)
+├── tests/                Unit tests (pytest, 51 tests)
 └── notebooks/            Walkthrough notebook for Euphemia   demo
 ```
 
@@ -61,6 +61,9 @@ Energy_Algorithms/
 
 ### 🆕 New in This Iteration
 
+- **FBMC flow-based coupling** (`fbmc.py`): PTDF + RAM constraints with loop flow detection. Euphemia's actual coupling algorithm.
+- **ENTSO-E API key** (`energy_data/config.py`): Live data access via stored security token.
+- **Tests**: 51 total (was 40) — 11 new FBMC tests covering 2-zone, 3-zone, edge cases.
 - **Multi-zone coupling** (`multi_zone.py`): ATC-constrained inter-zonal LP
 - **Euphemia   interview prep** (`EUPHEMIA_INTERVIEW.md`): Euphemia concepts + question bank
 - **CI workflow** (`.github/workflows/test.yml`): Python 3.11-3.13 matrix
