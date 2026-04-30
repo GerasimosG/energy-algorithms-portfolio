@@ -7,9 +7,8 @@ handles edge cases gracefully.
 No API key is required — tests run against demo data only.
 """
 from __future__ import annotations
-import os
 
-import pytest
+import os
 
 # Force demo data mode by temporarily clearing any API key
 _original_key = os.environ.get("ENTSOE_API_KEY", None)
@@ -127,7 +126,10 @@ def test_fallback_with_nonexistent_api():
     We import and call _build_pcr_model directly with demo data
     to verify the model construction works in isolation.
     """
-    from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
+    from energy_algorithms.adapters.entsoe_client import (
+        fetch_demo_day_ahead,
+        fetch_demo_generation_mix,
+    )
     from energy_algorithms.application.live_pipeline import _build_pcr_model
 
     prices = fetch_demo_day_ahead()

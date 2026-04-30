@@ -5,25 +5,24 @@ shared across all domain and application modules.
 """
 from __future__ import annotations
 
-
 from energy_algorithms.domain.hooks import (
+    POST_EXTRACT,
+    POST_SOLVE,
+    PRE_SOLVE,
     HookRegistry,
+    clear_hooks,
     register_hook,
     run_hooks,
-    clear_hooks,
-    PRE_SOLVE,
-    POST_SOLVE,
-    POST_EXTRACT,
 )
 from energy_algorithms.domain.options import (
     get_option,
-    set_option,
-    reset_options,
     get_options_dict,
+    reset_options,
+    set_option,
 )
 from energy_algorithms.infrastructure.metadata import (
-    VariableRegistry,
     ModelMetadata,
+    VariableRegistry,
     get_model_summary,
 )
 from energy_algorithms.infrastructure.solver_config import (

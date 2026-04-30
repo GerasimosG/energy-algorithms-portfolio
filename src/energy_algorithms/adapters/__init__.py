@@ -5,22 +5,21 @@ and application configuration.
 """
 from __future__ import annotations
 
-
 from energy_algorithms.adapters.config import ENTSOE_API_KEY
-from energy_algorithms.adapters.pulp_solver import PuLPSolverAdapter  # noqa: F401
 from energy_algorithms.adapters.entsoe_client import (
     EntsoeClient,
     fetch_demo_day_ahead,
     fetch_demo_generation_mix,
 )
-from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker, fetch_batch
+from energy_algorithms.adapters.pulp_solver import PuLPSolverAdapter  # noqa: F401
 from energy_algorithms.adapters.sqlite_store import (
     get_connection,
+    get_summary,
+    get_ticker_data,
     init_db,
     insert_ohlcv,
-    get_ticker_data,
-    get_summary,
 )
+from energy_algorithms.adapters.yfinance_fetcher import fetch_batch, fetch_ticker
 
 __all__ = [
     "PuLPSolverAdapter",

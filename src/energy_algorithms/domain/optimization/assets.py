@@ -20,8 +20,8 @@ Usage::
 """
 
 from __future__ import annotations
-import pulp
 
+import pulp
 
 # ── Asset base class ─────────────────────────────────────────────────────────
 

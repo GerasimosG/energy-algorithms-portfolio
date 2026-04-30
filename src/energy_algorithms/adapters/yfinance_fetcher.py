@@ -4,9 +4,7 @@ Handles rate limits with polite delays.
 """
 from __future__ import annotations
 
-
 import time
-from typing import Optional
 
 import yfinance as yf
 
@@ -17,7 +15,7 @@ def fetch_ticker(
     interval: str = "1d",
     retries: int = 3,
     delay: float = 1.0,
-) -> Optional[dict]:
+) -> dict | None:
     """Fetch daily OHLCV for a ticker. Returns dict or None on failure."""
     for attempt in range(1, retries + 1):
         try:

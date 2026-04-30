@@ -7,8 +7,6 @@ Demostrates different types of complex orders supported by Euphemia:
 """
 from __future__ import annotations
 
-
-import pulp
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 

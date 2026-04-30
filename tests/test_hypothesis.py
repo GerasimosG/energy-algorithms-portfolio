@@ -15,8 +15,8 @@ import pytest
 
 # Conditionally import Hypothesis
 try:
-    from hypothesis import given, settings, HealthCheck
     import hypothesis.strategies as st
+    from hypothesis import HealthCheck, given, settings
     HAS_HYPOTHESIS = True
 except ImportError:
     HAS_HYPOTHESIS = False

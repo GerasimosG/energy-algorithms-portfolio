@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
 from energy_algorithms.domain.markets.pcr_model import PCRModel
+
 
 def test_simple_clearing():
     """Simple market clears with correct MCP and welfare."""
@@ -101,7 +101,8 @@ def test_no_trades_zero_demand():
 
 # ── Intraday ────────────────────────────────────────────────────────
 
-from energy_algorithms.domain.markets.intraday import simulate_intraday, demo_intraday
+from energy_algorithms.domain.markets.intraday import demo_intraday, simulate_intraday
+
 
 def test_intraday_demo():
     """Demo intraday simulation returns valid result."""

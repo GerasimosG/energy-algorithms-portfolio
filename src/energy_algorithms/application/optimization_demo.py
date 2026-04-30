@@ -5,13 +5,14 @@ from __future__ import annotations
 Demo: run all three LP/MIP problems.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from energy_algorithms.domain.optimization.transportation import demo_transportation
 from energy_algorithms.domain.optimization.portfolio import demo_portfolio
 from energy_algorithms.domain.optimization.scheduling import demo_uc
+from energy_algorithms.domain.optimization.transportation import demo_transportation
 
 
 def main():
@@ -52,7 +53,7 @@ def main():
     print(f"  Status: {uc['status']}")
     if "total_cost" in uc:
         print(f"  Total Cost: ${uc['total_cost']:,.2f}")
-        print(f"\n  Hourly Dispatch:")
+        print("\n  Hourly Dispatch:")
         print(f"  {'Hour':>5s} {'Demand':>8s} {'Coal':>8s} {'Gas':>8s} {'Wind':>8s} {'Online':>20s}")
         for period, data in sorted(uc['schedule'].items())[::2]:  # Every 2nd for brevity
             h = period.split("=")[1]

@@ -8,8 +8,9 @@ using demo data (no API key required). For live data, see the
 EntsoeClient class in fetcher.py.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
@@ -53,7 +54,7 @@ def demo_energy_data() -> dict:
         print(f"  {g['type']:<25} {g['mw']:>8.0f} {share:>7.1f}%")
 
     # ── Summary ──────────────────────────────────────────────────
-    print(f"\n  ── Key Metrics ──")
+    print("\n  ── Key Metrics ──")
     print(f"  Day-ahead avg price:  €{prices['avg_price']}/MWh")
     print(f"  Peak price (18:00):   €{prices['prices'][17]['price_eur_mwh']}/MWh")
     print(f"  Off-peak min (04:00): €{prices['prices'][3]['price_eur_mwh']}/MWh")

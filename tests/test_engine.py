@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
+
 from energy_algorithms.domain.trading.backtest_engine import backtest
-from energy_algorithms.domain.trading.risk_metrics import sharpe_ratio, sortino_ratio, max_drawdown, value_at_risk, kelly_fraction
+from energy_algorithms.domain.trading.risk_metrics import (
+    kelly_fraction,
+    max_drawdown,
+    sharpe_ratio,
+    sortino_ratio,
+    value_at_risk,
+)
+
 
 def test_backtest_returns_dict():
     """Backtest returns expected keys."""

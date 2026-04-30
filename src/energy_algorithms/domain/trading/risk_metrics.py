@@ -4,7 +4,6 @@ Sharpe, Sortino, max drawdown, Calmar, VaR, Kelly.
 """
 from __future__ import annotations
 
-
 import numpy as np
 
 

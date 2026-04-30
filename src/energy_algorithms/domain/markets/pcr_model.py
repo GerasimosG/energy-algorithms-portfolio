@@ -7,6 +7,7 @@ Reference: EUPHEMIA Public Description — PCR Market Coupling Algorithm
 https://www.epexspot.com/en/euphemia
 """
 from __future__ import annotations
+
 # ---------------------------------------------------------------------------
 # Tolerance: minimum fill fraction for an order to be considered "accepted"
 # ---------------------------------------------------------------------------
@@ -270,7 +271,7 @@ class PCRModel:
             print(f"  IP Price:              €{r['ip_price']:.2f}/MWh")
             mwp = r.get("make_whole_payments", {})
             if mwp:
-                print(f"  Make-Whole Payments:")
+                print("  Make-Whole Payments:")
                 for bid, info in mwp.items():
                     print(f"    {bid}: €{info['payment']:,.2f} ({info['type']})")
         print(f"  Total Traded: {r['traded']:.1f} MWh")

@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 import pulp
-import pytest
 
 from energy_algorithms.infrastructure.metadata import (
-    VariableRegistry,
     ModelMetadata,
+    VariableRegistry,
     get_model_summary,
 )
 

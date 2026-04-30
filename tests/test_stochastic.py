@@ -1,16 +1,14 @@
 """Tests for Renewable Uncertainty Module — lp_optimization module."""
 from __future__ import annotations
-import os
 
 import numpy as np
-import pytest
 
 from energy_algorithms.domain.optimization.stochastic import (
-    generate_wind_scenarios,
-    generate_solar_scenarios,
-    solve_scenario_uc,
-    compute_vss,
     compute_evpi,
+    compute_vss,
+    generate_solar_scenarios,
+    generate_wind_scenarios,
+    solve_scenario_uc,
 )
 
 # ── 1. Wind scenario generation ───────────────────────────────────

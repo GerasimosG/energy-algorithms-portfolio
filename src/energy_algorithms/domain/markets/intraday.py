@@ -12,7 +12,6 @@ and the liquidity dynamics of European intraday power markets
 
 from __future__ import annotations
 
-
 # ---------------------------------------------------------------------------
 # OrderBook
 # ---------------------------------------------------------------------------

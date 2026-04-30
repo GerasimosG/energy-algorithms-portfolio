@@ -11,15 +11,15 @@ actual ENTSO-E prices.
 Gracefully falls back to demo data when the API is unavailable.
 """
 
-import sys
 import os
+import sys
 from datetime import datetime, timedelta
 from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
-    from energy_algorithms.adapters.config import ENTSOE_API_KEY, DEFAULT_AREA_CODE
+    from energy_algorithms.adapters.config import DEFAULT_AREA_CODE, ENTSOE_API_KEY
 except ImportError:
     ENTSOE_API_KEY = ""
     DEFAULT_AREA_CODE = "10YBE----------2"  # Belgium
@@ -309,7 +309,7 @@ def _print_report(
     print(f"  Data source : {data_source}")
     print(f"  Area        : {area} (Belgium)")
     print(f"  Date        : {date}")
-    print(f"  Model       : PCR Social Welfare Maximization (PuLP/CBC)")
+    print("  Model       : PCR Social Welfare Maximization (PuLP/CBC)")
     print("-" * 68)
 
     # ── Price comparison ─────────────────────────────────────────────

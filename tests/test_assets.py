@@ -1,8 +1,9 @@
 """Tests for lp_optimization.assets — OneInterval asset pattern."""
 from __future__ import annotations
 
-import pytest
 import pulp
+import pytest
+
 from energy_algorithms.domain.optimization.assets import (
     Asset,
     BatteryAsset,

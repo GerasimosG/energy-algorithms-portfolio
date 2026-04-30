@@ -5,9 +5,9 @@ import pytest
 
 from energy_algorithms.infrastructure.options import (
     get_option,
-    set_option,
-    reset_options,
     get_options_dict,
+    reset_options,
+    set_option,
 )
 
 # ---------------------------------------------------------------------------

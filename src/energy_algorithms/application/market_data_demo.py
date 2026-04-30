@@ -6,15 +6,19 @@ Demo: fetch 5 assets from Yahoo Finance → SQLite.
 Run with: python -m market-data.demo  (from repo root)
 """
 
-import sys
 import os
+import sys
 
 # Add this module directory to path for sibling imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from energy_algorithms.adapters.sqlite_store import (  # noqa: E402
+    get_connection,
+    get_summary,
+    init_db,
+    insert_ohlcv,
+)
 from energy_algorithms.adapters.yfinance_fetcher import fetch_batch  # noqa: E402
-from energy_algorithms.adapters.sqlite_store import get_connection, init_db, insert_ohlcv, get_summary  # noqa: E402
-
 
 TICKERS = ["AAPL", "MSFT", "GOOGL", "SPY", "BTC-USD"]
 

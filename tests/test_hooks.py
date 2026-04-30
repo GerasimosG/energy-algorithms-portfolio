@@ -4,13 +4,13 @@ from __future__ import annotations
 import pytest
 
 from energy_algorithms.domain.hooks import (
+    POST_EXTRACT,
+    POST_SOLVE,
+    PRE_SOLVE,
     HookRegistry,
+    clear_hooks,
     register_hook,
     run_hooks,
-    clear_hooks,
-    PRE_SOLVE,
-    POST_SOLVE,
-    POST_EXTRACT,
 )
 
 # ---------------------------------------------------------------------------

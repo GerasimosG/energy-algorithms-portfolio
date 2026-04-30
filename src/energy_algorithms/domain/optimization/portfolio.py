@@ -9,9 +9,8 @@ Includes:
 """
 from __future__ import annotations
 
-
-import pulp
 import numpy as np
+import pulp
 from scipy.optimize import minimize
 
 

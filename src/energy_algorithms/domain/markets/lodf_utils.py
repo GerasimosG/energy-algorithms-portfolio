@@ -12,9 +12,7 @@ References
 """
 from __future__ import annotations
 
-
 import numpy as np
-from typing import Optional
 
 __all__ = ["compute_lodf", "screen_cbcos"]
 
@@ -25,7 +23,7 @@ __all__ = ["compute_lodf", "screen_cbcos"]
 
 def compute_lodf(
     ptdf: np.ndarray,
-    branch_zone_map: Optional[list[tuple[int, int]]] = None,
+    branch_zone_map: list[tuple[int, int]] | None = None,
 ) -> np.ndarray:
     """Compute the LODF matrix from a zonal PTDF matrix.
 
@@ -130,7 +128,7 @@ def screen_cbcos(
     ptdf: np.ndarray,
     base_flows: np.ndarray,
     ram_limits: np.ndarray,
-    branch_zone_map: Optional[list[tuple[int, int]]] = None,
+    branch_zone_map: list[tuple[int, int]] | None = None,
     threshold: float = 0.10,
     verbose: bool = False,
 ) -> list[int]:

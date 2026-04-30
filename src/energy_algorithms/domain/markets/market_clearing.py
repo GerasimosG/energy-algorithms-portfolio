@@ -6,9 +6,9 @@ Produces a supply/demand stack visualization.
 """
 from __future__ import annotations
 
-
-import numpy as np
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

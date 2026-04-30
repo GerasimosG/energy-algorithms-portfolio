@@ -10,10 +10,10 @@ coupling research and Industry's renewable portfolio risk management.
 
 from __future__ import annotations
 
-import numpy as np
-import pulp
 from typing import Any
 
+import numpy as np
+import pulp
 
 # ---------------------------------------------------------------------------
 # Scenario generation

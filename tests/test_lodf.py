@@ -98,13 +98,12 @@ def test_compute_lodf_zero_ptdf_row():
     # For l=1: num = 0.6-(-0.4) = 1.0 → LODF[1,0] = 1.0 (correct!)
     # For l=2: num = -0.6-(0.4) = -1.0 → LODF[2,0] = -1.0 (correct!)
     # Self-outage (diagonal) is always -1.0.
-    expected = {0: -1.0, 1: 1.0, 2: -1.0}  # hmm, let me recalculate
     # Actually let me just check the values are reasonable
     for l in range(3):
         assert lodf[l, l] == -1.0, f"Self-outage LODF[{l},{l}] should be -1.0"
     # For l=1, k=0: abs(lodf[1,0]) should be > 0 since PTDF[1] has non-zero sensitivity
-    assert abs(lodf[1, 0]) > 0.5, f"LODF[1,0] should be ~1.0 for valid PTDF"
-    assert abs(lodf[2, 0]) > 0.5, f"LODF[2,0] should be ~1.0 for valid PTDF"
+    assert abs(lodf[1, 0]) > 0.5, "LODF[1,0] should be ~1.0 for valid PTDF"
+    assert abs(lodf[2, 0]) > 0.5, "LODF[2,0] should be ~1.0 for valid PTDF"
 
 def test_compute_lodf_values_2x2():
     """Verify LODF values for a simple 2-branch, 2-zone system."""
@@ -194,7 +193,7 @@ def test_screen_cbcos_outage_impact_creates_cbco():
     assert isinstance(critical, list)
     # At minimum, if any branch post-contingency exceeds threshold,
     # it should appear in the list
-    all_branches = set(range(3))
+    set(range(3))
     for c in critical:
         assert 0 <= c < 3, f"Invalid branch index in critical: {c}"
 
@@ -290,7 +289,7 @@ def test_screen_cbcos_threshold_zero_or_negative():
     # threshold=0: any positive flow > 0 * RAM = 0 -> all critical
     critical = screen_cbcos(ptdf, base_flows, ram_limits,
                             branch_zone_map=bzm, threshold=0.0)
-    assert len(critical) == 3, f"All branches should be critical with threshold=0"
+    assert len(critical) == 3, "All branches should be critical with threshold=0"
 
 def test_screen_cbcos_all_zero_flows():
     """All zero base flows: no CBCOs."""

@@ -11,18 +11,22 @@ Or:  python -c "import sys; sys.path.insert(0,'..'); import energy_algorithms.ad
 
 import os
 import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import numpy as np                                    # noqa: E402
+import numpy as np  # noqa: E402
 
-from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker          # noqa: E402
-from energy_algorithms.adapters.sqlite_store import (                       # noqa: E402
-    get_connection, init_db, insert_ohlcv, get_ticker_data,
+from energy_algorithms.adapters.sqlite_store import (  # noqa: E402
+    get_connection,
+    get_ticker_data,
+    init_db,
+    insert_ohlcv,
 )
-from energy_algorithms.domain.trading.backtest_engine import backtest                # noqa: E402
-from energy_algorithms.domain.trading.momentum import momentum              # noqa: E402
+from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker  # noqa: E402
+from energy_algorithms.domain.trading.backtest_engine import backtest  # noqa: E402
 from energy_algorithms.domain.trading.mean_reversion import mean_reversion  # noqa: E402
-from energy_algorithms.domain.trading.sma_crossover import sma_crossover    # noqa: E402
+from energy_algorithms.domain.trading.momentum import momentum  # noqa: E402
+from energy_algorithms.domain.trading.sma_crossover import sma_crossover  # noqa: E402
 
 
 def _load_or_fetch(ticker: str) -> np.ndarray:

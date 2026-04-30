@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
-from energy_algorithms.domain.optimization.transportation import solve_transportation, demo_transportation
-from energy_algorithms.domain.optimization.portfolio import optimize_portfolio_scipy, demo_portfolio
-from energy_algorithms.domain.optimization.scheduling import solve_unit_commitment, demo_uc
-from energy_algorithms.domain.optimization.storage import solve_storage, demo_storage
+
+from energy_algorithms.domain.optimization.portfolio import demo_portfolio, optimize_portfolio_scipy
+from energy_algorithms.domain.optimization.scheduling import demo_uc, solve_unit_commitment
+from energy_algorithms.domain.optimization.storage import demo_storage, solve_storage
+from energy_algorithms.domain.optimization.transportation import (
+    demo_transportation,
+    solve_transportation,
+)
 
 # ── Transportation ──────────────────────────────────────────────────
 

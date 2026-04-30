@@ -4,9 +4,8 @@ Schema: daily_ohlcv table with composite index.
 """
 from __future__ import annotations
 
-
-import sqlite3
 import os
+import sqlite3
 from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "market_data.sqlite")

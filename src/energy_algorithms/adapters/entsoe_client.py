@@ -7,13 +7,11 @@ API docs: https://transparency.entsoe.eu/content/static_content/Static%20content
 """
 from __future__ import annotations
 
-
-import urllib.request
 import urllib.parse
+import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from typing import Any
-
 
 # ENTSO-E API endpoints
 BASE_URL = "https://web-api.tp.entsoe.eu/api"

@@ -12,8 +12,8 @@ descriptive message when any check fails.
 """
 
 from __future__ import annotations
-from typing import Callable, Sequence, Union
 
+from collections.abc import Callable, Sequence
 
 # ── Individual validators ────────────────────────────────────────────────────
 
@@ -127,8 +127,7 @@ def validate_power_limits(
 
 def assert_invariants(
     result: dict,
-    checks: Sequence[Union[Callable[[dict], bool],
-                            tuple[Callable[[dict], bool], str]]],
+    checks: Sequence[Callable[[dict], bool] | tuple[Callable[[dict], bool], str]],
 ) -> None:
     """Run a battery of invariant checks, raising on first failure(s).
 

@@ -19,14 +19,18 @@ import pulp
 import pytest
 
 from energy_algorithms.domain.markets.fbmc import solve_fbmc
-from energy_algorithms.domain.markets.multi_day import solve_multi_day
-from energy_algorithms.domain.optimization.stochastic import (
-    generate_wind_scenarios,
-    solve_scenario_uc,
-    compute_vss,
-)
-from energy_algorithms.domain.optimization.assets import BatteryAsset, GeneratorAsset, SpillAsset, build_site
 from energy_algorithms.domain.markets.lodf_utils import compute_lodf, screen_cbcos
+from energy_algorithms.domain.markets.multi_day import solve_multi_day
+from energy_algorithms.domain.optimization.assets import (
+    BatteryAsset,
+    GeneratorAsset,
+    SpillAsset,
+    build_site,
+)
+from energy_algorithms.domain.optimization.stochastic import (
+    compute_vss,
+    solve_scenario_uc,
+)
 
 # ── Slow markers ───────────────────────────────────────────────────
 

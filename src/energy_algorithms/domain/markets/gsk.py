@@ -23,8 +23,8 @@ References
 - pomato framework (github.com/FRESNA/pomato)
 """
 
+
 import numpy as np
-from typing import Optional
 
 __all__ = ["flat_gsk", "gmax_gsk", "dynamic_gsk", "apply_gsk", "demo_gsk"]
 
@@ -102,7 +102,7 @@ def flat_gsk(
 def gmax_gsk(
     capacity_vector: np.ndarray,
     zone_map: list[int],
-    n_zones: Optional[int] = None,
+    n_zones: int | None = None,
 ) -> np.ndarray:
     """Build a Gmax (capacity-weighted) GSK matrix.
 
@@ -184,7 +184,7 @@ def dynamic_gsk(
     capacity_vector: np.ndarray,
     dispatch_vector: np.ndarray,
     zone_map: list[int],
-    n_zones: Optional[int] = None,
+    n_zones: int | None = None,
 ) -> np.ndarray:
     """Build a dynamic (dispatch-weighted) GSK matrix.
 

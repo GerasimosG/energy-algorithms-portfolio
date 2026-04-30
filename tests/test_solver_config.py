@@ -9,6 +9,7 @@ from energy_algorithms.infrastructure.solver_config import (
     solver_capabilities,
 )
 
+
 class TestListAvailableSolvers:
     """Tests for list_available_solvers()."""
     def test_always_includes_cbc(self):

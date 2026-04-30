@@ -4,7 +4,6 @@ Goes long when recent returns are positive, short when negative.
 """
 from __future__ import annotations
 
-
 import numpy as np
 import pandas as pd
 

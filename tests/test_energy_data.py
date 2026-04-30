@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
 
+
 def test_demo_day_ahead():
     """Demo day-ahead returns 24 hours of data."""
 

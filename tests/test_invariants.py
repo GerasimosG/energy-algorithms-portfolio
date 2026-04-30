@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import pytest
+
 from energy_algorithms.domain.optimization.invariants import (
-    validate_energy_balance,
-    validate_soc_bounds,
-    validate_power_limits,
     assert_invariants,
+    validate_energy_balance,
+    validate_power_limits,
+    validate_soc_bounds,
 )
 
 # ── validate_energy_balance ─────────────────────────────────────────

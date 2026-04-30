@@ -5,16 +5,17 @@ from __future__ import annotations
 Demo: run all energy market examples — PCR clearing, block orders, market stack.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import numpy as np
 
-from energy_algorithms.domain.markets.pcr_model import PCRModel
 from energy_algorithms.domain.markets.block_orders import run_all, run_exclusive
-from energy_algorithms.domain.markets.market_clearing import demo_clearing, plot_supply_demand_stack
 from energy_algorithms.domain.markets.fbmc import solve_fbmc
+from energy_algorithms.domain.markets.market_clearing import demo_clearing, plot_supply_demand_stack
+from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 
 def main():
@@ -152,8 +153,8 @@ def main():
         for bf in result_fbmc["branch_flows"]:
             print(f"  {bf['branch']:<18} {bf['flow_mw']:>8.0f} "
                   f"{bf['ram_forward']:>8.0f} {bf['utilization_pct']:>7.1f}%")
-        print(f"  → Key insight: Loop flows from hydro exports stress "
-              f"the Hydro→Diesel line even when power flows Hydro→Gas→Diesel")
+        print("  → Key insight: Loop flows from hydro exports stress "
+              "the Hydro→Diesel line even when power flows Hydro→Gas→Diesel")
     else:
         print(f"  ⚠ Status: {result_fbmc.get('status')}")
 

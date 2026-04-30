@@ -5,8 +5,13 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from energy_algorithms.domain.markets.gsk import (flat_gsk, gmax_gsk, dynamic_gsk,
-                                apply_gsk, demo_gsk)
+from energy_algorithms.domain.markets.gsk import (
+    apply_gsk,
+    demo_gsk,
+    dynamic_gsk,
+    flat_gsk,
+    gmax_gsk,
+)
 
 # ── flat_gsk tests ───────────────────────────────────────────────
 

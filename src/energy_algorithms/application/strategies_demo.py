@@ -5,21 +5,23 @@ from __future__ import annotations
 Demo: compare 3 strategies on AAPL with equity curves.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from energy_algorithms.adapters.sqlite_store import get_connection, get_ticker_data
 from energy_algorithms.domain.trading.backtest_engine import backtest
-from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 from energy_algorithms.domain.trading.mean_reversion import mean_reversion
 from energy_algorithms.domain.trading.momentum import momentum
+from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 
 
 def main():

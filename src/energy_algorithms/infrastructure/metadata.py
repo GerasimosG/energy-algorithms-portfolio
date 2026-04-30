@@ -154,7 +154,7 @@ class ModelMetadata:
         cls,
         prob: pulp.LpProblem,
         solver_name: str = "",
-    ) -> "ModelMetadata":
+    ) -> ModelMetadata:
         """
         Build a ModelMetadata instance by inspecting *prob*.
 

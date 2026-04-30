@@ -17,10 +17,10 @@ References:
 """
 from __future__ import annotations
 
+from typing import Any
 
 import numpy as np
 import pulp
-from typing import Any
 
 
 def solve_fbmc(

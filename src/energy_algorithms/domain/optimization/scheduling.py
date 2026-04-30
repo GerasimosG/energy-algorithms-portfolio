@@ -13,10 +13,9 @@ Models a day-ahead dispatch with:
 """
 from __future__ import annotations
 
-
 import pulp
 
-from energy_algorithms.domain.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
+from energy_algorithms.domain.hooks import POST_EXTRACT, POST_SOLVE, PRE_SOLVE, run_hooks
 from energy_algorithms.domain.options import get_option
 from energy_algorithms.ports.solver import SolverPort
 

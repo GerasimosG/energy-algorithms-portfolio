@@ -5,7 +5,6 @@ Minimize shipping cost from warehouses (supply) to retailers (demand).
 """
 from __future__ import annotations
 
-
 import pulp
 
 
