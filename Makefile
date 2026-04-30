@@ -1,7 +1,28 @@
-.PHONY: install test test-fast lint lint-fix typecheck clean docker-build
+.PHONY: install install-pip test test-fast lint lint-fix typecheck clean docker-build
+
+# ── Primary: Conda ──────────────────────────────────────────────────────────
 
 install:
+	conda env create -f environment.yml || conda env update -f environment.yml
+	conda activate energy-algorithms
+	pip install -e ".[live]"  # for ENTSO-E live pipeline
+	pre-commit install 2>/dev/null || true
+
+update:
+	conda env update -f environment.yml
+
+activate:
+	@echo "conda activate energy-algorithms"
+
+# ── Fallback: pip ───────────────────────────────────────────────────────────
+
+install-pip:
 	pip install -e ".[dev]"
+
+install-pip-all:
+	pip install -e ".[dev,live,docs]"
+
+# ── Common tasks ────────────────────────────────────────────────────────────
 
 test:
 	pytest tests/ -v --tb=short

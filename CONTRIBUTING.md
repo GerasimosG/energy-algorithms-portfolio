@@ -39,10 +39,30 @@ Thank you for your interest in contributing! This project is a public portfolio 
 
 ### Prerequisites
 
-- Python 3.11 or later
+- [Miniforge](https://github.com/conda-forge/miniforge) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (recommended)
 - Git
 
-### Install
+### Install (Conda — Primary)
+
+```bash
+# Clone the repository
+git clone https://github.com/GerasimosG/Energy_Algorithms.git
+cd Energy_Algorithms
+
+# Create the conda environment (all deps included)
+conda env create -f environment.yml
+
+# Activate it
+conda activate energy-algorithms
+
+# Install the package in editable mode (for entry-point scripts)
+pip install -e ".[live]"
+
+# Install pre-commit hooks (optional but recommended)
+pre-commit install
+```
+
+### Install (Pip — Fallback)
 
 ```bash
 # Clone the repository
@@ -57,7 +77,7 @@ pip install pre-commit
 pre-commit install
 ```
 
-This installs:
+### What Gets Installed
 - Runtime dependencies: `numpy`, `scipy`, `pandas`, `matplotlib`, `pulp`, `yfinance`
 - Dev dependencies: `pytest`, `pytest-cov`, `hypothesis`, `ruff`
 - The package itself in editable mode so your changes take effect immediately

@@ -181,13 +181,30 @@ Energy_Algorithms/
 
 ## Commands
 
-```bash
-# Install
-pip install -e ".[dev]"         # Dev + testing tools
-pip install -e ".[live]"         # + requests for ENTSO-E live
-pip install -e ".[docs]"        # + Sphinx for API docs
+### Conda (primary)
 
-# Test
+```bash
+# Create environment with all deps
+conda env create -f environment.yml
+conda activate energy-algorithms
+
+# Install ENTSO-E live extra (conda doesn't handle optional extras)
+pip install -e ".[live]"
+
+# Dev extras (already in environment.yml)
+make install-pip  # pip fallback
+```
+
+### Pip (fallback)
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+pip install -e ".[live]"   # + ENTSO-E live data
+pip install -e ".[docs]"   # + Sphinx
+```
+
+### Test
 pytest tests/ -v                             # All tests
 pytest tests/ -v -m "not slow and not pc"    # Fast tests only (Pi-friendly)
 pytest tests/test_pcr_model.py -v            # Single file

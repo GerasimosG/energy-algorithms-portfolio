@@ -194,8 +194,14 @@ Energy_Algorithms/
 ```bash
 git clone git@github.com:GerasimosG/Energy_Algorithms.git
 cd Energy_Algorithms
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[test]"
+
+# Conda (primary — recommended)
+conda env create -f environment.yml
+conda activate energy-algorithms
+pip install -e ".[live]"
+
+# Or pip (fallback)
+# pip install -e ".[dev]"
 
 # Run the showcase modules
 python -m energy_markets.demo      # ★ PCR, block orders, market stack
