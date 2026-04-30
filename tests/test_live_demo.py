@@ -6,8 +6,6 @@ handles edge cases gracefully.
 """
 from __future__ import annotations
 
-import os
-
 # Do NOT clear ENTSOE_API_KEY from env — key is in config.py
 # Tests work with both live and demo data
 

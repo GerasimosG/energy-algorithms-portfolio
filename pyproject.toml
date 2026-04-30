@@ -52,6 +52,7 @@ ea-markets = "energy_algorithms.application.markets_demo:main"
 ea-optimization = "energy_algorithms.application.optimization_demo:main"
 ea-trading = "energy_algorithms.application.trading_demo:main"
 ea-live = "energy_algorithms.application.live_pipeline:demo_live_pipeline"
+ea-europe = "energy_algorithms.application.european_coupling:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

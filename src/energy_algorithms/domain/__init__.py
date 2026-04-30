@@ -5,6 +5,7 @@ from energy_algorithms.domain import (  # noqa: F401
     markets,
     optimization,
 )
+
 try:
     from energy_algorithms.domain import trading  # noqa: F401
 except ImportError:

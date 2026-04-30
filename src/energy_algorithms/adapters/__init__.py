@@ -19,6 +19,7 @@ from energy_algorithms.adapters.sqlite_store import (
     init_db,
     insert_ohlcv,
 )
+
 try:
     from energy_algorithms.adapters.yfinance_fetcher import fetch_batch, fetch_ticker
 except ImportError:

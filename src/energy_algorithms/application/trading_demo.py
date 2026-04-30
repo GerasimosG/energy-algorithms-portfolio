@@ -13,7 +13,12 @@ import pandas as pd
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from energy_algorithms.adapters.sqlite_store import get_connection, get_ticker_data, init_db, insert_ohlcv
+from energy_algorithms.adapters.sqlite_store import (
+    get_connection,
+    get_ticker_data,
+    init_db,
+    insert_ohlcv,
+)
 from energy_algorithms.domain.trading import backtest, compute_all, sma_crossover, synthetic_prices
 
 try:
