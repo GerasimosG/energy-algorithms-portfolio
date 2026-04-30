@@ -283,7 +283,7 @@ class EntsoeClient:
         -------
         dict with status and parsed data.
         """
-        ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:0"}
+        ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3"}
 
         try:
             root = ET.fromstring(xml_text)
@@ -345,27 +345,30 @@ class EntsoeClient:
 
         # ---- Actual generation mix -----------------------------------
         elif document_type == DOC_ACTUAL_GENERATION:
+            gen_ns = {"ns": "urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0"}
             generation = []
             total_mw = 0.0
 
-            for ts in root.findall(".//ns:TimeSeries", ns):
-                psr_elem = ts.find(".//ns:MktPSRType/ns:psrType", ns)
+            for ts in root.findall(".//ns:TimeSeries", gen_ns):
+                psr_elem = ts.find(".//ns:MktPSRType/ns:psrType", gen_ns)
                 psr_code = psr_elem.text if psr_elem is not None else "???"
                 gen_type = PSR_TYPES.get(psr_code, f"Unknown ({psr_code})")
 
+                # Points are inside a Period element
                 values = []
-                for point in ts.findall(".//ns:Point", ns):
-                    qty_elem = point.find("ns:quantity", ns)
+                for point in ts.findall(".//ns:Period/ns:Point", gen_ns):
+                    qty_elem = point.find("ns:quantity", gen_ns)
                     if qty_elem is not None:
                         values.append(float(qty_elem.text))
 
                 avg_mw = round(sum(values) / len(values), 1) if values else 0.0
-                generation.append({
-                    "type": gen_type,
-                    "mw": avg_mw,
-                    "psr_code": psr_code,
-                })
-                total_mw += avg_mw
+                if avg_mw > 0:
+                    generation.append({
+                        "type": gen_type,
+                        "mw": avg_mw,
+                        "psr_code": psr_code,
+                    })
+                    total_mw += avg_mw
 
             generation.sort(key=lambda g: g["mw"], reverse=True)
             return {
