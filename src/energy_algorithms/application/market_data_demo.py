@@ -1,24 +1,17 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """
 Demo: fetch 5 assets from Yahoo Finance → SQLite.
 Run with: python -m market-data.demo  (from repo root)
 """
+from __future__ import annotations
 
-import os
-import sys
-
-# Add this module directory to path for sibling imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from energy_algorithms.adapters.sqlite_store import (  # noqa: E402
+from energy_algorithms.adapters.sqlite_store import (
     get_connection,
     get_summary,
     init_db,
     insert_ohlcv,
 )
-from energy_algorithms.adapters.yfinance_fetcher import fetch_batch  # noqa: E402
+from energy_algorithms.adapters.yfinance_fetcher import fetch_batch
 
 TICKERS = ["AAPL", "MSFT", "GOOGL", "SPY", "BTC-USD"]
 

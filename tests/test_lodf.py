@@ -99,9 +99,9 @@ def test_compute_lodf_zero_ptdf_row():
     # For l=2: num = -0.6-(0.4) = -1.0 → LODF[2,0] = -1.0 (correct!)
     # Self-outage (diagonal) is always -1.0.
     # Actually let me just check the values are reasonable
-    for l in range(3):
-        assert lodf[l, l] == -1.0, f"Self-outage LODF[{l},{l}] should be -1.0"
-    # For l=1, k=0: abs(lodf[1,0]) should be > 0 since PTDF[1] has non-zero sensitivity
+    for branch in range(3):
+        assert lodf[branch, branch] == -1.0, f"Self-outage LODF[{branch},{branch}] should be -1.0"
+    # For branch=1, k=0: abs(lodf[1,0]) should be > 0 since PTDF[1] has non-zero sensitivity
     assert abs(lodf[1, 0]) > 0.5, "LODF[1,0] should be ~1.0 for valid PTDF"
     assert abs(lodf[2, 0]) > 0.5, "LODF[2,0] should be ~1.0 for valid PTDF"
 
@@ -193,7 +193,6 @@ def test_screen_cbcos_outage_impact_creates_cbco():
     assert isinstance(critical, list)
     # At minimum, if any branch post-contingency exceeds threshold,
     # it should appear in the list
-    set(range(3))
     for c in critical:
         assert 0 <= c < 3, f"Invalid branch index in critical: {c}"
 

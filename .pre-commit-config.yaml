@@ -1,0 +1,25 @@
+# ── Pre-commit hooks for Energy_Algorithms ───────────────────────────
+# Auto-generated: run `pre-commit autoupdate` to update rev hashes.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        args: [src/energy_algorithms/]
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: pytest (fast tests only)
+        entry: pytest tests/ -v -m "not slow and not pc"
+        language: system
+        types: [python]
+        pass_filenames: false

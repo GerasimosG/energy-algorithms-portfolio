@@ -1,14 +1,10 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """
 Demo: run all energy market examples — PCR clearing, block orders, market stack.
 """
+from __future__ import annotations
 
 import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import numpy as np
 

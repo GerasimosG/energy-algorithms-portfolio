@@ -103,19 +103,19 @@ def compute_lodf(
         fz_k, tz_k = branch_zone_map[k]
         denom = 1.0 - (ptdf[k, fz_k] - ptdf[k, tz_k])
 
-        for l in range(n_branches):
-            if l == k:
+        for branch in range(n_branches):
+            if branch == k:
                 # Self-outage: flow on outaged branch becomes zero
-                lodf[l, k] = -1.0
+                lodf[branch, k] = -1.0
                 continue
 
             if abs(denom) < 1e-12:
                 # Topology-trivial outage (branch has no flow impact)
-                lodf[l, k] = 0.0
+                lodf[branch, k] = 0.0
                 continue
 
-            num = ptdf[l, fz_k] - ptdf[l, tz_k]
-            lodf[l, k] = num / denom
+            num = ptdf[branch, fz_k] - ptdf[branch, tz_k]
+            lodf[branch, k] = num / denom
 
     return lodf
 
@@ -218,36 +218,36 @@ def screen_cbcos(
             print(f"  [screen_cbcos] Outage of branch {k} "
                   f"(base_flow={base_k:.1f} MW)")
 
-        for l in range(n_branches):  # monitored branch
+        for branch in range(n_branches):  # monitored branch
             # Base-case criticality (even without outages)
-            if abs(base_flows[l]) >= threshold * ram_limits[l]:
-                critical_set.add(l)
+            if abs(base_flows[branch]) >= threshold * ram_limits[branch]:
+                critical_set.add(branch)
                 if verbose:
-                    print(f"    branch {l}: base flow {abs(base_flows[l]):.1f} >= "
-                          f"{threshold * ram_limits[l]:.1f} "
+                    print(f"    branch {branch}: base flow {abs(base_flows[branch]):.1f} >= "
+                          f"{threshold * ram_limits[branch]:.1f} "
                           f"(base-case critical)")
                 continue
 
             # Skip self-outage for base-case (already checked above)
-            if l == k:
+            if branch == k:
                 continue
 
             # Post-contingency impact
-            lodf_lk = lodf[l, k]
+            lodf_lk = lodf[branch, k]
             impact = abs(lodf_lk * base_k)
-            post_contingency = abs(base_flows[l]) + impact
+            post_contingency = abs(base_flows[branch]) + impact
 
-            threshold_flow = threshold * ram_limits[l]
+            threshold_flow = threshold * ram_limits[branch]
 
             if post_contingency >= threshold_flow:
-                critical_set.add(l)
+                critical_set.add(branch)
                 if verbose:
-                    print(f"    branch {l}: |base|+|impact| = "
-                          f"{abs(base_flows[l]):.1f} + {impact:.1f} = "
+                    print(f"    branch {branch}: |base|+|impact| = "
+                          f"{abs(base_flows[branch]):.1f} + {impact:.1f} = "
                           f"{post_contingency:.1f} >= {threshold_flow:.1f} "
-                          f"(critical via LODF[{l},{k}]={lodf_lk:.4f})")
+                          f"(critical via LODF[{branch},{k}]={lodf_lk:.4f})")
             elif verbose:
-                print(f"    branch {l}: screened out "
+                print(f"    branch {branch}: screened out "
                       f"({post_contingency:.1f} < {threshold_flow:.1f})")
 
     return sorted(critical_set)

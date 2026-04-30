@@ -25,11 +25,24 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
+          pip install mypy
+
+      - name: Lint with ruff
+        run: ruff check src/ tests/
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
+
+      - name: Type-check with mypy
+        run: mypy src/energy_algorithms/
 
       - name: Verify demos run
         run: |
           python -c "import energy_markets.demo; energy_markets.demo.main()"
           python -c "import lp_optimization.demo; lp_optimization.demo.main()"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build -t energy-algorithms .

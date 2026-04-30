@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """
 Live YFinance Backtest Demo — Fetch real AAPL data, run all 3 strategies,
@@ -8,25 +6,23 @@ produce a professional comparison report.
 Run: .venv/bin/python market_data/live_demo.py  (from repo root)
 Or:  python -c "import sys; sys.path.insert(0,'..'); import energy_algorithms.adapters.live_demo"
 """
+from __future__ import annotations
 
 import os
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import numpy as np
 
-import numpy as np  # noqa: E402
-
-from energy_algorithms.adapters.sqlite_store import (  # noqa: E402
+from energy_algorithms.adapters.sqlite_store import (
     get_connection,
     get_ticker_data,
     init_db,
     insert_ohlcv,
 )
-from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker  # noqa: E402
-from energy_algorithms.domain.trading.backtest_engine import backtest  # noqa: E402
-from energy_algorithms.domain.trading.mean_reversion import mean_reversion  # noqa: E402
-from energy_algorithms.domain.trading.momentum import momentum  # noqa: E402
-from energy_algorithms.domain.trading.sma_crossover import sma_crossover  # noqa: E402
+from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker
+from energy_algorithms.domain.trading.backtest_engine import backtest
+from energy_algorithms.domain.trading.mean_reversion import mean_reversion
+from energy_algorithms.domain.trading.momentum import momentum
+from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 
 
 def _load_or_fetch(ticker: str) -> np.ndarray:

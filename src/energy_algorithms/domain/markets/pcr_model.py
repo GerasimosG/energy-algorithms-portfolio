@@ -8,14 +8,12 @@ https://www.epexspot.com/en/euphemia
 """
 from __future__ import annotations
 
+import pulp
+
 # ---------------------------------------------------------------------------
 # Tolerance: minimum fill fraction for an order to be considered "accepted"
 # ---------------------------------------------------------------------------
 ACCEPTANCE_TOLERANCE = 0.001
-
-
-
-import pulp
 
 
 class PCRModel:

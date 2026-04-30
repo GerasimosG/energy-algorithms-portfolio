@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """Demo: ENTSO-E energy data pipeline.
 
@@ -7,11 +5,7 @@ Showcases day-ahead price analysis and generation mix breakdown
 using demo data (no API key required). For live data, see the
 EntsoeClient class in fetcher.py.
 """
-
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
 

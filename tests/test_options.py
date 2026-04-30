@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from energy_algorithms.infrastructure.options import (
+from energy_algorithms.domain.options import (
     get_option,
     get_options_dict,
     reset_options,

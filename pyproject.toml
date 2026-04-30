@@ -39,6 +39,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "hypothesis>=6.0",
+    "mypy>=1.15",
     "ruff>=0.8",
 ]
 live = [
@@ -61,6 +62,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "--cov=energy_algorithms --cov-fail-under=60"
 markers = [
     "slow: slow tests (>5s solve time) — run only on PC",
     "pc: PC-only tests (requires >1GB RAM, >1GHz CPU)",

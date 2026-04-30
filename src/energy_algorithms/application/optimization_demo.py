@@ -1,14 +1,8 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """
 Demo: run all three LP/MIP problems.
 """
-
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 from energy_algorithms.domain.optimization.portfolio import demo_portfolio
 from energy_algorithms.domain.optimization.scheduling import demo_uc

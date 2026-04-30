@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from energy_algorithms.domain.markets.intraday import demo_intraday, simulate_intraday
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 
@@ -100,8 +101,6 @@ def test_no_trades_zero_demand():
     assert r["status"] in ("Optimal", "Infeasible")
 
 # ── Intraday ────────────────────────────────────────────────────────
-
-from energy_algorithms.domain.markets.intraday import demo_intraday, simulate_intraday
 
 
 def test_intraday_demo():

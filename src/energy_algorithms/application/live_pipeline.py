@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
 """Live ENTSO-E Pipeline Demo — PCR market model driven by real data.
 
@@ -10,13 +8,10 @@ actual ENTSO-E prices.
 
 Gracefully falls back to demo data when the API is unavailable.
 """
+from __future__ import annotations
 
-import os
-import sys
 from datetime import datetime, timedelta
 from typing import Any
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     from energy_algorithms.adapters.config import DEFAULT_AREA_CODE, ENTSOE_API_KEY
