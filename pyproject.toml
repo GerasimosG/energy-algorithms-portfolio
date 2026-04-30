@@ -34,3 +34,7 @@ include = ["energy_markets*", "lp_optimization*", "backtester*", "strategies*", 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "slow: slow tests (>5s solve time) — run only on PC",
+    "pc: PC-only tests (requires >1GB RAM, >1GHz CPU)",
+]
