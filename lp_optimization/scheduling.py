@@ -9,9 +9,13 @@ Models a day-ahead dispatch with:
 - Reserve margin
 - Initial conditions (status, uptime, downtime)
 - Horizon-end min up/down enforcement
+- Lifecycle hooks (pre_solve, post_solve, post_extract)
 """
 
 import pulp
+
+from lp_optimization.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
+from lp_optimization.options import get_option
 
 
 def solve_unit_commitment(
@@ -208,10 +212,20 @@ def solve_unit_commitment(
             )
 
     # Solve
+    # --- Pre-solve hook ---
+    if get_option("run_hooks"):
+        run_hooks(PRE_SOLVE, prob=prob, solver="cbc")
+
     prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
 
-    if pulp.LpStatus[prob.status] != "Optimal":
-        return {"status": pulp.LpStatus[prob.status]}
+    status_str = pulp.LpStatus[prob.status]
+
+    # --- Post-solve hook ---
+    if get_option("run_hooks"):
+        run_hooks(POST_SOLVE, prob=prob, status=status_str, solver="cbc")
+
+    if status_str != "Optimal":
+        return {"status": status_str}
 
     # Extract schedule
     schedule = {}
@@ -225,8 +239,18 @@ def solve_unit_commitment(
         period["_online"] = [gen_names[g] for g in range(G) if pulp.value(u[g, t]) > 0.5]
         schedule[f"t={t}"] = period
 
+    # --- Post-extract hook ---
+    if get_option("run_hooks"):
+        run_hooks(
+            POST_EXTRACT,
+            prob=prob,
+            status=status_str,
+            schedule=schedule,
+            total_cost=round(float(pulp.value(total_cost)), 2),
+        )
+
     return {
-        "status": pulp.LpStatus[prob.status],
+        "status": status_str,
         "total_cost": round(float(pulp.value(total_cost)), 2),
         "schedule": schedule,
     }

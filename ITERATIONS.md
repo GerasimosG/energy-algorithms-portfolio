@@ -1,5 +1,25 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 09:15 CEST — ALL P1/P2/P3 competitor gaps implemented + production polish
+
+**What changed:**
+- **🔴 P1: LODF impact screening** (`energy_markets/lodf_utils.py`) — LODF matrix computation from PTDF, N-1 contingency CBCO screening. Reduces security constraints by up to 95% (pomato technique).
+- **🔴 P1: GSK strategies** (`energy_markets/gsk.py`) — Flat, gmax, and dynamic Generation Shift Key strategies for zonal→nodal mapping. Demo compares all three.
+- **🔴 P1: OneInterval asset pattern** (`lp_optimization/assets.py`) — Asset base class with 3 lifecycle hooks (_constraints, _objective, _post_solve). BatteryAsset, GeneratorAsset, SpillAsset. build_site() assembles LP.
+- **🟡 P2: Known-optimal tests** — 13 battery lifecycle tests verify charge/discharge logic, SoC bounds, energy balance. Build site tests verify multi-asset dispatch.
+- **🟡 P2: Physical invariant validation** (`lp_optimization/invariants.py`) — Energy balance, SoC bounds, power limit checkers. assert_invariants() runs battery post-solve.
+- **🟡 P2: Accessor pattern** — All assets expose .variables, .results, .net_power for clean post-solve extraction.
+- **🟡 P2: Hook registry** (`lp_optimization/hooks.py`) — PRE_SOLVE/POST_SOLVE/POST_EXTRACT hooks with register/run/clear. Applied to UC demo.
+- **🟢 P3: Solver-agnostic config** (`lp_optimization/solver_config.py`) — get_solver() with CBC default, HiGHS/Gurobi/CPLEX support with graceful fallback.
+- **🟢 P3: Centralized options** (`lp_optimization/options.py`) — Global OPTIONS dict with get/set/reset. Controls solver cfg, tolerances, verbosity.
+- **🟢 P3: Descriptive metadata** (`lp_optimization/metadata.py`) — VariableRegistry, ModelMetadata, get_model_summary() for LP introspection.
+- **🟢 P3: Spill asset** — Penalty-cost slack supply guaranteeing LP feasibility (energy-py-linear pattern).
+- **🟢 P3: extra_functionality hook** — Applied to scheduling.py demonstrating pre/post-solve hook injection.
+
+**New files:** `lp_optimization/assets.py`, `lp_optimization/invariants.py`, `lp_optimization/hooks.py`, `lp_optimization/options.py`, `lp_optimization/metadata.py`, `lp_optimization/solver_config.py`, `energy_markets/lodf_utils.py`, `energy_markets/gsk.py`, `tests/test_assets.py`, `tests/test_invariants.py`, `tests/test_hooks.py`, `tests/test_options.py`, `tests/test_metadata.py`, `tests/test_solver_config.py`, `tests/test_lodf.py`, `tests/test_gsk.py`
+**Tests:** 51 → 185 (+134!)
+**Git:** Pending push
+
 ## 2026-04-30 08:45 CEST — P1: FBMC flow-based coupling + ENTSO-E API config
 
 **What changed:**

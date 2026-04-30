@@ -1,8 +1,8 @@
 # ⚡ Energy Algorithms — Framework Documentation
 
-**Version:** `0.4.0`  \
-**Generated:** `2026-04-30 08:45 CEST`  \
-**Modules:** 12  |  **Tests:** 51  |  **Solvers:** PuLP/CBC + scipy SLSQP
+**Version:** `0.5.0`  \
+**Generated:** `2026-04-30 09:15 CEST`  \
+**Modules:** 18  |  **Tests:** 185  |  **Solvers:** PuLP/CBC + scipy SLSQP
 
 > This document explains how Energy_Algorithms works, how it compares to other frameworks, what benchmarks exist, and how to extend it. It is designed to be auto-updated as the codebase evolves.
 
@@ -402,30 +402,30 @@ def run_benchmarks(iterations=5):
 | Priority | pomato Feature | Current State | Adoption Plan |
 |----------|---------------|--------------|---------------|
 | 🔴 P1 | **FBMC flow-based coupling** | ATC only (simpler) | ✅ DONE — `fbmc.py` with PTDF + RAM |
-| 🔴 P1 | **Impact screening / LODF filter** | Not implemented | Add `lodf_filter()` method — reduces constraints by 95% |
-| 🟡 P2 | **Redundancy removal (Clarkson)** | Not implemented | Add as optional Julia integration |
-| 🟡 P2 | **GSK strategies for zonal mapping** | Not implemented | Add `flat`, `gmax`, `dynamic` strategies |
-| 🟢 P3 | **Chance-constrained OPF** | Not implemented | Add as stochastic extension |
-| 🟢 P3 | **Options dict pattern** | Ad-hoc parameters | Centralize into `self.options` dict |
+| 🔴 P1 | **Impact screening / LODF filter** | Not implemented | ✅ DONE — `lodf_utils.py` with `screen_cbcos()` |
+| 🟡 P2 | **Redundancy removal (Clarkson)** | Not implemented | Roadmap (requires Julia) |
+| 🟡 P2 | **GSK strategies for zonal mapping** | Not implemented | ✅ DONE — `gsk.py`: flat, gmax, dynamic |
+| 🟢 P3 | **Chance-constrained OPF** | Not implemented | Roadmap (stochastic extension) |
+| 🟢 P3 | **Options dict pattern** | Ad-hoc parameters | ✅ DONE — `lp_optimization/options.py` |
 
 ### 5.2 What energy-py-linear does better (and what to adopt)
 
 | Priority | Pattern | Current State | Adoption Plan |
 |----------|---------|--------------|---------------|
-| 🔴 P1 | **OneInterval asset pattern** | Monolithic functions | Extract per-asset classes with 3 lifecycle hooks |
-| 🟡 P2 | **Known-optimal dispatch tests** | Not implemented | Add parameterized tests with analytical solutions |
-| 🟡 P2 | **Physical invariant validation** | Manual assertions | Auto-validate post-solve |
-| 🟢 P3 | **ConstraintTerm DSL** | Inline constraints | Declarative constraint definitions |
-| 🟢 P3 | **Spill assets** | Not implemented | Add penalty-cost feasibility guarantee |
+| 🔴 P1 | **OneInterval asset pattern** | Monolithic functions | ✅ DONE — `assets.py`: Asset, BatteryAsset, GeneratorAsset, SpillAsset |
+| 🟡 P2 | **Known-optimal dispatch tests** | Not implemented | ✅ DONE — 13 asset lifecycle + dispatch tests |
+| 🟡 P2 | **Physical invariant validation** | Manual assertions | ✅ DONE — `invariants.py`: auto-validate post-solve |
+| 🟢 P3 | **ConstraintTerm DSL** | Inline constraints | Roadmap (declarative DSL) |
+| 🟢 P3 | **Spill assets** | Not implemented | ✅ DONE — `SpillAsset` with penalty-cost feasibility guarantee |
 
 ### 5.3 What PyPSA does better (and what to adopt)
 
 | Priority | Pattern | Current State | Adoption Plan |
 |----------|---------|--------------|---------------|
-| 🟡 P2 | **Accessor pattern** | Direct function calls | `model.optimize()` instead of `solve_model(model)` |
-| 🟢 P3 | **extra_functionality hook** | Not implemented | Allow user injection of custom constraints |
-| 🟢 P3 | **Solver-agnostic config** | Hardcoded CBC | Support HiGHS, Gurobi via config |
-| 🟢 P3 | **Descriptive metadata** | Scattered `__all__` lists | Centralized variable registry |
+| 🟡 P2 | **Accessor pattern** | Direct function calls | ✅ DONE — assets expose `.variables`, `.results`, `.net_power` |
+| 🟢 P3 | **extra_functionality hook** | Not implemented | ✅ DONE — `hooks.py`: PRE_SOLVE, POST_SOLVE, POST_EXTRACT |
+| 🟢 P3 | **Solver-agnostic config** | Hardcoded CBC | ✅ DONE — `solver_config.py`: CBC, HiGHS, Gurobi, CPLEX |
+| 🟢 P3 | **Descriptive metadata** | Scattered `__all__` lists | ✅ DONE — `metadata.py`: VariableRegistry, ModelMetadata |
 
 ---
 
