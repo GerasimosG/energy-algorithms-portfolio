@@ -1,6 +1,23 @@
 # ITERATIONS — Energy Algorithms
 
-## 2026-04-30 10:45 CEST — New features: multi-day coupling, stochastic, ENTSO-E live demo, Docker
+## 2026-04-30 17:30 CEST — AGENTS.md overhaul + CI fix + ruff auto-cleanup
+
+**What changed:**
+- **📝 AGENTS.md** — Complete rewrite distilling all learnings from 25+ iterations:
+  - Architecture diagram matching current hexagonal layout (with backward-compat infra/ layer)
+  - Critical conventions: 13 design principles, 6 design patterns, 5 state management rules
+  - Edge-case matrix: 14 must-test scenarios with exact test locations
+  - Interview checklist: 22 validated items across 5 categories — all ✅
+  - Rote-learned lessons: 10 concrete "don't repeat this" items from real bug fixes
+  - Competitor scorecard: pomato, PyPSA, energy-py-linear mapped vs this repo
+  - Documentation trilogy (README + ITERATIONS + FRAMEWORK.md) codified as mandatory
+- **🐛 CI fix** — Workflow was installing `.[test]` but pyproject.toml defines `dev`, not `test`. Fixed to `.[dev]`.
+- **🧹 Ruff auto-cleanup** — 106 auto-fixes applied across all 62 .py files (import ordering, unused imports, f-strings without placeholders, `Optional[X]` → `X | None`, `typing` → `collections.abc`)
+- **52 remaining lint issues** (E402 in demo scripts, E741 `l` variable name, F841 unused vars, UP035) — documented but deferred
+
+**Tests:** 232 passing, 2 skipped (unchanged)
+**Git:** Pushed to main (`d40e199`)
+**Fixes:** 1 CI bug, 106 code style issues
 
 **What changed:**
 - **📆 Multi-day coupling** (`energy_markets/multi_day.py`) — Extends FBMC to multiple days with storage carry-over. Battery SoC from day D transfers to day D+1. 8 tests.

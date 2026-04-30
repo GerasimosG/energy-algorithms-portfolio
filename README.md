@@ -23,7 +23,7 @@ This portfolio is laser-targeted at two specific roles. Below is a detailed brea
 | **LP/MIP formulation** | Can you translate a business problem into mathematical constraints? | `pcr_model.py` — social welfare LP with binary block orders. `scheduling.py` — unit commitment MIP with min up/down, ramp rates, reserve. `storage.py` — BESS revenue-maximizing LP |
 | **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `fbmc.py` — FBMC with PTDF/RAM (the real Euphemia algorithm). `block_orders.py` — linked + exclusive group mechanisms |
 | **Solver experience** | Have you used optimization solvers? Understand their limitations? | PuLP/CBC used throughout. README documents PuLP's quadratic limitation (why scipy handles portfolio risk). Honest about CBC vs commercial solvers |
-| **Python + software engineering** | Can you write production code, not just notebooks? | 185 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
+| **Python + software engineering** | Can you write production code, not just notebooks? | 232 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
 | **Non-convexity awareness** | Do you know that block orders make the problem non-convex? | Explicitly documented: MCP vs IP pricing gap, make-whole payments, PUN pricing. The README's "Implementation → Real Euphemia Mapping" table shows exactly where we simplify |
 
 #### Edge Cases — What Separates Good from Exceptional
@@ -72,7 +72,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 | Requirement | What Interviewers Look For | This Repo's Answer |
 |---|---|---|
-| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 185 tests, error handling throughout, `pyproject.toml` |
+| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 232 tests, error handling throughout, `pyproject.toml` |
 | **Backtesting** | Do you understand look-ahead bias, survivorship bias, transaction costs? | `engine.py` — vectorized, signal-shifted to avoid look-ahead. Commission and slippage modeled per trade. 7 risk metrics |
 | **Quantitative modeling** | Can you build and validate statistical models? | 3 strategy types (momentum, mean-reversion, SMA crossover) with parameterized thresholds. Portfolio optimization with cardinality constraints |
 | **Risk management** | Do you understand VaR, drawdown, Sharpe, Sortino, Kelly? | `metrics.py` — 7 metrics. Kelly fraction properly bounded. Sortino uses downside deviation only |
@@ -184,7 +184,7 @@ Energy_Algorithms/
 ├── strategies/             3 signal-based strategies
 ├── market_data/            Yahoo Finance → SQLite pipeline
 ├── knowledge/              12-file theory + Q&A curriculum ★
-├── tests/                  185 pytest tests (10 test files) ★
+├── tests/                  232 pytest tests (19 test files) ★
 ├── notebooks/              Walkthrough notebook for Euphemia   demo
 └── .github/workflows/      CI: Python 3.11–3.13
 ```
