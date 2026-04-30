@@ -41,5 +41,12 @@ output/
 # Build artifacts
 cbc
 
+# Coverage, caches, docs
+.coverage
+.mypy_cache/
+.ruff_cache/
+docs/build/
+
+
 # Hypothesis cache
 .hypothesis/
