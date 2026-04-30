@@ -20,19 +20,42 @@ from energy_algorithms.domain.trading.momentum import momentum
 from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 
 
+def _synthetic_prices(n: int = 500, seed: int = 42) -> tuple[np.ndarray, pd.DatetimeIndex]:
+    """Generate plausible synthetic price series for offline demos."""
+    rng = np.random.default_rng(seed)
+    returns = rng.normal(0.0003, 0.015, n)
+    prices = 100 * np.exp(np.cumsum(returns))
+    dates = pd.date_range(end="2024-12-31", periods=n)
+    return prices.astype(float), dates
+
+
+def _load_prices(ticker: str) -> tuple[np.ndarray, pd.DatetimeIndex]:
+    """Try SQLite first, fall back to synthetic data."""
+    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
+    try:
+        conn = get_connection(db_path)
+        rows = get_ticker_data(conn, ticker)
+        conn.close()
+        if rows:
+            prices = np.array([r["close"] for r in rows], dtype=float)
+            dates = pd.to_datetime([r["date"] for r in rows])
+            print(f"\n  Loaded {len(prices)} days of {ticker}")
+            return prices, dates
+    except Exception:
+        pass
+
+    print(f"  [WARN] No data for {ticker} — using synthetic data")
+    return _synthetic_prices(500, seed=hash(ticker) % (2**31))
+
+
 def main():
     print("=" * 65)
     print("  Strategies Demo — 3 Strategies Compared")
     print("=" * 65)
 
-    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
-    conn = get_connection(db_path)
-    rows = get_ticker_data(conn, "AAPL")
-    conn.close()
-
-    prices = np.array([r["close"] for r in rows], dtype=float)
-    dates = pd.to_datetime([r["date"] for r in rows])
-    print(f"\n  Loaded {len(prices)} days of AAPL")
+    prices, dates = _load_prices("AAPL")
 
     strategies = [
         ("SMA Crossover (20/50)", sma_crossover, {"fast": 20, "slow": 50}),

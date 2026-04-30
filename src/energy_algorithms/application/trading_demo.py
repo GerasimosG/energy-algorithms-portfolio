@@ -19,13 +19,39 @@ from energy_algorithms.domain.trading.risk_metrics import compute_all
 from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 
 
+def _synthetic_prices(n: int = 500, seed: int = 42) -> tuple[np.ndarray, pd.DatetimeIndex]:
+    """Generate plausible synthetic price series for offline demos."""
+    rng = np.random.default_rng(seed)
+    returns = rng.normal(0.0003, 0.015, n)
+    prices = 100 * np.exp(np.cumsum(returns))
+    dates = pd.date_range(end="2024-12-31", periods=n)
+    return prices.astype(float), dates
+
+
+def _load_prices(ticker: str) -> tuple[np.ndarray, pd.DatetimeIndex]:
+    """Try SQLite first, fall back to synthetic data."""
+    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
+    try:
+        conn = get_connection(db_path)
+        rows = get_ticker_data(conn, ticker)
+        conn.close()
+        if rows:
+            prices = np.array([r["close"] for r in rows], dtype=float)
+            dates = pd.to_datetime([r["date"] for r in rows])
+            return prices, dates
+    except Exception:
+        pass
+
+    print(f"  [WARN] No data for {ticker} — using synthetic data")
+    return _synthetic_prices(500, seed=hash(ticker) % (2**31))
+
+
 def main():
     print("=" * 65)
     print("  Backtester Demo — SMA Crossover on 3 Assets")
     print("=" * 65)
-
-    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
-    conn = get_connection(db_path)
 
     tickers = ["AAPL", "MSFT", "SPY"]
     results = {}
@@ -33,9 +59,7 @@ def main():
     fig, axes = plt.subplots(3, 1, figsize=(14, 10), sharex=True)
 
     for idx, ticker in enumerate(tickers):
-        rows = get_ticker_data(conn, ticker)
-        prices = np.array([r["close"] for r in rows], dtype=float)
-        dates = pd.to_datetime([r["date"] for r in rows])
+        prices, dates = _load_prices(ticker)
 
         # Generate signal
         signal = sma_crossover(prices, fast=20, slow=50)
@@ -75,7 +99,6 @@ def main():
     plot_path = os.path.join(plot_dir, "equity_curves.png")
     plt.savefig(plot_path, dpi=150, bbox_inches="tight")
     plt.close()
-    conn.close()
 
     print(f"\n  Plot saved: {plot_path}")
     print(f"\n{'=' * 65}")

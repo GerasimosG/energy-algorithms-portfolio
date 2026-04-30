@@ -30,8 +30,8 @@ market-data/*.db
 # Notebooks
 .ipynb_checkpoints/
 
-# Plots
-notebooks/plots/
+# Plots (any depth)
+**/plots/
 output/
 
 # Environment
