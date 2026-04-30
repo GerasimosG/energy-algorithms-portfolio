@@ -27,7 +27,7 @@ Energy_Algorithms/
 ├── backtester/           Vectorized backtesting engine + risk metrics
 ├── strategies/           3 signal-based trading strategies
 ├── market_data/          yfinance → SQLite pipeline
-├── tests/                Unit tests (pytest, 51 tests)
+├── tests/                Unit tests (pytest, 185 tests)
 └── notebooks/            Walkthrough notebook for Euphemia   demo
 ```
 
@@ -61,9 +61,12 @@ Energy_Algorithms/
 
 ### 🆕 New in This Iteration
 
+- **ALL competitor gaps implemented** — pomato (FBMC, LODF, GSK), energy-py-linear (OneInterval, invariants, spill), PyPSA (hooks, solver cfg, metadata, accessors)
 - **FBMC flow-based coupling** (`fbmc.py`): PTDF + RAM constraints with loop flow detection. Euphemia's actual coupling algorithm.
+- **LODF impact screening** (`lodf_utils.py`): CBCO filtering for N-1 security constraints
+- **OneInterval asset pattern** (`assets.py`): BatteryAsset, GeneratorAsset, SpillAsset with lifecycle hooks
 - **ENTSO-E API key** (`energy_data/config.py`): Live data access via stored security token.
-- **Tests**: 51 total (was 40) — 11 new FBMC tests covering 2-zone, 3-zone, edge cases.
+- **Tests**: 185 total (was 51) — 134 new tests covering FBMC, LODF, GSK, assets, invariants, hooks, options, metadata, solver config
 - **Multi-zone coupling** (`multi_zone.py`): ATC-constrained inter-zonal LP
 - **Euphemia   interview prep** (`EUPHEMIA_INTERVIEW.md`): Euphemia concepts + question bank
 - **CI workflow** (`.github/workflows/test.yml`): Python 3.11-3.13 matrix
