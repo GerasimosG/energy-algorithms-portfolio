@@ -9,6 +9,7 @@ with graceful fallback when a preferred solver is not installed.
 from __future__ import annotations
 
 import logging
+import shutil
 import warnings
 from typing import Any
 
@@ -153,9 +154,10 @@ def get_solver(name: str = "cbc", **kwargs: Any) -> Any:
             f"Available: {list_available_solvers()}"
         )
 
-    # --- Direct CBC path (always available with PuLP) ---
+    # --- Direct CBC path ---
     if name == "cbc":
-        return pulp.PULP_CBC_CMD(**kwargs)
+        _cbc_bin = shutil.which("cbc") or "cbc"
+        return pulp.COIN_CMD(path=_cbc_bin, **kwargs)
 
     # --- Check if the requested solver is installed ---
     if name in _RESOLVED:
@@ -175,7 +177,8 @@ def get_solver(name: str = "cbc", **kwargs: Any) -> Any:
         k: v for k, v in kwargs.items()
         if k not in ("msg", "timeLimit", "threads", "gapRel")
     }
-    return pulp.PULP_CBC_CMD(**fallback_kwargs)
+    _cbc_bin = shutil.which("cbc") or "cbc"
+    return pulp.COIN_CMD(path=_cbc_bin, **fallback_kwargs)
 
 
 def list_available_solvers() -> list[str]:

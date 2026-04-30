@@ -316,12 +316,15 @@ def test_multi_day_7_days():
         "initial_soc": 50,
     }
 
+    zones_per_day = [d["zones"] for d in days]
+    atc_per_day = [d["atc"] for d in days]
+
     start = time.perf_counter()
-    result = solve_multi_day(days, storage_config)
+    result = solve_multi_day(zones_per_day, atc_per_day, storage_config, horizon_days=7)
     elapsed = time.perf_counter() - start
 
     assert result["status"] == "Optimal"
-    assert result["total_welfare"] > 0
+    assert result["welfare"] > 0
     assert elapsed < 30.0, f"Multi-day 7d took {elapsed:.1f}s (limit 30s)"
 
 

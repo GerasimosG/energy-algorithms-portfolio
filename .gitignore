@@ -37,3 +37,9 @@ output/
 # Environment
 .env
 *.env
+
+# Build artifacts
+cbc
+
+# Hypothesis cache
+.hypothesis/
