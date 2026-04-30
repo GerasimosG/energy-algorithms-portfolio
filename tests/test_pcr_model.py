@@ -3,7 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
-from energy_markets.pcr_model import PCRModel
+from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 
 def test_simple_clearing():
@@ -109,7 +109,7 @@ def test_no_trades_zero_demand():
 
 # ── Intraday ────────────────────────────────────────────────────────
 
-from energy_markets.intraday import simulate_intraday, demo_intraday
+from energy_algorithms.domain.markets.intraday import simulate_intraday, demo_intraday
 
 
 def test_intraday_demo():

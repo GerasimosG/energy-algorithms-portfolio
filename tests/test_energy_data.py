@@ -3,7 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from energy_data.fetcher import fetch_demo_day_ahead, fetch_demo_generation_mix
+from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
 
 
 def test_demo_day_ahead():

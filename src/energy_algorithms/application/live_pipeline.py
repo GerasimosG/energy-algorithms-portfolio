@@ -17,17 +17,17 @@ from typing import Any
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
-    from energy_data.config import ENTSOE_API_KEY, DEFAULT_AREA_CODE
+    from energy_algorithms.adapters.config import ENTSOE_API_KEY, DEFAULT_AREA_CODE
 except ImportError:
     ENTSOE_API_KEY = ""
     DEFAULT_AREA_CODE = "10YBE----------2"  # Belgium
 
-from energy_data.fetcher import (
+from energy_algorithms.adapters.entsoe_client import (
     EntsoeClient,
     fetch_demo_day_ahead,
     fetch_demo_generation_mix,
 )
-from energy_markets.pcr_model import PCRModel
+from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 # ── Marginal cost estimates by technology (€/MWh) ────────────────────
 # Representative short-run marginal costs for European power generators.

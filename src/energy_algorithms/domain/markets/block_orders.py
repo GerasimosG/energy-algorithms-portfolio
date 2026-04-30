@@ -7,7 +7,7 @@ Demostrates different types of complex orders supported by Euphemia:
 """
 
 import pulp
-from energy_markets.pcr_model import PCRModel
+from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 
 def scenario_simple_block() -> dict:

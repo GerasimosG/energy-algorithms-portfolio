@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import pytest
 
-from energy_markets.gsk import (flat_gsk, gmax_gsk, dynamic_gsk,
+from energy_algorithms.domain.markets.gsk import (flat_gsk, gmax_gsk, dynamic_gsk,
                                 apply_gsk, demo_gsk)
 
 

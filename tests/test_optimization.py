@@ -5,10 +5,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 import numpy as np
-from lp_optimization.transportation import solve_transportation, demo_transportation
-from lp_optimization.portfolio import optimize_portfolio_scipy, demo_portfolio
-from lp_optimization.scheduling import solve_unit_commitment, demo_uc
-from lp_optimization.storage import solve_storage, demo_storage
+from energy_algorithms.domain.optimization.transportation import solve_transportation, demo_transportation
+from energy_algorithms.domain.optimization.portfolio import optimize_portfolio_scipy, demo_portfolio
+from energy_algorithms.domain.optimization.scheduling import solve_unit_commitment, demo_uc
+from energy_algorithms.domain.optimization.storage import solve_storage, demo_storage
 
 
 # ── Transportation ──────────────────────────────────────────────────

@@ -13,10 +13,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from market_data.store import get_connection, get_ticker_data
-from backtester.engine import backtest
-from backtester.metrics import compute_all
-from strategies.sma_crossover import sma_crossover
+from energy_algorithms.adapters.sqlite_store import get_connection, get_ticker_data
+from energy_algorithms.domain.trading.backtest_engine import backtest
+from energy_algorithms.domain.trading.risk_metrics import compute_all
+from energy_algorithms.domain.trading.sma_crossover import sma_crossover
 
 
 def main():

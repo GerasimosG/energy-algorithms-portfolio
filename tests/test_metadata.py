@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import pulp
 import pytest
 
-from lp_optimization.metadata import (
+from energy_algorithms.infrastructure.metadata import (
     VariableRegistry,
     ModelMetadata,
     get_model_summary,

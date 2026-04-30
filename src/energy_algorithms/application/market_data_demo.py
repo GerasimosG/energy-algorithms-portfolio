@@ -10,8 +10,8 @@ import os
 # Add this module directory to path for sibling imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from market_data.fetcher import fetch_batch  # noqa: E402
-from market_data.store import get_connection, init_db, insert_ohlcv, get_summary  # noqa: E402
+from energy_algorithms.adapters.yfinance_fetcher import fetch_batch  # noqa: E402
+from energy_algorithms.adapters.sqlite_store import get_connection, init_db, insert_ohlcv, get_summary  # noqa: E402
 
 
 TICKERS = ["AAPL", "MSFT", "GOOGL", "SPY", "BTC-USD"]

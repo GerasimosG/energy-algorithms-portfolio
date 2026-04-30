@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 import pulp
-from lp_optimization.assets import (
+from energy_algorithms.domain.optimization.assets import (
     Asset,
     BatteryAsset,
     GeneratorAsset,

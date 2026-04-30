@@ -9,10 +9,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import numpy as np
 
-from energy_markets.pcr_model import PCRModel
-from energy_markets.block_orders import run_all, run_exclusive
-from energy_markets.market_clearing import demo_clearing, plot_supply_demand_stack
-from energy_markets.fbmc import solve_fbmc
+from energy_algorithms.domain.markets.pcr_model import PCRModel
+from energy_algorithms.domain.markets.block_orders import run_all, run_exclusive
+from energy_algorithms.domain.markets.market_clearing import demo_clearing, plot_supply_demand_stack
+from energy_algorithms.domain.markets.fbmc import solve_fbmc
 
 
 def main():

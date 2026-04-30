@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import pytest
 
-from lp_optimization.stochastic import (
+from energy_algorithms.domain.optimization.stochastic import (
     generate_wind_scenarios,
     generate_solar_scenarios,
     solve_scenario_uc,

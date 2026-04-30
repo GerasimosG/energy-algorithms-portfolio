@@ -26,8 +26,8 @@ except ImportError:
     # and the @pytest.mark.skipif will skip the test.
     st = None
 
-from energy_markets.fbmc import solve_fbmc
-from lp_optimization.stochastic import (
+from energy_algorithms.domain.markets.fbmc import solve_fbmc
+from energy_algorithms.domain.optimization.stochastic import (
     generate_wind_scenarios,
     solve_scenario_uc,
 )

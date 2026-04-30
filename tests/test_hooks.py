@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from lp_optimization.hooks import (
+from energy_algorithms.infrastructure.hooks import (
     HookRegistry,
     register_hook,
     run_hooks,
@@ -196,7 +196,7 @@ class TestHooksInScheduling:
 
     def test_hooks_fire_during_uc_demo(self):
         """Pre/post solve hooks fire when running demo_uc()."""
-        from lp_optimization.scheduling import demo_uc
+        from energy_algorithms.domain.optimization.scheduling import demo_uc
 
         tracker = _Tracker()
         register_hook(PRE_SOLVE, tracker)

@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from energy_markets.multi_day import solve_multi_day
+from energy_algorithms.domain.markets.multi_day import solve_multi_day
 
 
 # ── 1. Basic 2-day coupling with storage ──────────────────────────

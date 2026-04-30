@@ -22,7 +22,7 @@ if "ENTSOE_API_KEY" in os.environ:
 
 def test_demo_live_pipeline_returns_valid_dict():
     """The pipeline returns a well-structured dict with all required keys."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
 
@@ -37,7 +37,7 @@ def test_demo_live_pipeline_returns_valid_dict():
 
 def test_demo_live_pipeline_falls_back_to_demo():
     """When API is unavailable (no key), the pipeline uses demo data."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
 
@@ -52,7 +52,7 @@ def test_demo_live_pipeline_falls_back_to_demo():
 
 def test_demo_live_pipeline_prices_has_24_hours():
     """Day-ahead prices contain 24 hourly values."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     prices = result["prices"].get("prices", [])
@@ -61,7 +61,7 @@ def test_demo_live_pipeline_prices_has_24_hours():
 
 def test_demo_live_pipeline_generation_has_sources():
     """Generation mix has multiple sources with positive MW."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     gen = result["generation"]
@@ -71,7 +71,7 @@ def test_demo_live_pipeline_generation_has_sources():
 
 def test_demo_live_pipeline_model_solves():
     """The PCR model reaches an Optimal solution with demo data."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     model_result = result["model_result"]
@@ -83,7 +83,7 @@ def test_demo_live_pipeline_model_solves():
 
 def test_demo_live_pipeline_model_has_positive_volume():
     """PCR model trades a positive volume of electricity."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     traded = result["model_result"].get("traded", 0)
@@ -92,7 +92,7 @@ def test_demo_live_pipeline_model_has_positive_volume():
 
 def test_demo_live_pipeline_generation_shares_sum_to_100():
     """Generation shares should approximately sum to 100%."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     shares = result["generation_shares"]
@@ -103,7 +103,7 @@ def test_demo_live_pipeline_generation_shares_sum_to_100():
 
 def test_demo_live_pipeline_model_mcp_is_positive():
     """Market clearing price should be positive."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     assert result["model_mcp"] > 0, \
@@ -112,7 +112,7 @@ def test_demo_live_pipeline_model_mcp_is_positive():
 
 def test_demo_live_pipeline_price_diff_is_finite():
     """Price difference percentage should be a finite number."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     result = demo_live_pipeline()
     diff = result["price_diff_pct"]
@@ -122,7 +122,7 @@ def test_demo_live_pipeline_price_diff_is_finite():
 
 def test_demo_live_pipeline_idempotent():
     """Running the pipeline twice should produce consistent results."""
-    from energy_data.live_demo import demo_live_pipeline
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
 
     r1 = demo_live_pipeline()
     r2 = demo_live_pipeline()
@@ -142,8 +142,8 @@ def test_fallback_with_nonexistent_api():
     We import and call _build_pcr_model directly with demo data
     to verify the model construction works in isolation.
     """
-    from energy_data.fetcher import fetch_demo_day_ahead, fetch_demo_generation_mix
-    from energy_data.live_demo import _build_pcr_model
+    from energy_algorithms.adapters.entsoe_client import fetch_demo_day_ahead, fetch_demo_generation_mix
+    from energy_algorithms.application.live_pipeline import _build_pcr_model
 
     prices = fetch_demo_day_ahead()
     gen = fetch_demo_generation_mix()
@@ -157,7 +157,7 @@ def test_fallback_with_nonexistent_api():
 
 def test_empty_prices_handled():
     """_build_pcr_model handles empty prices gracefully."""
-    from energy_data.live_demo import _build_pcr_model
+    from energy_algorithms.application.live_pipeline import _build_pcr_model
 
     empty_prices = {"prices": [], "avg_price": 0}
     gen = {
@@ -178,7 +178,7 @@ def test_zero_generation_handled():
     itself should not crash, and the model solve should either
     succeed with zero traded or raise a clear error.
     """
-    from energy_data.live_demo import _build_pcr_model
+    from energy_algorithms.application.live_pipeline import _build_pcr_model
 
     prices = {
         "prices": [{"hour": 1, "price_eur_mwh": 80}],

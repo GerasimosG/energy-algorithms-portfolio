@@ -4,7 +4,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
-from lp_optimization.invariants import (
+from energy_algorithms.domain.optimization.invariants import (
     validate_energy_balance,
     validate_soc_bounds,
     validate_power_limits,
@@ -241,7 +241,7 @@ def test_assert_invariants_lambda_str():
 
 def test_invariants_on_demo_site():
     """Invariants can be run on demo_site output."""
-    from lp_optimization.assets import demo_site
+    from energy_algorithms.domain.optimization.assets import demo_site
 
     result = demo_site()
     assert result["status"] == "Optimal"

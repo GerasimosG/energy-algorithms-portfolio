@@ -1,7 +1,6 @@
 # AGENTS.md — Energy Algorithms
 
-**Repo:** `/home/gerryberrypi/optimization-portfolio/`
-**Remote:** `git@github.com:GerasimosG/Energy_Algorithms.git`
+**Repo:** `git@github.com:GerasimosG/Energy_Algorithms.git`
 **Purpose:** Public portfolio for Euphemia   Junior Optimization Engineer & energy/quant roles (currently private)
 
 ## Skills
@@ -15,97 +14,150 @@ When working on this repo, load these skills:
 
 ## Identity
 
-This repo is GerryBerry's public portfolio demonstrating optimization modeling, energy market domain knowledge (Euphemia/PCR), and algorithmic trading. The **energy_markets** module is the hero piece — what differentiates this from generic quant repos. Targeted at **Euphemia  ** (Euphemia algorithm) and **Industry** (power market optimization) roles.
+This repo is GerryBerry's public portfolio demonstrating optimization modeling,
+energy market domain knowledge (Euphemia/PCR), and algorithmic trading.
+The **domain/markets** module is the hero piece — what differentiates this
+from generic quant repos. Targeted at **Euphemia  ** (Euphemia algorithm)
+and **Industry** (power market optimization) roles.
 
-## Architecture
+## Architecture (Hexagonal / Ports & Adapters)
 
 ```
 Energy_Algorithms/
-├── energy_markets/     ★ HERO — PCR social welfare LP, block orders, market stack, intraday, FBMC
-├── lp_optimization/      Core LP/MIP — transportation, portfolio, unit commitment, BESS storage
-├── energy_data/           ENTSO-E Transparency Platform API client (+ config with API key)
-├── backtester/           Vectorized backtesting engine + risk metrics
-├── strategies/           3 signal-based trading strategies
-├── market_data/          yfinance → SQLite pipeline
-├── tests/                Unit tests (pytest, 185 tests)
-└── notebooks/            Walkthrough notebook for Euphemia   demo
+├── src/
+│   └── energy_algorithms/          # Main package (pip-installable)
+│       ├── domain/                 # Pure business logic — NO I/O
+│       │   ├── markets/            # ★ HERO — PCR, block orders, FBMC, intraday
+│       │   ├── optimization/       # Core LP/MIP — UC, storage, portfolio, assets
+│       │   └── trading/            # Backtest engine, risk metrics, signal strategies
+│       ├── ports/                  # Abstract interfaces (ABCs / Protocols)
+│       │   └── solver.py           # SolverPort — domain depends on this, not PuLP
+│       ├── adapters/               # Concrete implementations of ports
+│       │   ├── entsoe_client.py    # ENTSO-E Transparency Platform adapter
+│       │   ├── yfinance_fetcher.py # Yahoo Finance data adapter
+│       │   ├── sqlite_store.py     # SQLite persistence adapter
+│       │   └── config.py           # Application configuration
+│       ├── application/            # Use-case orchestrators (wire domain + adapters)
+│       │   ├── live_pipeline.py    # ENTSO-E live PCR pipeline
+│       │   ├── live_backtest.py    # Live market data → backtest
+│       │   ├── markets_demo.py     # Markets demo entry point
+│       │   ├── optimization_demo.py# Optimization demo entry point
+│       │   └── trading_demo.py     # Trading demo entry point
+│       └── infrastructure/         # Cross-cutting concerns
+│           ├── hooks.py            # Lifecycle hooks (pre/post solve)
+│           ├── options.py          # Global configuration options
+│           ├── metadata.py         # Model introspection
+│           └── solver_config.py    # Solver-agnostic factory
+├── tests/                          # Mirrors src layout
+├── scripts/                        # CLI entry points
+├── pyproject.toml                  # Package config (src layout)
+├── conftest.py                     # Pytest config (CBC solver symlink)
+└── AGENTS.md                       # This file
 ```
+
+### Layering Rules
+
+1. **Domain** — imports ONLY stdlib, numpy, scipy, pulp (and ports). Never imports adapters or application.
+2. **Ports** — abstract; import only stdlib + typing. Define contracts (ABCs, Protocols).
+3. **Adapters** — implement ports. May import domain for type hints. May do I/O.
+4. **Application** — orchestrates domain + ports + adapters. Entry point for use cases.
+5. **Infrastructure** — cross-cutting utilities imported by domain modules.
 
 ## Critical Conventions
 
-- **Underscore** directory names for valid Python packages
-- Import via `sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))`
-- Timezone: **Europe/Brussels** (CET/CEST)
-- Run: `.venv/bin/python -m energy_markets.demo`
-- **Repo kept private** for now per user instruction
+- **`src` layout** — pip-installable with `pip install -e ".[dev]"`
+- **Underscore** directory names for valid Python packages (`energy_algorithms`)
+- **Package imports** — always `from energy_algorithms.domain.markets import ...` (absolute imports, no `sys.path` hacks)
+- **Time zone** — Europe/Brussels (CET/CEST)
+- **Imports** — use `ruff` (isort rules) for consistent ordering: stdlib → third-party → first-party
+- **Type hints** — use `from __future__ import annotations` and standard library generics (no `Optional[x]`, use `x | None`)
+- **Public API** — every `__init__.py` exports `__all__`
+- **Solvers** — domain code depends on `SolverPort` ABC, not on `pulp.PULP_CBC_CMD` directly (adapter pattern)
+- **Configuration** — API keys stored in `config.py`; never commit secrets
+- **Conventional commits** — `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+- **Branch naming** — `feat/<desc>`, `fix/<desc>`, `refactor/<desc>`
 
-## Status After Audit (2026-04-29 23:30 CEST)
-
-### ✅ Fixed (13 issues resolved)
-
-| # | What | Fix |
-|---|------|-----|
-| 1 | Linked blocks not linked | Added `group` parameter, equality constraints on shared group binary vars |
-| 2 | MCP ignores block orders | MCP = max(accepted_supply_prices + accepted_block_prices) |
-| 3 | Energy balance `>=` | Changed to `==` (exact match) |
-| 4 | Exclusive blocks | Group mechanism: `sum(b_i) <= 1` for `excl_*` groups |
-| 5 | Reserve/demand conflated | Split into energy_balance `==` and reserve `>=` constraints |
-| 6 | No UC initial conditions | Added `init_status`, min up/down from t=0 |
-| 7 | Horizon-end UC constraints | Min up/down enforced through final period |
-| 8 | Zero unit tests | `tests/` with 26 pytest tests (3 modules) |
-| 9 | No pyproject.toml | Added with dependencies, pytest config |
-| 10 | Hardcoded momentum threshold | Parameterized as `threshold=` arg |
-| 11 | Surplus shading wrong | Proper area-between-curves shading |
-| 12 | Demo ignores non-optimal | Status check before report() |
-| 13 | Empty `__init__.py` | All modules have `__all__` exports |
-
-### 🆕 New in This Iteration
-
-- **ALL competitor gaps implemented** — pomato (FBMC, LODF, GSK), energy-py-linear (OneInterval, invariants, spill), PyPSA (hooks, solver cfg, metadata, accessors)
-- **FBMC flow-based coupling** (`fbmc.py`): PTDF + RAM constraints with loop flow detection. Euphemia's actual coupling algorithm.
-- **LODF impact screening** (`lodf_utils.py`): CBCO filtering for N-1 security constraints
-- **OneInterval asset pattern** (`assets.py`): BatteryAsset, GeneratorAsset, SpillAsset with lifecycle hooks
-- **ENTSO-E API key** (`energy_data/config.py`): Live data access via stored security token.
-- **Tests**: 185 total (was 51) — 134 new tests covering FBMC, LODF, GSK, assets, invariants, hooks, options, metadata, solver config
-- **Multi-zone coupling** (`multi_zone.py`): ATC-constrained inter-zonal LP
-- **Euphemia   interview prep** (`EUPHEMIA_INTERVIEW.md`): Euphemia concepts + question bank
-- **CI workflow** (`.github/workflows/test.yml`): Python 3.11-3.13 matrix
-- **README**: Badges, architecture, metrics table, known limitations, references
-- **Tests**: 26 total (was 16) — transportation, portfolio, UC all tested
-
-### 🟡 Remaining Low-Priority
-
-- Hardcoded acceptance tolerance 0.001 (cosmetic)
-- Incomplete type hints (cosmetic)
-- `__init__.py` exports for all modules (done ✓)
-- IP pricing documentation added (done ✓ in EUPHEMIA_INTERVIEW.md)
-
-## Euphemia   Interview Readiness Checklist
-
-- ✅ LP/MIP formulation (PuLP, scipy)
-- ✅ Energy market domain (PCR, Euphemia, block orders)
-- ✅ Linked + exclusive block constraints
-- ✅ Unit commitment with min up/down, ramp rates
-- ✅ Portfolio optimization (mean-variance with scipy)
-- ✅ Backtesting with correct risk metrics
-- ✅ Vectorized engine (no look-ahead bias)
-- ✅ Unit tests (pytest, 26 tests passing)
-- ✅ Clean git history with meaningful commits
-- ✅ pyproject.toml for pip-installable package
-- ✅ CI/CD pipeline (`.github/workflows/test.yml`, Python 3.11–3.13)
-- ✅ README with Euphemia whitepaper-style depth (problem formulation, algorithm walkthrough)
-- ✅ LICENSE (MIT)
-
-## Git Workflow
+## Commands
 
 ```bash
-git remote set-url origin git@github.com:GerasimosG/Energy_Algorithms.git
-git add -A && git commit -m "message"
-git push origin main
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run all tests
+pytest tests/ -v
+
+# Run only fast tests (skip PC-scale benchmarks)
+pytest tests/ -v -m "not slow and not pc"
+
+# Run all tests including benchmarks
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_pcr_model.py -v
+
+# Type check
+mypy src/
+
+# Lint
+ruff check src/ tests/
+
+# Run application demos
+ea-markets          # Energy markets demo
+ea-optimization     # LP optimization demo
+ea-trading          # Trading backtest demo
+ea-live             # ENTSO-E live pipeline
+
+# Or directly
+python -m energy_algorithms.application.markets_demo
+```
+
+## Test Stats
+
+- **232 passing**, 2 skipped (solver fallback tests require uninstalled solvers)
+- Markers: `slow` (>5s), `pc` (>1GB RAM), none (fast unit tests)
+
+## Git Workflow (Update Trilogy)
+
+```bash
+# 1. Branch
+git checkout main && git pull
+git checkout -b <type>/<description>
+
+# 2. Commit (with verification)
+pytest tests/ -v          # MUST pass before commit
+git add -A
+git commit -m "<type>: <description>"
+
+# 3. PR
+git push -u origin <branch>
+gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'
+## Summary
+...
+EOF
+)"
 ```
 
 **Key:** `id_ed25519` is the account SSH key. Run `ssh-add ~/.ssh/id_ed25519` if auth fails.
 
-## Model Setting
+## Euphemia   Interview Readiness Checklist
 
-`model.default` set to `deepseek-v4-pro` on `opencode-go` provider. Takes effect on next session (`/new`).
+- ✅ LP/MIP formulation (PuLP, scipy)
+- ✅ Energy market domain (PCR/Euphemia, block orders)
+- ✅ Linked + exclusive block constraints
+- ✅ Unit commitment with min up/down, ramp rates
+- ✅ Portfolio optimization (mean-variance)
+- ✅ Backtesting with correct risk metrics
+- ✅ Vectorized engine (no look-ahead bias)
+- ✅ Flow-based market coupling (FBMC: PTDF + RAM)
+- ✅ LODF contingency screening (N-1 security)
+- ✅ Multi-day / multi-zone market coupling
+- ✅ Stochastic programming (VSS, EVPI)
+- ✅ Solver-agnostic architecture (SolverPort ABC)
+- ✅ Lifecycle hooks + options + metadata
+- ✅ Hexagonal architecture (ports & adapters)
+- ✅ 232 pytest tests passing
+- ✅ src layout with pyproject.toml
+- ✅ CI/CD (GitHub Actions, Python 3.11–3.13)
+- ✅ Conventional commits + clean git history
+- ✅ README with Euphemia whitepaper-style depth
+- ✅ LICENSE (MIT)

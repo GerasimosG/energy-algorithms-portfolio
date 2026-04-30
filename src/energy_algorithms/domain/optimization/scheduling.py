@@ -14,8 +14,8 @@ Models a day-ahead dispatch with:
 
 import pulp
 
-from lp_optimization.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
-from lp_optimization.options import get_option
+from energy_algorithms.infrastructure.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
+from energy_algorithms.infrastructure.options import get_option
 
 
 def solve_unit_commitment(

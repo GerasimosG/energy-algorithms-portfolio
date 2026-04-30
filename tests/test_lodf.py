@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import pytest
 
-from energy_markets.lodf_utils import compute_lodf, screen_cbcos
+from energy_algorithms.domain.markets.lodf_utils import compute_lodf, screen_cbcos
 
 
 # ── Test Data ─────────────────────────────────────────────────────

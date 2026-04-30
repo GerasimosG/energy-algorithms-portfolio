@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from lp_optimization.solver_config import (
+from energy_algorithms.infrastructure.solver_config import (
     get_solver,
     list_available_solvers,
     solver_capabilities,

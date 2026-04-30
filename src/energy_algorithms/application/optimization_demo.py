@@ -7,9 +7,9 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from lp_optimization.transportation import demo_transportation
-from lp_optimization.portfolio import demo_portfolio
-from lp_optimization.scheduling import demo_uc
+from energy_algorithms.domain.optimization.transportation import demo_transportation
+from energy_algorithms.domain.optimization.portfolio import demo_portfolio
+from energy_algorithms.domain.optimization.scheduling import demo_uc
 
 
 def main():

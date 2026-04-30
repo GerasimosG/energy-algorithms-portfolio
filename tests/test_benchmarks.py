@@ -18,15 +18,15 @@ import numpy as np
 import pulp
 import pytest
 
-from energy_markets.fbmc import solve_fbmc
-from energy_markets.multi_day import solve_multi_day
-from lp_optimization.stochastic import (
+from energy_algorithms.domain.markets.fbmc import solve_fbmc
+from energy_algorithms.domain.markets.multi_day import solve_multi_day
+from energy_algorithms.domain.optimization.stochastic import (
     generate_wind_scenarios,
     solve_scenario_uc,
     compute_vss,
 )
-from lp_optimization.assets import BatteryAsset, GeneratorAsset, SpillAsset, build_site
-from energy_markets.lodf_utils import compute_lodf, screen_cbcos
+from energy_algorithms.domain.optimization.assets import BatteryAsset, GeneratorAsset, SpillAsset, build_site
+from energy_algorithms.domain.markets.lodf_utils import compute_lodf, screen_cbcos
 
 
 # ── Slow markers ───────────────────────────────────────────────────
@@ -334,7 +334,7 @@ def test_multi_day_7_days():
 
 def test_fbmc_solve_benchmark():
     """Track FBMC solve time — should be <1s on any hardware."""
-    from energy_markets.fbmc import solve_fbmc
+    from energy_algorithms.domain.markets.fbmc import solve_fbmc
     zones = [
         {"name": "A", "supply": [{"price": 10, "qty": 300}], "demand": [{"price": 100, "qty": 100}]},
         {"name": "B", "supply": [{"price": 50, "qty": 300}], "demand": [{"price": 100, "qty": 200}]},

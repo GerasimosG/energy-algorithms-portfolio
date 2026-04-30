@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from lp_optimization.options import (
+from energy_algorithms.infrastructure.options import (
     get_option,
     set_option,
     reset_options,

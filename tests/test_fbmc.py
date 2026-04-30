@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
 import pytest
 
-from energy_markets.fbmc import solve_fbmc
+from energy_algorithms.domain.markets.fbmc import solve_fbmc
 
 
 # ── 2-Zone, 1-Branch (should match ATC) ──────────────────────────

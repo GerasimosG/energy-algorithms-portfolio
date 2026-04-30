@@ -13,7 +13,7 @@ Assets modelled:
 
 Usage::
 
-    >>> from lp_optimization.assets import demo_site
+    >>> from energy_algorithms.domain.optimization.assets import demo_site
     >>> result = demo_site()
     >>> print(result["status"])
     Optimal
