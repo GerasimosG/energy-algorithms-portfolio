@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 #!/usr/bin/env python3
 """
 Demo: backtest on 3 assets with SMA crossover, plot equity curves.

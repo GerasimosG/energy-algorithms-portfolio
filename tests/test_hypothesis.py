@@ -8,9 +8,7 @@ Usage:
 
 Without Hypothesis installed, these tests are skipped gracefully.
 """
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import numpy as np
 import pytest
@@ -67,7 +65,6 @@ def test_fbmc_random_energy_balance():
         total_demand = sum(zr["demand_cleared_mw"] for zr in result["zones"].values())
         assert abs(total_supply - total_demand) < 0.3
 
-
 @pytest.mark.skipif(
     not HAS_HYPOTHESIS,
     reason="hypothesis not installed (pip install hypothesis)"
@@ -83,7 +80,6 @@ def test_wind_scenarios_bounded():
         for s in scenarios:
             assert np.all(s >= 0), "Negative wind value"
             assert np.all(s <= 1.0), "Wind CF > 1.0"
-
 
 @pytest.mark.skipif(
     not HAS_HYPOTHESIS,
@@ -106,7 +102,6 @@ def test_uc_random_feasibility():
 
         result = solve_scenario_uc(demand, wind, np.zeros(n_periods), generators)
         assert result["status"] in ("Optimal", "Infeasible", "Unbounded")
-
 
 # If Hypothesis IS available, also define actual @given tests
 if HAS_HYPOTHESIS:

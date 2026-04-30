@@ -3,6 +3,8 @@
 Defines the contracts between domain logic and infrastructure.
 Adapters implement these ports; domain code depends only on ports.
 """
+from __future__ import annotations
+
 
 from energy_algorithms.ports.solver import SolverPort, SolverResult
 

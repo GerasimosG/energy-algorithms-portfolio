@@ -4,6 +4,8 @@ Vectorized backtesting with no look-ahead bias,
 momentum/mean-reversion/SMA crossover strategies,
 and comprehensive risk analytics.
 """
+from __future__ import annotations
+
 
 from energy_algorithms.domain.trading.backtest_engine import backtest
 from energy_algorithms.domain.trading.risk_metrics import (

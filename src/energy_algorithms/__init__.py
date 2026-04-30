@@ -7,6 +7,8 @@ Hexagonal architecture with clean separation:
 - ``application/`` — use-case orchestrators
 - ``infrastructure/`` — cross-cutting concerns (hooks, options, metadata)
 """
+from __future__ import annotations
+
 
 from energy_algorithms.domain.markets import PCRModel, solve_fbmc
 from energy_algorithms.domain.optimization import (
@@ -21,8 +23,11 @@ from energy_algorithms.domain.optimization import (
     SpillAsset,
     build_site,
 )
+from energy_algorithms.adapters import PuLPSolverAdapter
 from energy_algorithms.infrastructure import (
     get_solver,
+)
+from energy_algorithms.domain import (
     get_option,
     set_option,
 )
@@ -46,4 +51,6 @@ __all__ = [
     "get_solver",
     "get_option",
     "set_option",
+    # Adapters
+    "PuLPSolverAdapter",
 ]

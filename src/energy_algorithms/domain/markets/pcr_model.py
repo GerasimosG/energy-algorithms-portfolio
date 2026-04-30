@@ -6,6 +6,13 @@ Supports supply/demand curves and block orders (all-or-nothing).
 Reference: EUPHEMIA Public Description — PCR Market Coupling Algorithm
 https://www.epexspot.com/en/euphemia
 """
+from __future__ import annotations
+# ---------------------------------------------------------------------------
+# Tolerance: minimum fill fraction for an order to be considered "accepted"
+# ---------------------------------------------------------------------------
+ACCEPTANCE_TOLERANCE = 0.001
+
+
 
 import pulp
 
@@ -98,7 +105,7 @@ class PCRModel:
             return {"status": status}
 
         accepted_supply = [self.supply_orders[i]
-                           for i in range(Ns) if pulp.value(s_vars[i]) > 0.001]
+                           for i in range(Ns) if pulp.value(s_vars[i]) > ACCEPTANCE_TOLERANCE]
         accepted_blocks = [self.block_orders[i]
                            for i in range(Nb) if pulp.value(b_vars[i]) > 0.5]
         mcp_prices = [o["price"] for o in accepted_supply] + [b["price"] for b in accepted_blocks]
@@ -192,11 +199,11 @@ class PCRModel:
         #    demand bid prices (so demand is not priced out).
         acc_supply_prices = [
             o["price"] for o in result["orders"]["supply"].values()
-            if o["filled_frac"] > 0.001
+            if o["filled_frac"] > ACCEPTANCE_TOLERANCE
         ]
         acc_demand_prices = [
             o["price"] for o in result["orders"]["demand"].values()
-            if o["filled_frac"] > 0.001
+            if o["filled_frac"] > ACCEPTANCE_TOLERANCE
         ]
         lower_bound = max(acc_supply_prices) if acc_supply_prices else 0.0
         upper_bound = min(acc_demand_prices) if acc_demand_prices else float("inf")

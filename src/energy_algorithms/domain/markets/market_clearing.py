@@ -4,6 +4,8 @@ from supply and demand step functions.
 
 Produces a supply/demand stack visualization.
 """
+from __future__ import annotations
+
 
 import numpy as np
 import matplotlib

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 #!/usr/bin/env python3
 """
 Demo: compare 3 strategies on AAPL with equity curves.

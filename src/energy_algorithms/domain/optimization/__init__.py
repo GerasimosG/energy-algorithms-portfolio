@@ -4,6 +4,8 @@ Classic operations research applied to power systems:
 transportation, portfolio (mean-variance), unit commitment,
 BESS storage, OneInterval asset pattern, stochastic UC.
 """
+from __future__ import annotations
+
 
 from energy_algorithms.domain.optimization.transportation import solve_transportation, demo_transportation
 from energy_algorithms.domain.optimization.portfolio import (

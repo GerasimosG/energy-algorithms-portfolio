@@ -4,6 +4,8 @@ Core domain models for Pan-European electricity market coupling:
 PCR social welfare LP, block orders (linked/exclusive),
 flow-based market coupling (PTDF + RAM), continuous intraday matching.
 """
+from __future__ import annotations
+
 
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 from energy_algorithms.domain.markets.intraday import simulate_intraday, demo_intraday

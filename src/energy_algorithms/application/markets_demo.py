@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 #!/usr/bin/env python3
 """
 Demo: run all energy market examples — PCR clearing, block orders, market stack.

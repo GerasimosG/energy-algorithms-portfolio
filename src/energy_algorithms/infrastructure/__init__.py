@@ -3,8 +3,10 @@
 Hooks, options, metadata, and solver configuration
 shared across all domain and application modules.
 """
+from __future__ import annotations
 
-from energy_algorithms.infrastructure.hooks import (
+
+from energy_algorithms.domain.hooks import (
     HookRegistry,
     register_hook,
     run_hooks,
@@ -13,7 +15,7 @@ from energy_algorithms.infrastructure.hooks import (
     POST_SOLVE,
     POST_EXTRACT,
 )
-from energy_algorithms.infrastructure.options import (
+from energy_algorithms.domain.options import (
     get_option,
     set_option,
     reset_options,

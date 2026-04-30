@@ -11,11 +11,14 @@ Models a day-ahead dispatch with:
 - Horizon-end min up/down enforcement
 - Lifecycle hooks (pre_solve, post_solve, post_extract)
 """
+from __future__ import annotations
+
 
 import pulp
 
-from energy_algorithms.infrastructure.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
-from energy_algorithms.infrastructure.options import get_option
+from energy_algorithms.domain.hooks import run_hooks, PRE_SOLVE, POST_SOLVE, POST_EXTRACT
+from energy_algorithms.domain.options import get_option
+from energy_algorithms.ports.solver import SolverPort
 
 
 def solve_unit_commitment(
@@ -26,6 +29,7 @@ def solve_unit_commitment(
     init_uptime: list[int] | None = None,
     init_downtime: list[int] | None = None,
     verbose: bool = False,
+    solver: SolverPort | None = None,
 ) -> dict:
     """
     Solve simplified unit commitment MIP.
@@ -216,9 +220,13 @@ def solve_unit_commitment(
     if get_option("run_hooks"):
         run_hooks(PRE_SOLVE, prob=prob, solver="cbc")
 
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-
-    status_str = pulp.LpStatus[prob.status]
+    # Use SolverPort if provided, otherwise default to CBC adapter
+    if solver is not None:
+        result = solver.solve(prob, msg=verbose)
+        status_str = result.status
+    else:
+        prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+        status_str = pulp.LpStatus[prob.status]
 
     # --- Post-solve hook ---
     if get_option("run_hooks"):

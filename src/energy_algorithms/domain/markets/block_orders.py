@@ -5,6 +5,8 @@ Demostrates different types of complex orders supported by Euphemia:
 - Linked block: several blocks that must all be accepted or rejected together
 - Exclusive block: mutually exclusive choices (e.g., different unit configurations)
 """
+from __future__ import annotations
+
 
 import pulp
 from energy_algorithms.domain.markets.pcr_model import PCRModel

@@ -2,6 +2,8 @@
 SMA Crossover Strategy.
 Generates long/short signals from fast/slow moving average cross.
 """
+from __future__ import annotations
+
 
 import numpy as np
 import pandas as pd

@@ -6,6 +6,8 @@ with Available Transfer Capacity (ATC) constraints between zones.
 This is directly relevant to Euphemia: the algorithm couples 25+ European
 power exchanges, where inter-zonal flows are limited by ATC values.
 """
+from __future__ import annotations
+
 
 import pulp
 

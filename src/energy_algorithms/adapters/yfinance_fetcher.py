@@ -2,6 +2,8 @@
 Fetch OHLCV data from Yahoo Finance via yfinance.
 Handles rate limits with polite delays.
 """
+from __future__ import annotations
+
 
 import time
 from typing import Optional

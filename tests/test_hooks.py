@@ -1,13 +1,9 @@
 """Tests for lp_optimization.hooks — lifecycle hook registry."""
-
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 
-from energy_algorithms.infrastructure.hooks import (
+from energy_algorithms.domain.hooks import (
     HookRegistry,
     register_hook,
     run_hooks,
@@ -17,11 +13,9 @@ from energy_algorithms.infrastructure.hooks import (
     POST_EXTRACT,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 class _Tracker:
     """Simple callable that records that it was invoked and with what."""
@@ -32,11 +26,9 @@ class _Tracker:
     def __call__(self, **context):
         self.calls.append(context)
 
-
 # ---------------------------------------------------------------------------
 # Tests — HookRegistry class
 # ---------------------------------------------------------------------------
-
 
 class TestHookRegistry:
     """Tests for the HookRegistry class."""
@@ -154,11 +146,9 @@ class TestHookRegistry:
         reg.run("ev")
         assert len(t.calls) == 1  # second hook still ran
 
-
 # ---------------------------------------------------------------------------
 # Tests — global convenience functions
 # ---------------------------------------------------------------------------
-
 
 class TestGlobalHooks:
     """Tests for the module-level convenience functions."""
@@ -182,11 +172,9 @@ class TestGlobalHooks:
             assert isinstance(ev, str)
             assert len(ev) > 0
 
-
 # ---------------------------------------------------------------------------
 # Tests — integration with scheduling demo
 # ---------------------------------------------------------------------------
-
 
 class TestHooksInScheduling:
     """Verify hooks fire during the scheduling solve cycle."""

@@ -7,6 +7,8 @@ Includes:
 - Min/max individual weights
 - Cardinality constraint (via top-N selection in scipy version)
 """
+from __future__ import annotations
+
 
 import pulp
 import numpy as np

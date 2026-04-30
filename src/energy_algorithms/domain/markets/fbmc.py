@@ -15,6 +15,8 @@ References:
   - pomato framework (github.com/FRESNA/pomato)
   - Euphemia algorithm specification
 """
+from __future__ import annotations
+
 
 import numpy as np
 import pulp

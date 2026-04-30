@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 #!/usr/bin/env python3
 """Live ENTSO-E Pipeline Demo — PCR market model driven by real data.
 

@@ -1,18 +1,17 @@
 """Tests for FBMC (Flow-Based Market Coupling) — energy_markets module."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import numpy as np
 import pytest
 
 from energy_algorithms.domain.markets.fbmc import solve_fbmc
 
-
 # ── 2-Zone, 1-Branch (should match ATC) ──────────────────────────
 
 def test_fbmc_2zone_simple():
     """2 zones, 1 branch: FBMC reduces to ATC-equivalent with same capacity."""
+
     zones = [
         {
             "name": "North", "zone_id": 0,
@@ -40,7 +39,6 @@ def test_fbmc_2zone_simple():
     assert "South" in result["zones"]
     # North should export to South (cheaper generation)
     assert result["zones"]["North"]["supply_cleared_mw"] >= result["zones"]["North"]["demand_cleared_mw"]
-
 
 def test_fbmc_2zone_binding_constraint():
     """Branch constraint binds: cheaper zone exports hit RAM limit."""
@@ -70,7 +68,6 @@ def test_fbmc_2zone_binding_constraint():
     assert net_export <= 50 + 0.1  # Allow small tolerance
     # South must use some expensive supply since cheap imports constrained
     assert south["supply_cleared_mw"] > 0
-
 
 # ── 3-Zone Triangle (loop flows) ─────────────────────────────────
 
@@ -116,7 +113,6 @@ def test_fbmc_3zone_loop_flow():
     flow_values = [f["flow_mw"] for f in result["branch_flows"]]
     assert all(isinstance(f, (int, float)) for f in flow_values)
 
-
 def test_fbmc_3zone_binding_loop():
     """PTDF loop flow constrains cheap zone differently than ATC would."""
     zones = [
@@ -160,7 +156,6 @@ def test_fbmc_3zone_binding_loop():
     # Check that at least one other zone uses their supply
     assert result["zones"]["B"]["supply_cleared_mw"] > 0
 
-
 # ── Edge cases ───────────────────────────────────────────────────
 
 def test_fbmc_zero_ram_constrains_flow():
@@ -200,7 +195,6 @@ def test_fbmc_zero_ram_constrains_flow():
     assert result_free["welfare"] > 0
     assert result_free["zones"]["A"]["supply_cleared_mw"] > 0
 
-
 def test_fbmc_zero_demand():
     """Zero demand is handled gracefully."""
     zones = [
@@ -225,7 +219,6 @@ def test_fbmc_zero_demand():
     # No demand = no need for supply
     assert result["zones"]["A"]["supply_cleared_mw"] == 0
     assert result["zones"]["A"]["demand_cleared_mw"] == 0
-
 
 def test_fbmc_zone_order_invariant():
     """Result is invariant under zone reordering."""
@@ -255,7 +248,6 @@ def test_fbmc_zone_order_invariant():
     # Flows should be in opposite directions (order swapped)
     assert abs(r1["zones"]["North"]["supply_cleared_mw"] - r2["zones"]["North"]["supply_cleared_mw"]) < 0.1
 
-
 # ── PTDF validation ──────────────────────────────────────────────
 
 def test_fbmc_ptdf_row_sums_to_zero():
@@ -272,7 +264,6 @@ def test_fbmc_ptdf_row_sums_to_zero():
     with pytest.raises(ValueError, match="Each PTDF row must sum to zero"):
         solve_fbmc(zones, bad_ptdf, ram, zone_names)
 
-
 def test_fbmc_ptdf_shape_mismatch():
     """PTDF columns must match number of zones."""
     zones = [
@@ -284,7 +275,6 @@ def test_fbmc_ptdf_shape_mismatch():
 
     with pytest.raises(ValueError, match="PTDF columns"):
         solve_fbmc(zones, ptdf, ram, zone_names)
-
 
 def test_fbmc_ram_branch_count_mismatch():
     """RAM limits must match PTDF rows (number of critical branches)."""
@@ -301,7 +291,6 @@ def test_fbmc_ram_branch_count_mismatch():
 
     with pytest.raises(ValueError, match="RAM limits"):
         solve_fbmc(zones, ptdf, ram, zone_names)
-
 
 def test_fbmc_negative_ram_raises():
     """RAM limits must be positive."""

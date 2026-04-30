@@ -1,7 +1,6 @@
 """Tests for Renewable Uncertainty Module — lp_optimization module."""
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
+import os
 
 import numpy as np
 import pytest
@@ -13,7 +12,6 @@ from energy_algorithms.domain.optimization.stochastic import (
     compute_vss,
     compute_evpi,
 )
-
 
 # ── 1. Wind scenario generation ───────────────────────────────────
 
@@ -31,7 +29,6 @@ def test_generate_wind_scenarios_shape():
         # All values should be >= 0 (capacity factor non-negative)
         assert np.all(s >= 0)
 
-
 def test_generate_wind_scenarios_mean_close_to_base():
     """With many scenarios, mean should approximate base profile."""
     base = np.array([0.5, 0.5, 0.5, 0.5, 0.5])
@@ -44,7 +41,6 @@ def test_generate_wind_scenarios_mean_close_to_base():
     # Mean should be within ~5% of base for 500 samples
     assert np.allclose(mean_profile, base, atol=0.05)
 
-
 def test_generate_wind_scenarios_seed_reproducible():
     """Same seed should produce identical scenarios."""
     base = np.array([0.3, 0.5, 0.8])
@@ -53,7 +49,6 @@ def test_generate_wind_scenarios_seed_reproducible():
 
     for a, b in zip(s1, s2):
         assert np.array_equal(a, b)
-
 
 # ── 2. Solar scenario generation ─────────────────────────────────
 
@@ -67,7 +62,6 @@ def test_generate_solar_scenarios_daytime_only():
         assert np.all(s[base == 0] == 0)
         # Daytime periods should be >= 0
         assert np.all(s[base > 0] >= 0)
-
 
 # ── 3. Scenario UC solves ─────────────────────────────────────────
 
@@ -92,7 +86,6 @@ def test_scenario_uc_solves():
     assert "schedule" in result
     assert len(result["schedule"]) == len(demand)
 
-
 def test_scenario_uc_renewables_reduce_cost():
     """More renewables → lower dispatch cost."""
     demand = [600.0, 600.0, 600.0, 600.0]
@@ -115,7 +108,6 @@ def test_scenario_uc_renewables_reduce_cost():
     assert result_high_wind["status"] == "Optimal"
     assert result_low_wind["status"] == "Optimal"
     assert result_high_wind["total_cost"] < result_low_wind["total_cost"]
-
 
 # ── 4. VSS computation ────────────────────────────────────────────
 
@@ -147,7 +139,6 @@ def test_vss_positive():
     assert isinstance(vss, float)
     assert not np.isnan(vss)
 
-
 # ── 5. EVPI computation ───────────────────────────────────────────
 
 def test_evpi_non_negative():
@@ -172,7 +163,6 @@ def test_evpi_non_negative():
     assert evpi >= 0, f"EVPI should be non-negative, got {evpi}"
     assert isinstance(evpi, float)
     assert not np.isnan(evpi)
-
 
 # ── 6. Deterministic base case ────────────────────────────────────
 
@@ -202,7 +192,6 @@ def test_deterministic_uc_base():
             f"t={t}: gen={gen_total}, residual={residual[t]}"
         )
 
-
 # ── 7. Large scenario count ───────────────────────────────────────
 
 def test_many_scenarios():
@@ -223,7 +212,6 @@ def test_many_scenarios():
         generators=generators, n_scenarios=100, std_pct=0.20, seed=0,
     )
     assert vss >= 0
-
 
 # ── 8. Edge case: zero wind / zero solar ──────────────────────────
 

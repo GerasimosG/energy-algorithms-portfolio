@@ -1,7 +1,6 @@
 """Tests for lp_optimization module: transportation, portfolio, scheduling."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 import numpy as np
@@ -10,11 +9,11 @@ from energy_algorithms.domain.optimization.portfolio import optimize_portfolio_s
 from energy_algorithms.domain.optimization.scheduling import solve_unit_commitment, demo_uc
 from energy_algorithms.domain.optimization.storage import solve_storage, demo_storage
 
-
 # ── Transportation ──────────────────────────────────────────────────
 
 def test_transportation_solves():
     """Basic transportation problem finds optimal solution."""
+
     supply = {"A": 100, "B": 150}
     demand = {"R1": 80, "R2": 120}
     cost = {("A", "R1"): 4, ("A", "R2"): 6, ("B", "R1"): 7, ("B", "R2"): 3}
@@ -23,13 +22,11 @@ def test_transportation_solves():
     assert r["total_cost"] > 0
     assert len(r["allocations"]) > 0
 
-
 def test_transportation_demo():
     """Demo transportation works and returns valid result."""
     r = demo_transportation()
     assert r["status"] == "Optimal"
     assert r["total_cost"] < 10000  # reasonable cost
-
 
 def test_transportation_infeasible():
     """Transportation is infeasible when supply < demand."""
@@ -39,7 +36,6 @@ def test_transportation_infeasible():
     r = solve_transportation(supply, demand, cost)
     assert r["status"] == "Infeasible"
 
-
 # ── Portfolio ────────────────────────────────────────────────────────
 
 def test_portfolio_scipy_solves():
@@ -48,7 +44,6 @@ def test_portfolio_scipy_solves():
     assert r["status"] == "Optimal"
     assert r["weights"] is not None
     assert abs(sum(r["weights"]) - 1.0) < 0.01
-
 
 def test_portfolio_cardinality():
     """Cardinality constraint limits number of assets."""
@@ -64,7 +59,6 @@ def test_portfolio_cardinality():
     )
     assert r["n_assets_selected"] <= 3
 
-
 def test_portfolio_min_variance():
     """Without target_return, finds minimum variance portfolio."""
     er = [0.08, 0.10, 0.12]
@@ -79,7 +73,6 @@ def test_portfolio_min_variance():
     assert r["weights"] is not None
     assert abs(sum(r["weights"]) - 1.0) < 0.01
 
-
 # ── Unit Commitment ──────────────────────────────────────────────────
 
 def test_uc_demo_solves():
@@ -89,14 +82,12 @@ def test_uc_demo_solves():
     assert r["total_cost"] > 0
     assert len(r["schedule"]) == 12  # 12 periods
 
-
 def test_uc_energy_balance():
     """Each period's generation matches demand exactly."""
     r = demo_uc()
     for t_key, period in r["schedule"].items():
         gen = sum(v for k, v in period.items() if not k.startswith("_"))
         assert abs(gen - period["_demand"]) < 0.01
-
 
 def test_uc_init_conditions():
     """Initial conditions constrain early periods — G1 must stay off 2 periods."""
@@ -117,7 +108,6 @@ def test_uc_init_conditions():
     if r["status"] == "Optimal":
         assert len(r["schedule"]) == 5
 
-
 def test_uc_reserve_margin():
     """Reserve margin provides extra committed capacity."""
     demand = [500]
@@ -132,7 +122,6 @@ def test_uc_reserve_margin():
     )
     assert r["status"] == "Optimal"
 
-
 # ── Storage ─────────────────────────────────────────────────────────
 
 def test_storage_demo():
@@ -141,7 +130,6 @@ def test_storage_demo():
     assert r["status"] == "Optimal"
     assert r["revenue"] >= 0
     assert len(r["schedule"]) == 24
-
 
 def test_storage_charges_when_cheap():
     """Battery charges at low prices and discharges at high prices."""
@@ -156,7 +144,6 @@ def test_storage_charges_when_cheap():
     assert sched[0]["charge"] >= 0
     assert sched[3]["discharge"] > 0 or sched[4]["discharge"] > 0
 
-
 def test_storage_soc_bounds():
     """SoC never exceeds capacity."""
     prices = [50] * 10
@@ -167,7 +154,6 @@ def test_storage_soc_bounds():
     assert r["status"] == "Optimal"
     for period in r["schedule"]:
         assert 0 <= period["soc"] <= 100 + 0.01
-
 
 def test_storage_round_trip():
     """Round-trip efficiency means energy out < energy in."""

@@ -1,7 +1,6 @@
 """Tests for lp_optimization.invariants — physical invariant validation."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 from energy_algorithms.domain.optimization.invariants import (
@@ -11,18 +10,17 @@ from energy_algorithms.domain.optimization.invariants import (
     assert_invariants,
 )
 
-
 # ── validate_energy_balance ─────────────────────────────────────────
 
 def test_validate_energy_balance_passes():
     """Energy balance passes when supply = demand + losses (within tolerance)."""
+
     assert validate_energy_balance(
         supply=[100.0, 50.0, 200.0],
         demand=[95.0, 47.0, 190.0],
         losses=[5.0, 3.0, 10.0],
         tolerance=0.01,
     )
-
 
 def test_validate_energy_balance_no_losses():
     """Energy balance passes when supply = demand exactly."""
@@ -33,7 +31,6 @@ def test_validate_energy_balance_no_losses():
         tolerance=0.01,
     )
 
-
 def test_validate_energy_balance_losses_optional():
     """Losses default to zero when not provided."""
     assert validate_energy_balance(
@@ -41,7 +38,6 @@ def test_validate_energy_balance_losses_optional():
         demand=[42.0],
         tolerance=0.01,
     )
-
 
 def test_validate_energy_balance_fails_on_shortfall():
     """Energy balance fails when supply < demand."""
@@ -51,7 +47,6 @@ def test_validate_energy_balance_fails_on_shortfall():
         tolerance=0.5,
     )
 
-
 def test_validate_energy_balance_fails_on_excess():
     """Energy balance fails when supply > demand + losses beyond tolerance."""
     assert not validate_energy_balance(
@@ -60,7 +55,6 @@ def test_validate_energy_balance_fails_on_excess():
         losses=[2.0],
         tolerance=0.5,
     )
-
 
 def test_validate_energy_balance_mixed_lengths():
     """Raises ValueError when lists have different lengths."""
@@ -76,7 +70,6 @@ def test_validate_energy_balance_mixed_lengths():
             losses=[5, 3],
         )
 
-
 def test_validate_energy_balance_strict_tolerance():
     """Energy balance fails at zero tolerance with tiny mismatch."""
     assert not validate_energy_balance(
@@ -84,7 +77,6 @@ def test_validate_energy_balance_strict_tolerance():
         demand=[100.0],
         tolerance=0.0,
     )
-
 
 # ── validate_soc_bounds ─────────────────────────────────────────────
 
@@ -95,14 +87,12 @@ def test_validate_soc_bounds_passes():
         capacity=100.0,
     )
 
-
 def test_validate_soc_bounds_fails_below_zero():
     """SoC below 0 fails validation."""
     assert not validate_soc_bounds(
         soc_values=[0.0, -0.01],
         capacity=100.0,
     )
-
 
 def test_validate_soc_bounds_fails_above_capacity():
     """SoC above capacity fails validation."""
@@ -111,7 +101,6 @@ def test_validate_soc_bounds_fails_above_capacity():
         capacity=100.0,
     )
 
-
 def test_validate_soc_bounds_tolerance():
     """SoC within tolerance does not fail."""
     assert validate_soc_bounds(
@@ -119,7 +108,6 @@ def test_validate_soc_bounds_tolerance():
         capacity=100.0,
         tolerance=0.01,
     )
-
 
 def test_validate_soc_bounds_zero_capacity():
     """Zero capacity: SoC must be exactly 0."""
@@ -133,11 +121,9 @@ def test_validate_soc_bounds_zero_capacity():
         tolerance=0.0,
     )
 
-
 def test_validate_soc_bounds_empty_list():
     """Empty SoC list returns True (vacuously satisfied)."""
     assert validate_soc_bounds([], capacity=100.0)
-
 
 # ── validate_power_limits ───────────────────────────────────────────
 
@@ -148,7 +134,6 @@ def test_validate_power_limits_passes():
         max_power=50.0,
     )
 
-
 def test_validate_power_limits_fails_negative():
     """Negative power fails validation."""
     assert not validate_power_limits(
@@ -156,14 +141,12 @@ def test_validate_power_limits_fails_negative():
         max_power=100.0,
     )
 
-
 def test_validate_power_limits_fails_above_max():
     """Power above max_power fails validation."""
     assert not validate_power_limits(
         power_values=[100.0, 100.01],
         max_power=100.0,
     )
-
 
 def test_validate_power_limits_tolerance():
     """Power within tolerance does not fail."""
@@ -173,11 +156,9 @@ def test_validate_power_limits_tolerance():
         tolerance=0.01,
     )
 
-
 def test_validate_power_limits_empty():
     """Empty power list returns True."""
     assert validate_power_limits([], max_power=50.0)
-
 
 # ── assert_invariants ───────────────────────────────────────────────
 
@@ -189,7 +170,6 @@ def test_assert_invariants_all_pass():
         lambda r: r["total_cost"] > 0,
     ])
 
-
 def test_assert_invariants_one_fails():
     """Raises AssertionError when a check fails."""
     result = {"status": "Infeasible"}
@@ -198,7 +178,6 @@ def test_assert_invariants_one_fails():
             lambda r: r["status"] == "Optimal",
         ])
     assert "failed" in str(exc_info.value)
-
 
 def test_assert_invariants_multiple_checks_run_all():
     """All checks run and failures are accumulated in the error message."""
@@ -212,11 +191,9 @@ def test_assert_invariants_multiple_checks_run_all():
     msg = str(exc_info.value)
     assert "failed" in msg
 
-
 def test_assert_invariants_empty_checks():
     """Empty checks list is fine."""
     assert_invariants({}, [])
-
 
 def test_assert_invariants_with_names():
     """Named checks appear in the error message."""
@@ -227,7 +204,6 @@ def test_assert_invariants_with_names():
         ])
     assert "soc_within_capacity" in str(exc_info.value)
 
-
 def test_assert_invariants_lambda_str():
     """Lambda without name uses string representation."""
     result = {"x": 1}
@@ -235,7 +211,6 @@ def test_assert_invariants_lambda_str():
         assert_invariants(result, [
             lambda r: r["x"] > 10,
         ])
-
 
 # ── Integration with demo_site ──────────────────────────────────────
 

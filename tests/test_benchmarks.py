@@ -10,9 +10,9 @@ Markers:
     @pytest.mark.slow — >5s solve time on PC
     @pytest.mark.pc   — requires PC hardware (>1GB RAM)
 """
+from __future__ import annotations
 
-import sys, os, time
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import time
 
 import numpy as np
 import pulp
@@ -28,12 +28,10 @@ from energy_algorithms.domain.optimization.stochastic import (
 from energy_algorithms.domain.optimization.assets import BatteryAsset, GeneratorAsset, SpillAsset, build_site
 from energy_algorithms.domain.markets.lodf_utils import compute_lodf, screen_cbcos
 
-
 # ── Slow markers ───────────────────────────────────────────────────
 
 slow = pytest.mark.slow
 pc = pytest.mark.pc
-
 
 # ═══════════════════════════════════════════════════════════════════
 # FBMC stress tests
@@ -79,7 +77,6 @@ def test_fbmc_10_zones():
     assert result["welfare"] > 0
     assert elapsed < 30.0, f"FBMC 10-zone solve took {elapsed:.1f}s (limit 30s)"
 
-
 @slow
 @pc
 def test_fbmc_50_zones():
@@ -113,7 +110,6 @@ def test_fbmc_50_zones():
     assert result["welfare"] > 0
     assert elapsed < 120.0, f"FBMC 50-zone solve took {elapsed:.1f}s (limit 120s)"
 
-
 # ═══════════════════════════════════════════════════════════════════
 # Unit commitment stress tests
 # ═══════════════════════════════════════════════════════════════════
@@ -146,7 +142,6 @@ def test_uc_100_generators_24_hours():
     assert result["total_cost"] > 0
     assert elapsed < 60.0, f"UC 100-gen took {elapsed:.1f}s (limit 60s)"
 
-
 @slow
 @pc
 def test_uc_500_generators_48_hours():
@@ -175,7 +170,6 @@ def test_uc_500_generators_48_hours():
     assert result["total_cost"] > 0
     assert elapsed < 300.0, f"UC 500-gen took {elapsed:.1f}s (limit 300s)"
 
-
 # ═══════════════════════════════════════════════════════════════════
 # LODF / CBCO stress tests
 # ═══════════════════════════════════════════════════════════════════
@@ -200,7 +194,6 @@ def test_lodf_500_branches():
     assert lodf.shape == (n_branches, n_branches)
     assert elapsed < 10.0, f"LODF 500-branch took {elapsed:.1f}s (limit 10s)"
 
-
 @slow
 @pc
 def test_cbco_screening_200_branches():
@@ -223,7 +216,6 @@ def test_cbco_screening_200_branches():
 
     assert len(critical) <= n_branches
     assert elapsed < 5.0, f"CBCO 200-branch took {elapsed:.1f}s (limit 5s)"
-
 
 # ═══════════════════════════════════════════════════════════════════
 # Asset / Site stress tests
@@ -253,7 +245,6 @@ def test_site_168_hours():
     assert pulp.LpStatus[prob.status] == "Optimal"
     assert elapsed < 30.0, f"Site 168h took {elapsed:.1f}s (limit 30s)"
 
-
 # ═══════════════════════════════════════════════════════════════════
 # Stochastic VSS at scale
 # ═══════════════════════════════════════════════════════════════════
@@ -280,7 +271,6 @@ def test_vss_50_scenarios():
     assert isinstance(vss, float)
     assert vss >= 0
     assert elapsed < 120.0, f"VSS 50-scenarios took {elapsed:.1f}s (limit 120s)"
-
 
 # ═══════════════════════════════════════════════════════════════════
 # Multi-day stress
@@ -327,7 +317,6 @@ def test_multi_day_7_days():
     assert result["welfare"] > 0
     assert elapsed < 30.0, f"Multi-day 7d took {elapsed:.1f}s (limit 30s)"
 
-
 # ═══════════════════════════════════════════════════════════════════
 # Quick benchmarks (run even on Pi — just performance tracking)
 # ═══════════════════════════════════════════════════════════════════
@@ -349,7 +338,6 @@ def test_fbmc_solve_benchmark():
 
     assert result["status"] == "Optimal"
     assert elapsed < 5.0, f"FBMC benchmark took {elapsed:.2f}s"
-
 
 def test_uc_solve_benchmark():
     """Track UC solve time."""

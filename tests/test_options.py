@@ -1,9 +1,5 @@
 """Tests for lp_optimization.options — centralised options dict."""
-
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 
@@ -14,11 +10,9 @@ from energy_algorithms.infrastructure.options import (
     get_options_dict,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 @pytest.fixture(autouse=True)
 def _reset_after_test():
@@ -27,11 +21,9 @@ def _reset_after_test():
     yield
     reset_options()
 
-
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
-
 
 class TestGetOption:
     """Tests for get_option()."""
@@ -63,7 +55,6 @@ class TestGetOption:
         d["solver"] = "highs"
         assert get_option("solver") == "cbc"  # unchanged
 
-
 class TestSetOption:
     """Tests for set_option()."""
 
@@ -76,7 +67,6 @@ class TestSetOption:
         """Setting an unknown key raises KeyError."""
         with pytest.raises(KeyError, match="Unknown option"):
             set_option("bogus_key", True)
-
 
 class TestResetOptions:
     """Tests for reset_options()."""
@@ -99,7 +89,6 @@ class TestResetOptions:
         reset_options()
         reset_options()
         assert get_option("solver") == "cbc"
-
 
 class TestOptionsIntegration:
     """Integration-style tests for the options module."""

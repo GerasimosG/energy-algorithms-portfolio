@@ -1,7 +1,5 @@
 """Tests for lp_optimization.assets — OneInterval asset pattern."""
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 import pulp
@@ -13,7 +11,6 @@ from energy_algorithms.domain.optimization.assets import (
     build_site,
     demo_site,
 )
-
 
 # ── Base Asset ───────────────────────────────────────────────────────
 
@@ -33,7 +30,6 @@ def test_asset_base_class_lifecycle():
     asset._objective(prob, interval_data, T)
     asset._post_solve(prob, interval_data, T)
     # No errors = pass
-
 
 # ── BatteryAsset ─────────────────────────────────────────────────────
 
@@ -73,7 +69,6 @@ def test_battery_asset_lifecycle():
     assert all(0 <= p["discharge"] <= battery.max_power for p in sched)
     assert all(0 <= p["charge"] <= battery.max_power for p in sched)
 
-
 def test_battery_asset_soc_bounds():
     """State of charge never exceeds capacity."""
     battery = BatteryAsset("BESS", capacity=100, max_power=50,
@@ -93,7 +88,6 @@ def test_battery_asset_soc_bounds():
     battery._post_solve(prob, interval_data, T)
     for period in battery.results["schedule"]:
         assert 0 <= period["soc"] <= 100 + 0.01
-
 
 def test_battery_asset_energy_balance():
     """SoC evolves correctly: SoC[t] = SoC[t-1] + charge*eff_in - discharge/eff_out."""
@@ -120,7 +114,6 @@ def test_battery_asset_energy_balance():
                         period["discharge"] / 0.9)
         assert abs(period["soc"] - expected_soc) < 0.01
         soc_prev = period["soc"]
-
 
 # ── GeneratorAsset ──────────────────────────────────────────────────
 
@@ -149,7 +142,6 @@ def test_generator_asset_lifecycle():
     for power in gen.results["power"]:
         assert 10 <= power <= 100
 
-
 def test_generator_asset_at_min_output():
     """Generator can be forced to its minimum output."""
     gen = GeneratorAsset("Gen1", min_output=50, max_output=200, cost_per_mwh=40)
@@ -166,7 +158,6 @@ def test_generator_asset_at_min_output():
     assert pulp.LpStatus[prob.status] == "Optimal"
     gen._post_solve(prob, interval_data, T)
     assert gen.results["power"][0] == pytest.approx(50, abs=0.01)
-
 
 # ── SpillAsset ──────────────────────────────────────────────────────
 
@@ -199,7 +190,6 @@ def test_spill_asset_makes_feasible():
     assert gen.results["power"][0] == pytest.approx(30, abs=0.01)
     assert spill.results["spill"][0] == pytest.approx(70, abs=0.01)
 
-
 def test_spill_asset_not_used_when_unnecessary():
     """Spill asset stays at zero when other assets can meet demand."""
     gen = GeneratorAsset("Gen1", min_output=0, max_output=200, cost_per_mwh=50)
@@ -213,7 +203,6 @@ def test_spill_asset_not_used_when_unnecessary():
     spill._post_solve(prob, interval_data, T=1)
     assert gen.results["power"][0] == pytest.approx(100, abs=0.01)
     assert spill.results["spill"][0] == pytest.approx(0, abs=0.01)
-
 
 def test_spill_asset_high_penalty():
     """SpillAsset with higher penalty is used less."""
@@ -235,7 +224,6 @@ def test_spill_asset_high_penalty():
     assert spill_cheap.results["spill"][0] == pytest.approx(50, abs=0.01)
     assert spill_expensive.results["spill"][0] == pytest.approx(0, abs=0.01)
 
-
 # ── build_site ──────────────────────────────────────────────────────
 
 def test_build_site_demo():
@@ -245,7 +233,6 @@ def test_build_site_demo():
     assert "total_cost" in result
     assert "schedule" in result
     assert len(result["schedule"]) > 0
-
 
 def test_build_site_energy_balance():
     """Total net power from all assets equals demand in each period."""
@@ -274,7 +261,6 @@ def test_build_site_energy_balance():
                spill.results["spill"][t])
         assert net == pytest.approx(interval_data[t]["demand"], abs=0.01)
 
-
 def test_build_site_battery_arbitrage_in_site():
     """Battery charges when price is low and discharges when high in a site context."""
     battery = BatteryAsset("BESS", capacity=50, max_power=10,
@@ -302,7 +288,6 @@ def test_build_site_battery_arbitrage_in_site():
     total_discharge = sum(p["discharge"] for p in sched)
     if total_charge > 0:
         assert total_discharge < total_charge
-
 
 def test_build_site_multiple_generators():
     """Multiple generators are dispatched economically."""

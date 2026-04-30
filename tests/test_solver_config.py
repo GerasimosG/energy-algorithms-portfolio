@@ -1,9 +1,5 @@
 """Tests for lp_optimization.solver_config — solver discovery and fallback."""
-
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 
@@ -13,10 +9,8 @@ from energy_algorithms.infrastructure.solver_config import (
     solver_capabilities,
 )
 
-
 class TestListAvailableSolvers:
     """Tests for list_available_solvers()."""
-
     def test_always_includes_cbc(self):
         """CBC is always available because it ships with PuLP."""
         solvers = list_available_solvers()
@@ -28,7 +22,6 @@ class TestListAvailableSolvers:
         assert isinstance(solvers, list)
         assert all(isinstance(s, str) for s in solvers)
         assert solvers == sorted(solvers)
-
 
 class TestGetSolver:
     """Tests for get_solver()."""
@@ -85,7 +78,6 @@ class TestGetSolver:
         with pytest.warns(UserWarning, match="Falling back to CBC"):
             solver = get_solver("highs")
         assert solver is not None
-
 
 class TestSolverCapabilities:
     """Tests for solver_capabilities()."""

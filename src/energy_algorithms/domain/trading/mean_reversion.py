@@ -2,6 +2,8 @@
 Mean Reversion Strategy using Bollinger Bands.
 Buys when price touches lower band, sells (short) when touches upper band.
 """
+from __future__ import annotations
+
 
 import numpy as np
 import pandas as pd

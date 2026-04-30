@@ -1,4 +1,6 @@
 """
+from __future__ import annotations
+
 Battery Energy Storage System (BESS) — Revenue-maximizing LP.
 
 Models a single battery over T periods given a price forecast.

@@ -1,18 +1,17 @@
 """Tests for Multi-Day Market Coupling — energy_markets module."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pytest
 
 from energy_algorithms.domain.markets.multi_day import solve_multi_day
-
 
 # ── 1. Basic 2-day coupling with storage ──────────────────────────
 
 def test_2day_with_storage_welfare_higher():
     """2-day coupling: battery charges cheap day 1, discharges expensive day 2,
     yielding higher welfare than no-storage baseline."""
+
     # Day 1: very cheap (North 5 €/MWh), moderate demand
     # Day 2: very expensive, demand higher
     zones_per_day = [
@@ -76,7 +75,6 @@ def test_2day_with_storage_welfare_higher():
     # Energy should be shifted between days
     assert result_with["total_energy_shifted"] >= 0
 
-
 # ── 2. No-storage baseline (reduces to independent per-day solves) ─
 
 def test_no_storage_independent_days():
@@ -109,7 +107,6 @@ def test_no_storage_independent_days():
     assert result["total_energy_shifted"] == 0.0
     # Per-day results exist
     assert len(result["per_day"]) == 2
-
 
 # ── 3. Storage SoC carry-over ─────────────────────────────────────
 
@@ -157,7 +154,6 @@ def test_storage_soc_carryover():
         f"Carry-over failed: day0 end={end_day0}, day1 start={start_day1}"
     )
 
-
 # ── 4. Infeasible storage configuration ───────────────────────────
 
 def test_zero_capacity_storage():
@@ -190,7 +186,6 @@ def test_zero_capacity_storage():
         assert entry["discharge"] == 0.0
         assert entry["soc_start"] == 0.0
         assert entry["soc_end"] == 0.0
-
 
 # ── 5. Multi-zone multi-day (3 zones × 2 days) ────────────────────
 
@@ -234,7 +229,6 @@ def test_multi_zone_multi_day():
     assert len(result["storage_schedule"]) == 2  # one per day
     assert result["total_energy_shifted"] >= 0
 
-
 # ── 6. Single-day with storage (degenerate multi-day) ─────────────
 
 def test_single_day_with_storage():
@@ -263,7 +257,6 @@ def test_single_day_with_storage():
     assert len(result["per_day"]) == 1
     assert "day_0" in result["storage_schedule"]
 
-
 # ── 7. Input validation ───────────────────────────────────────────
 
 def test_mismatched_days_raises():
@@ -280,7 +273,6 @@ def test_mismatched_days_raises():
 
     with pytest.raises(ValueError, match="same number of days"):
         solve_multi_day(zones_per_day, atc_per_day, storage_config=None, horizon_days=1)
-
 
 def test_horizon_days_mismatch():
     """horizon_days must match the number of entries in zones_per_day."""

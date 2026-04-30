@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 #!/usr/bin/env python3
 """
 Live YFinance Backtest Demo — Fetch real AAPL data, run all 3 strategies,

@@ -1,13 +1,13 @@
 """Tests for energy_markets PCR model."""
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from __future__ import annotations
 
 import pytest
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 
-
 def test_simple_clearing():
     """Simple market clears with correct MCP and welfare."""
+
     model = PCRModel("test")
     model.add_supply("Cheap", 10, 100)
     model.add_supply("Expensive", 80, 100)
@@ -16,7 +16,6 @@ def test_simple_clearing():
     assert r["status"] == "Optimal"
     assert r["mcp"] == 80  # Expensive is marginal
     assert r["traded"] == 150.0
-
 
 def test_block_accepted():
     """Cheap block order is accepted."""
@@ -29,7 +28,6 @@ def test_block_accepted():
     assert r["status"] == "Optimal"
     assert r["orders"]["blocks"]["Nuclear"]["accepted"] is True
 
-
 def test_block_rejected():
     """Expensive block order is rejected."""
     model = PCRModel("test")
@@ -40,7 +38,6 @@ def test_block_rejected():
     r = model.solve()
     assert r["status"] == "Optimal"
     assert r["orders"]["blocks"]["ExpensivePeaker"]["accepted"] is False
-
 
 def test_exclusive_blocks():
     """Exclusive blocks: at most one accepted."""
@@ -53,7 +50,6 @@ def test_exclusive_blocks():
     assert r["status"] == "Optimal"
     accepted = [b for b in r["orders"]["blocks"].values() if b["accepted"]]
     assert len(accepted) <= 1  # At most one exclusive block accepted
-
 
 def test_linked_blocks():
     """Linked blocks: all accepted or all rejected together."""
@@ -69,7 +65,6 @@ def test_linked_blocks():
     b = r["orders"]["blocks"]["Block_B"]["accepted"]
     assert a == b  # Both accepted or both rejected
 
-
 def test_energy_balance_exact():
     """Energy balance constraint is equality (supply == demand)."""
     model = PCRModel("test_bal")
@@ -81,7 +76,6 @@ def test_energy_balance_exact():
     # Over-generation should not happen: supply == demand
     total_supplied = sum(o["filled_qty"] for o in r["orders"]["supply"].values())
     assert abs(total_supplied - r["traded"]) < 0.01
-
 
 def test_mcp_with_block():
     """MCP includes block order prices when block is marginal."""
@@ -96,7 +90,6 @@ def test_mcp_with_block():
     if r["orders"]["blocks"]["GasBlock"]["accepted"]:
         assert r["mcp"] >= 80
 
-
 def test_no_trades_zero_demand():
     """Zero demand results in no trades or infeasible (energy balance == 0 supply == 0 demand)."""
     model = PCRModel("test_zero")
@@ -106,11 +99,9 @@ def test_no_trades_zero_demand():
     # Either Optimal with 0 trades, or Infeasible (cannot have 0 supply == 0 demand with min constraints)
     assert r["status"] in ("Optimal", "Infeasible")
 
-
 # ── Intraday ────────────────────────────────────────────────────────
 
 from energy_algorithms.domain.markets.intraday import simulate_intraday, demo_intraday
-
 
 def test_intraday_demo():
     """Demo intraday simulation returns valid result."""
@@ -118,7 +109,6 @@ def test_intraday_demo():
     assert r["status"] == "completed"
     assert len(r["trades"]) > 0
     assert r["total_volume"] > 0
-
 
 def test_intraday_match_buy_sell():
     """A buy order at 100 matches a sell order at 100."""
@@ -130,7 +120,6 @@ def test_intraday_match_buy_sell():
     assert len(r["trades"]) == 1
     assert r["trades"][0]["qty"] == 10
 
-
 def test_intraday_no_match():
     """Buy at 80 doesn't match sell at 100."""
     orders = [
@@ -140,7 +129,6 @@ def test_intraday_no_match():
     r = simulate_intraday(orders)
     assert len(r["trades"]) == 0
     assert len(r["unfilled_orders"]) == 2
-
 
 def test_intraday_partial_fill():
     """Buy for 20 MW where only 10 MW available → partial fill."""
@@ -153,7 +141,6 @@ def test_intraday_partial_fill():
     assert r["trades"][0]["qty"] == 10
     # 10 MW of buy order remains unfilled
     assert len(r["unfilled_orders"]) == 1
-
 
 def test_intraday_vwap():
     """VWAP reflects price×volume weighting."""

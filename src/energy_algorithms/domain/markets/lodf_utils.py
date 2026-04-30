@@ -10,6 +10,8 @@ References
 - ENTSO-E Flow-Based Market Coupling documentation
 - Euphemia algorithm specification — CBCO filtering
 """
+from __future__ import annotations
+
 
 import numpy as np
 from typing import Optional

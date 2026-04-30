@@ -1,9 +1,5 @@
 """Tests for lp_optimization.metadata — variable and model metadata."""
-
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import pulp
 import pytest
@@ -14,11 +10,9 @@ from energy_algorithms.infrastructure.metadata import (
     get_model_summary,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 def _make_simple_problem() -> pulp.LpProblem:
     """Create a small PuLP problem for metadata testing."""
@@ -32,11 +26,9 @@ def _make_simple_problem() -> pulp.LpProblem:
     prob += x - z == 0, "c3"
     return prob
 
-
 # ---------------------------------------------------------------------------
 # Tests — VariableRegistry
 # ---------------------------------------------------------------------------
-
 
 class TestVariableRegistry:
     """Tests for the VariableRegistry class."""
@@ -90,11 +82,9 @@ class TestVariableRegistry:
         assert var["lower"] == 0
         assert var["upper"] is None
 
-
 # ---------------------------------------------------------------------------
 # Tests — ModelMetadata
 # ---------------------------------------------------------------------------
-
 
 class TestModelMetadata:
     """Tests for the ModelMetadata class."""
@@ -151,11 +141,9 @@ class TestModelMetadata:
         assert meta.constraint_count == 0
         assert meta.sense == "Maximize"
 
-
 # ---------------------------------------------------------------------------
 # Tests — get_model_summary convenience
 # ---------------------------------------------------------------------------
-
 
 class TestGetModelSummary:
     """Tests for get_model_summary()."""

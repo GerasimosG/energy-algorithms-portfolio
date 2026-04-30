@@ -2,6 +2,8 @@
 SQLite storage for OHLCV market data.
 Schema: daily_ohlcv table with composite index.
 """
+from __future__ import annotations
+
 
 import sqlite3
 import os

@@ -1,25 +1,23 @@
 """Tests for LODF impact screening — energy_markets/lodf_utils.py."""
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from __future__ import annotations
 
 import numpy as np
 import pytest
 
 from energy_algorithms.domain.markets.lodf_utils import compute_lodf, screen_cbcos
 
-
 # ── Test Data ─────────────────────────────────────────────────────
 
 def make_ptdf_3zone():
     """Create a valid 3-branch, 3-zone PTDF matrix (rows sum to ~0)."""
+
     # Branch AB, BC, AC in a triangle
     return np.array([
         [ 0.6, -0.4, -0.2],   # AB: mainly north-south
         [ 0.3,  0.3, -0.6],   # BC: east-west
         [-0.9,  0.1,  0.8],   # CA: loop flow branch
     ])
-
 
 def make_branch_zone_map():
     """Map branch index -> (from_zone, to_zone) for 3-zone system."""
@@ -28,7 +26,6 @@ def make_branch_zone_map():
         (1, 2),   # Branch 1: B→C
         (2, 0),   # Branch 2: C→A
     ]
-
 
 # ── compute_lodf tests ────────────────────────────────────────────
 
@@ -40,7 +37,6 @@ def test_compute_lodf_shape():
 
     assert lodf.shape == (3, 3)
     assert isinstance(lodf, np.ndarray)
-
 
 def test_compute_lodf_self_outage():
     """Self-outage LODF (diagonal) should be approximately 1.0.
@@ -59,7 +55,6 @@ def test_compute_lodf_self_outage():
         assert abs(lodf[k, k] - (-1.0)) < 1e-10, \
             f"Self-outage LODF[{k},{k}] = {lodf[k, k]}, expected -1.0"
 
-
 def test_compute_lodf_2zone_simple():
     """2 zones, 1 branch: LODF is a 1x1 matrix with -1.0."""
     ptdf = np.array([[0.5, -0.5]])
@@ -69,13 +64,11 @@ def test_compute_lodf_2zone_simple():
     assert lodf.shape == (1, 1)
     assert lodf[0, 0] == -1.0
 
-
 def test_compute_lodf_without_map_raises():
     """Missing branch_zone_map should raise ValueError."""
     ptdf = make_ptdf_3zone()
     with pytest.raises(ValueError):
         compute_lodf(ptdf)
-
 
 def test_compute_lodf_map_mismatch_raises():
     """branch_zone_map length must match PTDF rows."""
@@ -84,14 +77,12 @@ def test_compute_lodf_map_mismatch_raises():
     with pytest.raises(ValueError):
         compute_lodf(ptdf, branch_zone_map=bzm)
 
-
 def test_compute_lodf_bad_zone_indices():
     """Zone indices in map must be within valid range."""
     ptdf = np.array([[0.5, -0.5]])
     bzm = [(0, 5)]   # zone 5 doesn't exist
     with pytest.raises(ValueError):
         compute_lodf(ptdf, branch_zone_map=bzm)
-
 
 def test_compute_lodf_zero_ptdf_row():
     """PTDF row of all zeros: LODF for that branch is zero (no impact)."""
@@ -114,7 +105,6 @@ def test_compute_lodf_zero_ptdf_row():
     # For l=1, k=0: abs(lodf[1,0]) should be > 0 since PTDF[1] has non-zero sensitivity
     assert abs(lodf[1, 0]) > 0.5, f"LODF[1,0] should be ~1.0 for valid PTDF"
     assert abs(lodf[2, 0]) > 0.5, f"LODF[2,0] should be ~1.0 for valid PTDF"
-
 
 def test_compute_lodf_values_2x2():
     """Verify LODF values for a simple 2-branch, 2-zone system."""
@@ -148,7 +138,6 @@ def test_compute_lodf_values_2x2():
     assert lodf[1, 1] == -1.0
     assert abs(lodf[1, 0] - 2.0) < 1e-10
 
-
 # ── screen_cbcos tests ────────────────────────────────────────────
 
 def test_screen_cbcos_no_outages_critical():
@@ -163,7 +152,6 @@ def test_screen_cbcos_no_outages_critical():
 
     assert critical == [], f"Expected empty list, got {critical}"
 
-
 def test_screen_cbcos_binding_branch_is_critical():
     """A branch at 95% of RAM should be flagged as CBCO."""
     ptdf = make_ptdf_3zone()
@@ -177,7 +165,6 @@ def test_screen_cbcos_binding_branch_is_critical():
     # Branch 0 itself at 95% > 90% threshold -> should be in critical list
     assert 0 in critical, f"Branch 0 should be critical, got {critical}"
 
-
 def test_screen_cbcos_not_binding_screened_out():
     """A branch at 50% of RAM should be screened out with threshold=0.9."""
     ptdf = make_ptdf_3zone()
@@ -189,7 +176,6 @@ def test_screen_cbcos_not_binding_screened_out():
                             branch_zone_map=bzm, threshold=0.9)
 
     assert critical == [], "No branch should be critical"
-
 
 def test_screen_cbcos_outage_impact_creates_cbco():
     """Outage of a heavily loaded branch creates CBCOs on other branches."""
@@ -212,7 +198,6 @@ def test_screen_cbcos_outage_impact_creates_cbco():
     for c in critical:
         assert 0 <= c < 3, f"Invalid branch index in critical: {c}"
 
-
 def test_screen_cbcos_high_threshold_screens_more():
     """Higher threshold screens out more branches."""
     ptdf = make_ptdf_3zone()
@@ -229,7 +214,6 @@ def test_screen_cbcos_high_threshold_screens_more():
     assert len(critical_hi) <= len(critical_lo), \
         f"Higher threshold should have <= critical: lo={critical_lo}, hi={critical_hi}"
 
-
 def test_screen_cbcos_empty_system():
     """Empty PTDF matrix should return empty list."""
     ptdf = np.zeros((0, 2))
@@ -241,7 +225,6 @@ def test_screen_cbcos_empty_system():
                             branch_zone_map=bzm)
     assert critical == []
 
-
 def test_screen_cbcos_shape_mismatch():
     """Mismatched array sizes should raise ValueError."""
     ptdf = make_ptdf_3zone()
@@ -251,7 +234,6 @@ def test_screen_cbcos_shape_mismatch():
 
     with pytest.raises(ValueError, match="base_flows"):
         screen_cbcos(ptdf, base_flows, ram_limits, branch_zone_map=bzm)
-
 
 def test_screen_cbcos_ram_shape_mismatch():
     """RAM array length must match branches."""
@@ -263,7 +245,6 @@ def test_screen_cbcos_ram_shape_mismatch():
     with pytest.raises(ValueError, match="ram_limits"):
         screen_cbcos(ptdf, base_flows, ram_limits, branch_zone_map=bzm)
 
-
 def test_screen_cbcos_negative_ram():
     """Negative RAM values should raise ValueError."""
     ptdf = make_ptdf_3zone()
@@ -273,7 +254,6 @@ def test_screen_cbcos_negative_ram():
 
     with pytest.raises(ValueError, match="non-negative"):
         screen_cbcos(ptdf, base_flows, ram_limits, branch_zone_map=bzm)
-
 
 def test_screen_cbcos_zero_ram():
     """RAM = 0: branch is critical (0/0 -> treated as binding)."""
@@ -288,7 +268,6 @@ def test_screen_cbcos_zero_ram():
     # Branch 0 has RAM=0, so it should be critical
     assert 0 in critical, f"Zero-RAM branch should be critical, got {critical}"
 
-
 def test_screen_cbcos_verbose_does_not_crash():
     """Verbose mode should not crash."""
     ptdf = make_ptdf_3zone()
@@ -301,7 +280,6 @@ def test_screen_cbcos_verbose_does_not_crash():
                             verbose=True)
     assert isinstance(critical, list)
 
-
 def test_screen_cbcos_threshold_zero_or_negative():
     """Threshold <= 0 should be handled gracefully (all critical)."""
     ptdf = make_ptdf_3zone()
@@ -313,7 +291,6 @@ def test_screen_cbcos_threshold_zero_or_negative():
     critical = screen_cbcos(ptdf, base_flows, ram_limits,
                             branch_zone_map=bzm, threshold=0.0)
     assert len(critical) == 3, f"All branches should be critical with threshold=0"
-
 
 def test_screen_cbcos_all_zero_flows():
     """All zero base flows: no CBCOs."""
