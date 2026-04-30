@@ -1,5 +1,24 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 10:15 CEST — Knowledge base: 12 files, 3,610 lines across all domains
+
+**What changed:**
+- **📚 `knowledge/` directory** — Comprehensive theory, Q&A, and self-assessment curriculum:
+  - `market-coupling.md` (720L): PCR, Euphemia, ATC vs FBMC, loop flows, non-convexities
+  - `fbmc-ptdf.md` (1,087L): PTDF deep dive, LODF computation, CBCO screening, GSK strategies
+  - `block-orders.md` (218L): Linked, exclusive, MCP vs IP pricing, make-whole payments
+  - `optimization-theory.md` (263L): LP/MIP, simplex, duality, branch and bound, solver internals
+  - `unit-commitment.md` (184L): 8 constraints, initial conditions, horizon-end, ramp/capacity coupling
+  - `storage-optimization.md` (174L): SoC dynamics, efficiency trap, OneInterval pattern, SpillAsset
+  - `backtesting.md` (163L): Look-ahead bias, 7 risk metrics, vectorized engine, Kelly criterion
+  - `entsoe.md` (159L): Transparency Platform, bidding zones, PSR types, pipeline architecture
+  - `competitor-analysis.md` (156L): pomato, PyPSA, energy-py-linear gap analysis with resolution status
+  - `interview-qa.md` (216L): 20 questions with GOOD and EXCEPTIONAL answers for Euphemia   and Industry
+  - `quiz.md` (199L): 50 questions across 8 domains with full answer key
+  - `README.md` (71L): Index, how-to-use guide, quick reference
+
+**Git:** Pushed to `GerasimosG/Energy_Algorithms` (private) (`decb94e`)
+
 ## 2026-04-30 09:15 CEST — ALL P1/P2/P3 competitor gaps implemented + production polish
 
 **What changed:**

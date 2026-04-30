@@ -23,7 +23,7 @@ This portfolio is laser-targeted at two specific roles. Below is a detailed brea
 | **LP/MIP formulation** | Can you translate a business problem into mathematical constraints? | `pcr_model.py` — social welfare LP with binary block orders. `scheduling.py` — unit commitment MIP with min up/down, ramp rates, reserve. `storage.py` — BESS revenue-maximizing LP |
 | **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `fbmc.py` — FBMC with PTDF/RAM (the real Euphemia algorithm). `block_orders.py` — linked + exclusive group mechanisms |
 | **Solver experience** | Have you used optimization solvers? Understand their limitations? | PuLP/CBC used throughout. README documents PuLP's quadratic limitation (why scipy handles portfolio risk). Honest about CBC vs commercial solvers |
-| **Python + software engineering** | Can you write production code, not just notebooks? | 51 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
+| **Python + software engineering** | Can you write production code, not just notebooks? | 185 pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
 | **Non-convexity awareness** | Do you know that block orders make the problem non-convex? | Explicitly documented: MCP vs IP pricing gap, make-whole payments, PUN pricing. The README's "Implementation → Real Euphemia Mapping" table shows exactly where we simplify |
 
 #### Edge Cases — What Separates Good from Exceptional
@@ -72,7 +72,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 | Requirement | What Interviewers Look For | This Repo's Answer |
 |---|---|---|
-| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 40 tests, error handling throughout, `pyproject.toml` |
+| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 185 tests, error handling throughout, `pyproject.toml` |
 | **Backtesting** | Do you understand look-ahead bias, survivorship bias, transaction costs? | `engine.py` — vectorized, signal-shifted to avoid look-ahead. Commission and slippage modeled per trade. 7 risk metrics |
 | **Quantitative modeling** | Can you build and validate statistical models? | 3 strategy types (momentum, mean-reversion, SMA crossover) with parameterized thresholds. Portfolio optimization with cardinality constraints |
 | **Risk management** | Do you understand VaR, drawdown, Sharpe, Sortino, Kelly? | `metrics.py` — 7 metrics. Kelly fraction properly bounded. Sortino uses downside deviation only |
@@ -112,7 +112,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 **The Portfolio Walkthrough** — When an interviewer says "walk me through this repo":
 1. Open with: "This is my optimization portfolio, built for energy market and quantitative trading roles. The hero module is `energy_markets/` — it implements a PCR market coupling LP that maps directly to Euphemia concepts."
 2. Show the README's "Implementation → Real Euphemia Mapping" table — it demonstrates you know exactly where your model simplifies reality.
-3. Run `pytest tests/ -v` live if possible — 40 green tests in 2 seconds is compelling.
+3. Run `pytest tests/ -v` live if possible — 185 green tests in ~3 seconds is compelling.
 4. Open `notebooks/walkthrough.ipynb` and run a few cells — the multi-zone coupling or BESS storage demos are visually impressive.
 
 **Technical Questions They Will Ask Both Roles:**
@@ -142,44 +142,51 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 | `energy_data/fetcher.py` | ⭐ Market data | ⭐⭐⭐ Core — Data infrastructure |
 | `strategies/*` | — | ⭐⭐⭐ Core — Trading signals |
 
-## 📖 Framework Documentation
+## 📖 Framework Documentation & Knowledge Base
 
-A comprehensive **FRAMEWORK.md** document explains everything in detail:
-- Architecture overview and design principles
-- Data flow and solve pipeline with timing benchmarks
-- Module deep-dives (each optimization's formulation, constraints, edge cases)
-- Competitor comparison tables (pomato, PyPSA, energy-py-linear)
-- Benchmark methodology and competitor benchmarks to beat
-- Edge cases and defensive patterns across all modules
-- Iteration history and extension guide
+**FRAMEWORK.md** explains the full architecture, data flow, competitor comparisons, benchmark methodology, and iteration history. Auto-updated with each iteration.
 
-> The framework docs auto-update with each iteration. Run `./scripts/update_framework_metrics.sh` before committing.
+**`knowledge/`** is a comprehensive curriculum (12 files, 3,610 lines) covering theory, edge cases, interview Q&A, and self-assessment:
+- Market coupling (PCR, Euphemia, FBMC), block orders, PTDF deep dive, LP/MIP theory
+- Unit commitment, storage optimization, backtesting methodology, ENTSO-E platform
+- Competitor analysis (pomato, PyPSA, energy-py-linear) with gap resolution status
+- Interview Q&A with 20 questions and exceptional answers, 50-question self-assessment quiz
 
 ## 📦 Architecture
 
 ```
 Energy_Algorithms/
-├── energy_markets/        ★ HERO — PCR coupling, block orders, multi-zone, intraday, Euphemia context
-│   ├── pcr_model.py       LP: social welfare maximization with binary block orders
+├── energy_markets/        ★ HERO — PCR, FBMC, block orders, intraday, LODF screening
+│   ├── pcr_model.py       Social welfare LP with binary block orders
+│   ├── fbmc.py            FBMC flow-based coupling (PTDF + RAM, loop flows) ★
 │   ├── multi_zone.py      Multi-zone coupling with ATC constraints
-│   ├── block_orders.py    Linked, exclusive, and simple block order scenarios
-│   ├── intraday.py        Continuous intraday trading simulation with order matching ★ new
-│   ├── market_clearing.py Supply/demand stack equilibrium + visualization
-│   └── EUPHEMIA_INTERVIEW.md  Interview prep: Euphemia concepts, question bank
-├── lp_optimization/        Core LP/MIP skills
-│   ├── transportation.py  Classic transportation LP
+│   ├── lodf_utils.py      LODF computation + N-1 CBCO screening ★
+│   ├── gsk.py             GSK strategies (flat, gmax, dynamic) ★
+│   ├── block_orders.py    Linked, exclusive, and simple block orders
+│   ├── intraday.py        Continuous intraday trading order book matching
+│   └── market_clearing.py Supply/demand stack equilibrium + visualization
+├── lp_optimization/        Core LP/MIP + infrastructure
+│   ├── scheduling.py      Unit commitment MIP (min up/down, ramp, reserve)
+│   ├── storage.py         BESS battery storage LP
 │   ├── portfolio.py       Mean-variance (scipy SLSQP) + linear (PuLP)
-│   ├── scheduling.py      Unit commitment MIP with min up/down, ramp rates, reserve
-│   └── storage.py         BESS battery storage optimization LP ★ new
-├── energy_data/            European electricity market data ★ new
-│   ├── fetcher.py         ENTSO-E Transparency Platform API client
+│   ├── transportation.py  Classic transportation LP
+│   ├── assets.py          OneInterval pattern: Battery, Generator, SpillAsset ★
+│   ├── invariants.py      Post-solve physical invariant validation ★
+│   ├── hooks.py           PRE_SOLVE/POST_SOLVE event hooks ★
+│   ├── solver_config.py   CBC, HiGHS, Gurobi, CPLEX with fallback ★
+│   ├── options.py         Centralized get/set/reset config ★
+│   └── metadata.py        VariableRegistry, ModelMetadata introspection ★
+├── energy_data/            ENTSO-E Transparency Platform API client
+│   ├── fetcher.py         REST client with structured error handling
+│   ├── config.py          API key storage ★
 │   └── demo.py            Demo with realistic Belgian market data
 ├── backtester/             Vectorized backtesting engine + 7 risk metrics
-├── strategies/             3 signal-based strategies (momentum, mean-reversion, SMA)
+├── strategies/             3 signal-based strategies
 ├── market_data/            Yahoo Finance → SQLite pipeline
-├── tests/                  40 pytest tests across 4 modules ★ 26→40
-├── notebooks/              Walkthrough notebook for Euphemia   demo ★ new
-└── .github/workflows/      CI: Python 3.11–3.13, tests + demo verification
+├── knowledge/              12-file theory + Q&A curriculum ★
+├── tests/                  185 pytest tests (10 test files) ★
+├── notebooks/              Walkthrough notebook for Euphemia   demo
+└── .github/workflows/      CI: Python 3.11–3.13
 ```
 
 ## 🚀 Quick Start
@@ -289,13 +296,14 @@ max Σ_j(p_j^d · q_j^d · x_j^d) − Σ_i(p_i^s · q_i^s · x_i^s) − Σ_k(p_k
 
 | Metric | Value |
 |--------|-------|
-| Python modules | 11 |
-| Total source files | 24 |
-| Test files | 4 |
-| Test cases | 40 (all passing) |
+| Python modules | 18 |
+| Total source files | 35+ |
+| Test files | 10 |
+| Test cases | 185 (all passing) |
+| Knowledge base | 12 files, 3,610 lines |
 | Risk metrics | 7 (Sharpe, Sortino, maxDD, Calmar, VaR95, VaR99, Kelly) |
-| Optimization solvers | 2 (PuLP/CBC, scipy SLSQP) |
-| New in this iteration | BESS storage, intraday trading, ENTSO-E pipeline, notebook walkthrough |
+| Optimization solvers | 2+ (PuLP/CBC, scipy SLSQP, HiGHS/Gurobi/CPLEX configs) |
+| Competitor gaps resolved | 12/14 (Clarkson/Chance-OPF: roadmap) |
 
 ## 🧪 Testing
 
