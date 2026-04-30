@@ -9,7 +9,11 @@ Usage:
     prices = client.fetch_day_ahead_prices("10YBE----------2", "2024-01-01")
 """
 
+from energy_data.config import ENTSOE_API_KEY
 from energy_data.fetcher import EntsoeClient, fetch_demo_day_ahead, fetch_demo_generation_mix
 from energy_data.demo import demo_energy_data
 
-__all__ = ["EntsoeClient", "fetch_demo_day_ahead", "fetch_demo_generation_mix", "demo_energy_data"]
+__all__ = [
+    "EntsoeClient", "ENTSOE_API_KEY", "fetch_demo_day_ahead",
+    "fetch_demo_generation_mix", "demo_energy_data",
+]

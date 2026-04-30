@@ -7,9 +7,12 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import numpy as np
+
 from energy_markets.pcr_model import PCRModel
 from energy_markets.block_orders import run_all, run_exclusive
 from energy_markets.market_clearing import demo_clearing, plot_supply_demand_stack
+from energy_markets.fbmc import solve_fbmc
 
 
 def main():
@@ -105,6 +108,52 @@ def main():
         plot_path,
     )
     print(f"  Plot saved: {plot_path}")
+
+    # 6. FBMC flow-based coupling
+    print(f"\n\n{'─' * 65}")
+    print("  6. FBMC Flow-Based Market Coupling (3-zone triangle w/ loop flows)")
+    print(f"{'─' * 65}")
+    zones_fbmc = [
+        {"name": "Hydro_North", "zone_id": 0,
+         "supply": [{"price": 5, "qty": 300}, {"price": 30, "qty": 200}],
+         "demand": [{"price": 100, "qty": 200}]},
+        {"name": "Gas_Center", "zone_id": 1,
+         "supply": [{"price": 45, "qty": 200}, {"price": 70, "qty": 150}],
+         "demand": [{"price": 150, "qty": 400}]},
+        {"name": "Diesel_South", "zone_id": 2,
+         "supply": [{"price": 65, "qty": 150}, {"price": 95, "qty": 200}],
+         "demand": [{"price": 120, "qty": 250}]},
+    ]
+    ptdf = np.array([
+        [ 0.6, -0.4, -0.2],  # Line AB: Hydro→Gas exports stress this
+        [ 0.3,  0.3, -0.6],  # Line BC: Gas→Diesel flows
+        [ 0.1, -0.1,  0.0],  # Line AC: loop flow from Hydro→Diesel bypass
+    ])
+    znames = [z["name"] for z in zones_fbmc]
+    ram_all = [
+        {"name": "Hydro_Gas", "ram_forward": 180, "ram_reverse": 180},
+        {"name": "Gas_Diesel", "ram_forward": 150, "ram_reverse": 150},
+        {"name": "Hydro_Diesel", "ram_forward": 40, "ram_reverse": 40},
+    ]
+    result_fbmc = solve_fbmc(zones_fbmc, ptdf, ram_all, znames)
+    if result_fbmc.get("status") == "Optimal":
+        print(f"  Welfare: €{result_fbmc['welfare']:>10,.2f}")
+        print(f"  {'Zone':<18} {'Supply':>8} {'Demand':>8} {'Net':>8} {'MCP':>8}")
+        print(f"  {'─'*18} {'─'*8} {'─'*8} {'─'*8} {'─'*8}")
+        for z in znames:
+            zr = result_fbmc["zones"][z]
+            print(f"  {z:<18} {zr['supply_cleared_mw']:>8.0f} "
+                  f"{zr['demand_cleared_mw']:>8.0f} {zr['net_position_mw']:>+8.0f} "
+                  f"€{zr['mcp']:>5.0f}")
+        print(f"\n  {'Branch':<18} {'Flow':>8} {'RAM':>8} {'Util%':>8}")
+        print(f"  {'─'*18} {'─'*8} {'─'*8} {'─'*8}")
+        for bf in result_fbmc["branch_flows"]:
+            print(f"  {bf['branch']:<18} {bf['flow_mw']:>8.0f} "
+                  f"{bf['ram_forward']:>8.0f} {bf['utilization_pct']:>7.1f}%")
+        print(f"  → Key insight: Loop flows from hydro exports stress "
+              f"the Hydro→Diesel line even when power flows Hydro→Gas→Diesel")
+    else:
+        print(f"  ⚠ Status: {result_fbmc.get('status')}")
 
     print(f"\n{'=' * 65}")
     print("  Energy markets module complete. Euphemia connection documented.")

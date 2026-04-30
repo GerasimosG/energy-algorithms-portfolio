@@ -8,5 +8,6 @@ as continuous intraday market microstructure (XBID/SPOT).
 
 from energy_markets.pcr_model import PCRModel
 from energy_markets.intraday import simulate_intraday, demo_intraday
+from energy_markets.fbmc import solve_fbmc
 
-__all__ = ["PCRModel", "simulate_intraday", "demo_intraday"]
+__all__ = ["PCRModel", "simulate_intraday", "demo_intraday", "solve_fbmc"]
