@@ -1,0 +1,63 @@
+# ── Virtual environments & package managers ──────────────────────────
+.venv/
+venv/
+env/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# ── Version control ─────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# ── IDE & editor files ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Testing & coverage ──────────────────────────────────────────────
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+*.prof
+
+# ── Notebooks & artifacts ───────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+*.png
+*.jpg
+*.svg
+*.pdf
+outputs/
+plots/
+
+# ── Docker ──────────────────────────────────────────────────────────
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# ── CI/CD ────────────────────────────────────────────────────────────
+.github/
+
+# ── Secrets & config with tokens ────────────────────────────────────
+# Keep config.py out of the image — mount as volume at runtime
+energy_data/config.py
+*.key
+*.pem
+
+# ── OS junk ─────────────────────────────────────────────────────────
+*.log
+*.tmp

@@ -1,5 +1,18 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 10:45 CEST — New features: multi-day coupling, stochastic, ENTSO-E live demo, Docker
+
+**What changed:**
+- **📆 Multi-day coupling** (`energy_markets/multi_day.py`) — Extends FBMC to multiple days with storage carry-over. Battery SoC from day D transfers to day D+1. 8 tests.
+- **🎲 Renewable uncertainty** (`lp_optimization/stochastic.py`) — Monte Carlo wind/solar scenario generation. Scenario UC solver. VSS + EVPI computation. 11 tests.
+- **🔴 ENTSO-E live pipeline** (`energy_data/live_demo.py`) — Fetches real Belgian market data via stored API key. PCR model integrates real prices. Graceful fallback to demo data. 13 tests.
+- **🐳 Dockerfile** — Multi-stage build (builder + runtime). Reproducible environment. Installs all deps from pyproject.toml + optional HiGHS.
+- **📦 .dockerignore** — Excludes venv, pycache, git, IDE files.
+
+**New files:** `energy_markets/multi_day.py`, `lp_optimization/stochastic.py`, `energy_data/live_demo.py`, `Dockerfile`, `.dockerignore`, `tests/test_multi_day.py`, `tests/test_stochastic.py`, `tests/test_live_demo.py`
+**Tests:** 185 → 217 (+32)
+**Git:** Pending push
+
 ## 2026-04-30 10:15 CEST — Knowledge base: 12 files, 3,610 lines across all domains
 
 **What changed:**

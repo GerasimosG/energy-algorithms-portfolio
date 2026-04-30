@@ -299,7 +299,7 @@ max Σ_j(p_j^d · q_j^d · x_j^d) − Σ_i(p_i^s · q_i^s · x_i^s) − Σ_k(p_k
 | Python modules | 18 |
 | Total source files | 35+ |
 | Test files | 10 |
-| Test cases | 185 (all passing) |
+| Test cases | 217 (all passing) |
 | Knowledge base | 12 files, 3,610 lines |
 | Risk metrics | 7 (Sharpe, Sortino, maxDD, Calmar, VaR95, VaR99, Kelly) |
 | Optimization solvers | 2+ (PuLP/CBC, scipy SLSQP, HiGHS/Gurobi/CPLEX configs) |

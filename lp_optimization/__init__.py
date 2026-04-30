@@ -66,6 +66,15 @@ from lp_optimization.invariants import (
     assert_invariants,
 )
 
+# Renewable uncertainty + stochastic programming
+from lp_optimization.stochastic import (
+    generate_wind_scenarios,
+    generate_solar_scenarios,
+    solve_scenario_uc,
+    compute_vss,
+    compute_evpi,
+)
+
 __all__ = [
     # Original exports
     "solve_transportation",
@@ -110,4 +119,10 @@ __all__ = [
     "validate_soc_bounds",
     "validate_power_limits",
     "assert_invariants",
+    # Stochastic
+    "generate_wind_scenarios",
+    "generate_solar_scenarios",
+    "solve_scenario_uc",
+    "compute_vss",
+    "compute_evpi",
 ]
