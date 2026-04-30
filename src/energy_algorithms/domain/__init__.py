@@ -1,11 +1,14 @@
 """Domain layer — pure business logic with no I/O dependencies."""
 from __future__ import annotations
 
-from energy_algorithms.domain import (
-    markets,  # noqa: F401
-    optimization,  # noqa: F401
-    trading,  # noqa: F401
+from energy_algorithms.domain import (  # noqa: F401
+    markets,
+    optimization,
 )
+try:
+    from energy_algorithms.domain import trading  # noqa: F401
+except ImportError:
+    pass
 from energy_algorithms.domain.hooks import (  # noqa: F401
     POST_EXTRACT,
     POST_SOLVE,

@@ -5,8 +5,20 @@ Under 150 lines.
 """
 from __future__ import annotations
 
+import os
+import sys
+
 import numpy as np
-import pandas as pd
+
+# Suppress numpy/pyarrow version mismatch noise from pandas import chain
+_devnull = os.devnull
+_old_stderr = sys.stderr
+with open(_devnull, "w") as _null:
+    sys.stderr = _null
+    try:
+        import pandas as pd
+    finally:
+        sys.stderr = _old_stderr
 
 
 def backtest(

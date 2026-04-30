@@ -19,7 +19,11 @@ from energy_algorithms.adapters.sqlite_store import (
     init_db,
     insert_ohlcv,
 )
-from energy_algorithms.adapters.yfinance_fetcher import fetch_batch, fetch_ticker
+try:
+    from energy_algorithms.adapters.yfinance_fetcher import fetch_batch, fetch_ticker
+except ImportError:
+    fetch_batch = None  # type: ignore[assignment]
+    fetch_ticker = None  # type: ignore[assignment]
 
 __all__ = [
     "PuLPSolverAdapter",

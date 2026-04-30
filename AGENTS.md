@@ -1,8 +1,25 @@
 # AGENTS.md — Energy Algorithms
 
 **Repo:** `git@github.com:GerasimosG/Energy_Algorithms.git`
-**Purpose:** Public portfolio for Euphemia   Junior Optimization Engineer & energy/quant roles
-**Design target:** Beat pomato, PyPSA, energy-py-linear in architecture, tests, and documentation
+**Purpose:** Public portfolio targeting **Euphemia   Junior Optimization Engineer** and **Industry power market/optimization** roles only. Stock trading is out of scope.
+**Design target:** Beat pomato, PyPSA, energy-py-linear in architecture, tests, and documentation for energy market coupling (Euphemia/PCR, FBMC) and LP/MIP optimization (unit commitment, storage, portfolios).
+
+---
+
+## Skill-Aware Operation (MANDATORY)
+
+Before every user request:
+1. Scan `~/.config/opencode/skills/*/SKILL.md` for skills relevant to the request
+2. Find the best-matching skill by name or description
+3. Load that skill via the `skill` tool and follow its instructions
+4. If no skill matches, proceed normally
+
+```bash
+# List available skills
+ls ~/.config/opencode/skills/
+# Search by keyword
+ls ~/.config/opencode/skills/ | grep <keyword>
+```
 
 ---
 
@@ -18,7 +35,8 @@ intraday order books. This differentiates it from generic quant repos.
 **Target audiences:**
 - **Euphemia  ** — Euphemia algorithm (Pan-European market coupling)
 - **Industry** — Power market optimization, portfolio management
-- **Quant finance** — Backtesting, risk metrics, signal strategies
+
+**Out of scope:** Stock/crypto trading, generic quant finance. This repo is for energy market professionals.
 
 **Competitor strategy:** Identify gaps in existing frameworks (pomato, PyPSA, energy-py-linear),
 prioritize by impact (P1 > P2 > P3), implement with tests + docs simultaneously.
@@ -74,6 +92,67 @@ Energy_Algorithms/
 3. **Adapters** — implement ports. May import domain for type hints. **May do I/O.**
 4. **Application** — orchestrates domain + ports + adapters. Entry points for use cases.
 5. **Infrastructure** — backward-compat re-exports. New code imports from `domain/` directly.
+
+---
+
+## Coding Standards (Production-Grade)
+
+### Language Defaults
+- Default to Python unless the task clearly requires another language.
+
+### Maintainability
+- Production-ready code only: robust, maintainable, suitable for portfolio use, Python best practices.
+- Handle errors and edge cases explicitly — never silently swallow exceptions.
+- Prefer explicit code over clever one-liners.
+- Comment non-obvious math, indexing, and assumptions (especially optimization constraints, PTDF/LODF math, surplus calculations).
+- Minimal global state (except the intentional OPTIONS dict).
+- Avoid hidden coupling: pass dependencies explicitly (solver, config, logger).
+- Keep interfaces stable; add new files instead of breaking legacy behavior.
+
+### Repo-Style Consistency
+- Match local repo style (formatting, naming, typing usage, error-handling patterns).
+- Inline single-use helpers when reasonable; avoid redundant checks already guaranteed by callers.
+
+### Naming
+- Do NOT prefix helper functions with `_` (this repo uses `_` internally for private helpers; match existing convention).
+- Use descriptive names with underscores between words (snake_case).
+
+### Determinism & Reproducibility
+- Set seeds for all stochastic tests (`random_seed` or `numpy.random.seed()`).
+- Log key package versions in CI/README.
+- Include git commit hash in run reports when relevant.
+
+### Fail-Fast & Error Handling
+- Never silently swallow exceptions. If catching, log and re-raise unless there's an explicitly defined safe fallback (e.g., ENTSO-E fallback to demo data, solver fallback to CBC).
+- Fail fast on NaN/Inf in optimization results — validate invariants post-solve.
+- Prefer explicit validation checks at module boundaries.
+
+### Error Avoidance (Lessons Learned)
+- When you make an error, update AGENTS.md so it's not repeated.
+- **Synthetic data fallback**: Always try real data (yfinance, ENTSO-E, SQLite) before falling back to synthetic. Synthetic must be clearly labeled as `[WARN]`.
+- **Grid search for strategy params**: Fixed-param strategies may lose on recent data. Grid-search over parameter ranges to demonstrate profitability.
+- **Suppress known library noise**: Wrap import of libraries with known version-mismatch stderr noise (e.g., numpy/pyarrow) in stderr-redirect to keep output clean.
+- **Plots directory**: Generated plots go to `src/energy_algorithms/notebooks/plots/` and are excluded from git via `**/plots/` in `.gitignore`.
+
+### RAM & Performance Discipline
+- Monitor memory during bulk operations (large yfinance fetches, grid searches over many param combinations).
+- Limit grid search to at most ~30 backtests per demo to stay under 500MB RSS.
+- Vectorized operations only (numpy/pandas) — no Python loops over price data.
+- Close SQLite connections promptly after reads/writes.
+
+### Skill Selection by Task (MANDATORY)
+- Announce selected skills in one short line before implementation work.
+- Use the minimal skill set that covers the task.
+- **Solver bug, NaN, or crash**: use `@systematic-debugging`, then `@requesting-code-review` before closeout.
+- **Architecture changes**: use `@software-architecture` + `@clean-code`.
+- **Multi-file refactors or interface changes**: use `@plan-writing` before edits.
+- **Performance work**: use `@performance-profiling` before and after optimization.
+- **Test regressions**: use `@test-fixing`, or `@test-driven-development` when adding new behavior.
+- **Results analysis / post-processing**: use `@jupyter-notebook` and `@spreadsheet`.
+- **Markdown/docs updates**: use `@writing-skills`.
+- **Final completion gate**: use `@verification-before-completion` and `@finishing-a-development-branch`.
+- **Prompt engineering**: use `@prompt-engineering` + `@prompt-engineer` for writing efficient prompts.
+- **Code review**: use `@requesting-code-review` when reviewing code.
 
 ---
 

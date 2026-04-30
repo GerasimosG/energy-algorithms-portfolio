@@ -4,9 +4,19 @@ Handles rate limits with polite delays.
 """
 from __future__ import annotations
 
+import os
+import sys
 import time
 
-import yfinance as yf
+# Suppress numpy/pyarrow version mismatch noise from yfinance's import chain
+_devnull = os.devnull
+_old_stderr = sys.stderr
+with open(_devnull, "w") as _null:
+    sys.stderr = _null
+    try:
+        import yfinance as yf
+    finally:
+        sys.stderr = _old_stderr
 
 
 def fetch_ticker(
