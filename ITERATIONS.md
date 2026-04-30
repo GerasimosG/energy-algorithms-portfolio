@@ -1,5 +1,22 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-04-30 08:45 CEST — P1: FBMC flow-based coupling + ENTSO-E API config
+
+**What changed:**
+- **📡 FBMC flow-based coupling** (`energy_markets/fbmc.py`) — New module implementing Flow-Based Market Coupling with PTDF matrix constraints. The real algorithm Euphemia uses for Pan-European market coupling (upgrade from ATC):
+  - PTDF-based flow constraints: `flow_l = Σ(PTDF[l,n] · net_position[n])` constrained by RAM
+  - Captures loop flows that ATC cannot model
+  - 3-zone triangle demo shows binding Hydro_Gas line (100%) and loop flow on Hydro_Diesel
+  - Input validation: PTDF row sum ≈ 0, shape matching, non-negative RAM
+  - Follows standard solve chain (formulate → solve → validate → extract)
+- **🔑 ENTSO-E API key** (`energy_data/config.py`) — Stored API token for live data access. Exported via `energy_data.__init__`.
+- **📋 11 new FBMC tests** — 2-zone simple/binding, 3-zone loop/binding, zero RAM, zero demand, order invariance, 5 validation edge cases
+- **demo.py** — Section 6 now includes FBMC demo with formatted output
+
+**New files:** `energy_markets/fbmc.py`, `energy_data/config.py`, `tests/test_fbmc.py`
+**Tests:** 40 → 51 (+11)
+**Git:** Pushed to `GerasimosG/Energy_Algorithms` (private) (`76fb9b9`)
+
 ## 2026-04-30 01:40 CEST — Framework documentation, competitor gap analysis, auto-update
 
 **What changed:**

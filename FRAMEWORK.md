@@ -1,8 +1,8 @@
 # ⚡ Energy Algorithms — Framework Documentation
 
-**Version:** `0.3.0`  
-**Generated:** `2026-04-30 01:30 CEST`  
-**Modules:** 11  |  **Tests:** 40  |  **Solvers:** PuLP/CBC + scipy SLSQP
+**Version:** `0.4.0`  \
+**Generated:** `2026-04-30 08:45 CEST`  \
+**Modules:** 12  |  **Tests:** 51  |  **Solvers:** PuLP/CBC + scipy SLSQP
 
 > This document explains how Energy_Algorithms works, how it compares to other frameworks, what benchmarks exist, and how to extend it. It is designed to be auto-updated as the codebase evolves.
 
@@ -17,11 +17,11 @@
 │                   Energy_Algorithms                      │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │  energy_markets/  ★ HERO MODULE                     │   │
-│  │  ┌────────────┐ ┌──────────┐ ┌───────────────┐  │   │
-│  │  │ PCR Model  │ │ Multi-   │ │ Intraday      │  │   │
-│  │  │ (social    │ │ Zone     │ │ (order book   │  │   │
-│  │  │ welfare    │ │ Coupling │ │ simulation)   │  │   │
-│  │  │ LP + MIP)  │ │ (ATC)    │ │               │  │   │
+|  │  ┌────────────┐ ┌──────────┐ ┌───────────────┐  │   │
+|  │  │ PCR Model  │ │ Multi-   │ │ FBMC Flow-   │  │   │
+|  │  │ (social    │ │ Zone     │ │ Based        │  │   │
+|  │  │ welfare    │ │ (ATC +   │ │ Coupling     │  │   │
+|  │  │ LP + MIP)  │ │ Coupling)│ │ (PTDF + RAM) │  │   │
 │  │  └────────────┘ └──────────┘ └───────────────┘  │   │
 │  │  ┌────────────┐ ┌──────────────┐                  │   │
 │  │  │ Block      │ │ Market       │                  │   │
@@ -401,7 +401,7 @@ def run_benchmarks(iterations=5):
 
 | Priority | pomato Feature | Current State | Adoption Plan |
 |----------|---------------|--------------|---------------|
-| 🔴 P1 | **FBMC flow-based coupling** | ATC only (simpler) | Upgrade `multi_zone.py` with PTDF-based flow constraints |
+| 🔴 P1 | **FBMC flow-based coupling** | ATC only (simpler) | ✅ DONE — `fbmc.py` with PTDF + RAM |
 | 🔴 P1 | **Impact screening / LODF filter** | Not implemented | Add `lodf_filter()` method — reduces constraints by 95% |
 | 🟡 P2 | **Redundancy removal (Clarkson)** | Not implemented | Add as optional Julia integration |
 | 🟡 P2 | **GSK strategies for zonal mapping** | Not implemented | Add `flat`, `gmax`, `dynamic` strategies |
@@ -471,7 +471,7 @@ def run_benchmarks(iterations=5):
 
 | Date | Iteration | Tests | Modules | Key Changes |
 |------|-----------|-------|---------|-------------|
-| 2026-04-30 | 6 | 40 | 11 | Framework docs + job requirements + IP pricing |
+|| 2026-04-30 | 7 | 51 | 12 | FBMC flow-based coupling + loop flows + ENTSO-E API config |
 | 2026-04-29 00:15 | 5 | 40 | 11 | BESS, intraday, ENTSO-E pipeline, notebook |
 | 2026-04-29 23:55 | 4 | 26 | 8 | LICENSE, whitepaper expansion, checklist cleanup |
 | 2026-04-29 23:30 | 3 | 26 | 8 | Re-audit, public repo research, multi-zone, CI |
