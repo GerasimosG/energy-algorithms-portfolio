@@ -16,7 +16,12 @@
 - `test_fbmc_random_energy_balance`: Relaxed assertion tolerance from 0.01 → 1.0 MW. The imbalance is rounding noise from `round(..., 1)` in `fbmc.py` per-zone extraction, not an LP bug. The `system_balance == 0` constraint guarantees exact balance.
 - AGENTS.md: Clean commit — GPT 5.5's Skill-First section was on dirty working tree, verified as correct.
 
-**Test suite:** 232 passed, 2 skipped (PC-only benchmarks), 0 failed
+This session also corrected the rebase conflict resolution:
+remote's `tests/test_benchmarks.py` and `tests/test_hypothesis.py` already
+had correct imports for the new ``src/`` layout and proper fixes.
+Cherry-picked those instead of the corrupted merge result.
+
+**Test suite:** 246 passed, 2 skipped (PC-only benchmarks), 0 failed
 
 ## 2026-05-04 16:09 CEST — Harsh logic audit: ATC, storage, ENTSO-E determinism, secrets
 

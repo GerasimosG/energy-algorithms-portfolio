@@ -84,7 +84,7 @@ Energy_Algorithms/
 │           ├── options.py          #   Identical copy; domain/options.py is canonical
 │           ├── metadata.py         #   Model introspection (VariableRegistry, ModelMetadata)
 │           └── solver_config.py    #   Solver-agnostic factory (CBC, HiGHS, Gurobi, CPLEX)
-├── tests/                          # Unit tests (pytest, 232 tests, 2 PC-only skipped)
+├── tests/                          # Unit tests (pytest, 246 tests, 2 PC-only skipped)
 ├── knowledge/                      # Theory, Q&A, interview prep, competitor analysis
 ├── notebooks/                      # Jupyter walkthrough (24-cell Euphemia   interview tour)
 ├── scripts/                        # update_framework_metrics.sh
@@ -118,7 +118,7 @@ Energy_Algorithms/
 
 - `tests/test_benchmarks.py` — 11 stress tests (9 PC-only, 2 Pi-friendly)
 - `tests/test_hypothesis.py` — 4 property-based tests (1 requires hypothesis)
-- **Tests:** 232 passed, 2 skipped (PC-only), 0 failed
+- **Tests:** 246 passed, 2 skipped (PC-only), 0 failed
 
 ---
 
