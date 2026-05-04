@@ -8,12 +8,12 @@
 - **📡 ENTSO-E generation aggregation fixed** — duplicate production-type time series are aggregated before computing generation shares and building PCR supply orders. This prevents share totals below 100% and duplicate order IDs overwriting dispatch results.
 - **🔐 Tracked ENTSO-E token removed** — `config.py` now reads `ENTSOE_API_KEY` from the environment only. Demo tests run offline by default, so the public portfolio no longer depends on local credentials.
 - **🧪 Regression coverage added** — new tests cover reverse ATC flow, multi-day reverse flow, real storage shifting, duplicate ENTSO-E generation types, and env-only credential loading.
+- **📓 Notebook repaired** — `notebooks/walkthrough.ipynb` now imports the `energy_algorithms` package layout and parses/lints under the repo's Python 3.11 target.
 - **📚 Docs synced** — README, AGENTS, and ENTSO-E knowledge docs now describe env-driven API config and 246 passing tests.
 
 **Tests:** 246 passed, 2 skipped, 60.44% coverage ✅
-**Ruff:** `ruff check src tests` clean ✅
-**Known residual:** `ruff check .` still fails on pre-existing notebook syntax/style issues in `notebooks/walkthrough.ipynb`; not introduced by this audit.
-**Git:** Pushed to main (`25fd548`)
+**Ruff:** `ruff check .` clean ✅
+**Git:** Pushed to main (2026-05-04 audit commits)
 
 ## 2026-04-30 18:30 CEST — All gaps resolved: repo reaches 10/10
 
