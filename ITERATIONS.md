@@ -13,7 +13,7 @@
 **Tests:** 246 passed, 2 skipped, 60.44% coverage ✅
 **Ruff:** `ruff check src tests` clean ✅
 **Known residual:** `ruff check .` still fails on pre-existing notebook syntax/style issues in `notebooks/walkthrough.ipynb`; not introduced by this audit.
-**Git:** Pending push
+**Git:** Pushed to main (`25fd548`)
 
 ## 2026-04-30 18:30 CEST — All gaps resolved: repo reaches 10/10
 
