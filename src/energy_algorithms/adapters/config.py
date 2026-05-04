@@ -1,13 +1,14 @@
 """ENTSO-E API configuration.
 
-The API token is stored here as a convenience for demo and development use.
-This is a personal token — treat it like a password.
-Register at: https://transparency.entsoe.eu → My Account → Web API
+Live data access is enabled by setting ``ENTSOE_API_KEY`` in the
+environment. Without it, demos fall back to offline data.
 """
 from __future__ import annotations
 
-# ENTSO-E Transparency Platform API security token
-ENTSOE_API_KEY = "88a738a7-a53f-4e05-a4d6-8acc88ab4c39"
+import os
+
+# ENTSO-E Transparency Platform API security token.
+ENTSOE_API_KEY = os.getenv("ENTSOE_API_KEY", "").strip()
 
 # Default bidding zone for demos
 DEFAULT_AREA_CODE = "10YBE----------2"  # Belgium

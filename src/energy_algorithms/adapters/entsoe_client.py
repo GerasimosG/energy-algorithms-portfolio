@@ -346,8 +346,7 @@ class EntsoeClient:
         # ---- Actual generation mix -----------------------------------
         elif document_type == DOC_ACTUAL_GENERATION:
             gen_ns = {"ns": "urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0"}
-            generation = []
-            total_mw = 0.0
+            generation_by_type: dict[str, dict[str, Any]] = {}
 
             for ts in root.findall(".//ns:TimeSeries", gen_ns):
                 psr_elem = ts.find(".//ns:MktPSRType/ns:psrType", gen_ns)
@@ -363,20 +362,26 @@ class EntsoeClient:
 
                 avg_mw = round(sum(values) / len(values), 1) if values else 0.0
                 if avg_mw > 0:
-                    generation.append({
-                        "type": gen_type,
-                        "mw": avg_mw,
-                        "psr_code": psr_code,
-                    })
-                    total_mw += avg_mw
+                    if gen_type not in generation_by_type:
+                        generation_by_type[gen_type] = {
+                            "type": gen_type,
+                            "mw": 0.0,
+                            "psr_code": psr_code,
+                        }
+                    generation_by_type[gen_type]["mw"] += avg_mw
 
+            generation = [
+                {**source, "mw": round(float(source["mw"]), 1)}
+                for source in generation_by_type.values()
+            ]
             generation.sort(key=lambda g: g["mw"], reverse=True)
+            total_mw = round(sum(g["mw"] for g in generation), 1)
             return {
                 "status": "ok",
                 "area": area,
                 "date": date,
                 "generation": generation,
-                "total_mw": round(total_mw, 1),
+                "total_mw": total_mw,
             }
 
         # ---- Load forecast --------------------------------------------

@@ -6,8 +6,7 @@ handles edge cases gracefully.
 """
 from __future__ import annotations
 
-# Do NOT clear ENTSOE_API_KEY from env — key is in config.py
-# Tests work with both live and demo data
+import importlib
 
 
 def test_demo_live_pipeline_returns_valid_dict():
@@ -85,6 +84,49 @@ def test_demo_live_pipeline_generation_shares_sum_to_100():
         f"Shares sum to {total_share}%, expected ~100%"
 
 
+def test_live_pipeline_aggregates_duplicate_generation_types(monkeypatch):
+    """Duplicate PSR time series should not overwrite shares or supply orders."""
+    from energy_algorithms.application import live_pipeline
+
+    prices = {
+        "status": "ok",
+        "area": "10YBE----------2",
+        "date": "2024-03-15",
+        "prices": [
+            {"hour": 1, "price_eur_mwh": 200.0},
+            {"hour": 2, "price_eur_mwh": 200.0},
+            {"hour": 3, "price_eur_mwh": 200.0},
+        ],
+        "avg_price": 200.0,
+    }
+    generation = {
+        "status": "ok",
+        "area": "10YBE----------2",
+        "date": "2024-03-15",
+        "generation": [
+            {"type": "Hydro Pumped Storage", "mw": 40.0, "psr_code": "B10"},
+            {"type": "Hydro Pumped Storage", "mw": 60.0, "psr_code": "B10"},
+        ],
+        "total_mw": 100.0,
+    }
+
+    def fake_fetch_live(api_key, area, date):
+        return {
+            "success": True,
+            "prices": prices,
+            "generation": generation,
+            "live": True,
+        }
+
+    monkeypatch.setattr(live_pipeline, "_try_fetch_live", fake_fetch_live)
+    monkeypatch.setattr(live_pipeline, "_print_report", lambda **kwargs: None)
+
+    result = live_pipeline.demo_live_pipeline()
+
+    assert result["generation_shares"] == {"Hydro Pumped Storage": 100.0}
+    assert result["model_result"]["orders"]["supply"]["Hydro Pumped Storage"]["qty"] == 100.0
+
+
 def test_demo_live_pipeline_model_mcp_is_positive():
     """Market clearing price should be positive."""
     from energy_algorithms.application.live_pipeline import demo_live_pipeline
@@ -102,6 +144,17 @@ def test_demo_live_pipeline_price_diff_is_finite():
     diff = result["price_diff_pct"]
     assert isinstance(diff, (int, float))
     assert abs(diff) < 1000  # Shouldn't be absurdly large
+
+
+def test_entsoe_api_key_defaults_to_environment_only(monkeypatch):
+    """Tracked config must not contain a baked-in personal ENTSO-E token."""
+    monkeypatch.delenv("ENTSOE_API_KEY", raising=False)
+
+    import energy_algorithms.adapters.config as config
+
+    reloaded = importlib.reload(config)
+
+    assert reloaded.ENTSOE_API_KEY == ""
 
 
 # ── Edge-case tests (always use demo data) ──────────────────────────

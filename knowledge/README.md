@@ -64,7 +64,7 @@ Orders → Welfare Maximization (MIP) → IP Pricing → Market Results
 - CBC struggles beyond ~100K variables; Gurobi handles millions
 - A full day's day-ahead market costs billions in cleared volume
 - Belgian nuclear baseload is ~4.8 GW
-- ENTSO-E API token required for live data (stored in `energy_data/config.py`)
+- ENTSO-E API token required for live data (`ENTSOE_API_KEY` environment variable)
 
 ---
 

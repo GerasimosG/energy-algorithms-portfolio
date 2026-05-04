@@ -1,5 +1,20 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-04 16:09 CEST — Harsh logic audit: ATC, storage, ENTSO-E determinism, secrets
+
+**What changed:**
+- **🔁 Bidirectional ATC fixed** — `multi_zone.py` and `multi_day.py` now model each ATC corridor as one signed flow variable. A single pair such as `("A", "B")` allows both `A→B` and `B→A`, matching the documented Euphemia-style coupling convention.
+- **🔋 Multi-day storage made physical** — storage is now connected to a zone balance (default zone 0), so charge/discharge actually shifts energy across days instead of being neutralized by separate global and zonal balances.
+- **📡 ENTSO-E generation aggregation fixed** — duplicate production-type time series are aggregated before computing generation shares and building PCR supply orders. This prevents share totals below 100% and duplicate order IDs overwriting dispatch results.
+- **🔐 Tracked ENTSO-E token removed** — `config.py` now reads `ENTSOE_API_KEY` from the environment only. Demo tests run offline by default, so the public portfolio no longer depends on local credentials.
+- **🧪 Regression coverage added** — new tests cover reverse ATC flow, multi-day reverse flow, real storage shifting, duplicate ENTSO-E generation types, and env-only credential loading.
+- **📚 Docs synced** — README, AGENTS, and ENTSO-E knowledge docs now describe env-driven API config and 246 passing tests.
+
+**Tests:** 246 passed, 2 skipped, 60.44% coverage ✅
+**Ruff:** `ruff check src tests` clean ✅
+**Known residual:** `ruff check .` still fails on pre-existing notebook syntax/style issues in `notebooks/walkthrough.ipynb`; not introduced by this audit.
+**Git:** Pending push
+
 ## 2026-04-30 18:30 CEST — All gaps resolved: repo reaches 10/10
 
 **What changed:**

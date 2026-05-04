@@ -54,11 +54,30 @@ def solve_multi_zone(
         s_vars[zi] = {si: pulp.LpVariable(f"s_z{zi}_{si}", 0, 1) for si in range(Ns)}
         d_vars[zi] = {di: pulp.LpVariable(f"d_z{zi}_{di}", 0, 1) for di in range(Nd)}
 
-    # Flow variables (only for pairs with ATC)
-    atc_pairs = set()
+    # Flow variables (one signed variable per bidirectional ATC corridor).
+    # Positive value follows the tuple direction; negative value is reverse flow.
+    atc_pairs = {}
+    zone_set = set(zone_names)
     for (a, b), cap in atc.items():
-        flows[(a, b)] = pulp.LpVariable(f"flow_{a}_to_{b}", lowBound=0, upBound=cap)
-        atc_pairs.add((a, b))
+        if a not in zone_set or b not in zone_set:
+            raise ValueError(f"ATC pair ({a}, {b}) references an unknown zone")
+        if a == b:
+            raise ValueError("ATC pair endpoints must be different zones")
+        if cap < 0:
+            raise ValueError(f"ATC capacity must be non-negative, got {cap}")
+
+        corridor = tuple(sorted((a, b)))
+        if corridor in atc_pairs:
+            _, _, prev_cap = atc_pairs[corridor]
+            if cap != prev_cap:
+                raise ValueError(
+                    f"Duplicate ATC corridor {corridor} has conflicting "
+                    f"capacities: {prev_cap} and {cap}"
+                )
+            continue
+
+        flows[(a, b)] = pulp.LpVariable(f"flow_{a}_to_{b}", lowBound=-cap, upBound=cap)
+        atc_pairs[corridor] = (a, b, cap)
 
     # ---- Objective: sum of social welfare across all zones ----
     welfare = 0
@@ -85,18 +104,15 @@ def solve_multi_zone(
             z["demand"][di]["qty"] * d_vars[zi][di]
             for di in range(len(z["demand"]))
         )
-        # Net exports = outflows - inflows
-        exports = pulp.lpSum(
-            flows.get((zone_names[zi], zj), 0)
-            for zj in zone_names
-            if (zone_names[zi], zj) in atc_pairs
+        # Net exports are positive when power leaves the zone. A signed flow
+        # variable contributes positively to its tuple source and negatively
+        # to its tuple sink.
+        net_exports = pulp.lpSum(
+            var if a == zone_names[zi] else -var
+            for (a, b), var in flows.items()
+            if zone_names[zi] in (a, b)
         )
-        imports = pulp.lpSum(
-            flows.get((zj, zone_names[zi]), 0)
-            for zj in zone_names
-            if (zj, zone_names[zi]) in atc_pairs
-        )
-        prob += supply_qty + imports == demand_qty + exports, f"balance_{zone_names[zi]}"
+        prob += supply_qty == demand_qty + net_exports, f"balance_{zone_names[zi]}"
 
     # ---- Solve ----
     prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
@@ -109,8 +125,12 @@ def solve_multi_zone(
     flow_results = {}
     for (a, b), var in flows.items():
         val = pulp.value(var)
+        if val is None:
+            continue
         if val > 0.01:
             flow_results[f"{a}→{b}"] = round(val, 1)
+        elif val < -0.01:
+            flow_results[f"{b}→{a}"] = round(abs(val), 1)
 
     zone_results = {}
     for zi in range(Z):

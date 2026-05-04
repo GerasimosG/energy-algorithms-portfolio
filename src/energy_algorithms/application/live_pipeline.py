@@ -88,8 +88,36 @@ def _try_fetch_live(api_key: str, area: str, date: str) -> dict[str, Any]:
     return {
         "success": True,
         "prices": prices_result,
-        "generation": gen_result,
+        "generation": _aggregate_generation_data(gen_result),
         "live": True,
+    }
+
+
+def _aggregate_generation_data(gen_data: dict[str, Any]) -> dict[str, Any]:
+    """Aggregate repeated ENTSO-E generation time series by production type."""
+    by_type: dict[str, dict[str, Any]] = {}
+
+    for source in gen_data.get("generation", []):
+        gen_type = source["type"]
+        if gen_type not in by_type:
+            by_type[gen_type] = {
+                "type": gen_type,
+                "mw": 0.0,
+                "psr_code": source.get("psr_code"),
+            }
+        by_type[gen_type]["mw"] += float(source.get("mw", 0.0))
+
+    generation = [
+        {**source, "mw": round(float(source["mw"]), 1)}
+        for source in by_type.values()
+        if float(source["mw"]) > 0
+    ]
+    generation.sort(key=lambda source: source["mw"], reverse=True)
+
+    return {
+        **gen_data,
+        "generation": generation,
+        "total_mw": round(sum(source["mw"] for source in generation), 1),
     }
 
 
@@ -117,6 +145,7 @@ def _build_pcr_model(prices_data: dict, gen_data: dict, area: str) -> PCRModel:
     PCRModel instance with orders populated.
     """
     model = PCRModel(area=area)
+    gen_data = _aggregate_generation_data(gen_data)
 
     # ── Supply: one order per generation type ────────────────────────
     for g in gen_data["generation"]:
@@ -224,7 +253,7 @@ def demo_live_pipeline() -> dict[str, Any]:
     except Exception:
         # Graceful fallback to demo data
         prices_data = fetch_demo_day_ahead()
-        gen_data = fetch_demo_generation_mix()
+        gen_data = _aggregate_generation_data(fetch_demo_generation_mix())
         date = prices_data.get("date", date)
 
     # ═══════════════════════════════════════════════════════════════
@@ -244,6 +273,7 @@ def demo_live_pipeline() -> dict[str, Any]:
     # ═══════════════════════════════════════════════════════════════
     # Step 4 — Generation shares
     # ═══════════════════════════════════════════════════════════════
+    gen_data = _aggregate_generation_data(gen_data)
     total_mw = gen_data.get("total_mw", 0)
     generation_shares: dict[str, float] = {}
     for g in gen_data.get("generation", []):
@@ -374,7 +404,7 @@ def _print_report(
     print("=" * 68)
     if not live:
         print("  ⚠ Running with demo data — set ENTSOE_API_KEY in")
-        print("    energy_data/config.py for live ENTSO-E data.")
+        print("    the environment for live ENTSO-E data.")
     print("=" * 68)
     print()
 

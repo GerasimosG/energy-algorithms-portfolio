@@ -108,6 +108,32 @@ def test_no_storage_independent_days():
     # Per-day results exist
     assert len(result["per_day"]) == 2
 
+
+def test_single_atc_pair_allows_reverse_flow_without_storage():
+    """Multi-day ATC uses the same bidirectional corridor convention as multi-zone."""
+    zones_per_day = [
+        [
+            {
+                "name": "A",
+                "supply": [{"price": 100, "qty": 100}],
+                "demand": [{"price": 150, "qty": 100}],
+            },
+            {
+                "name": "B",
+                "supply": [{"price": 10, "qty": 100}],
+                "demand": [{"price": 20, "qty": 100}],
+            },
+        ],
+    ]
+
+    result = solve_multi_day(zones_per_day, [{(0, 1): 100}], storage_config=None, horizon_days=1)
+
+    assert result["status"] == "Optimal"
+    assert result["per_day"][0]["flows"] == {"B→A": 100.0}
+    assert result["per_day"][0]["zones"]["A"]["supply_cleared_mw"] == 0.0
+    assert result["per_day"][0]["zones"]["A"]["demand_cleared_mw"] == 100.0
+    assert result["per_day"][0]["zones"]["B"]["supply_cleared_mw"] == 100.0
+
 # ── 3. Storage SoC carry-over ─────────────────────────────────────
 
 def test_storage_soc_carryover():
@@ -153,6 +179,40 @@ def test_storage_soc_carryover():
     assert abs(end_day0 - start_day1) < 0.01, (
         f"Carry-over failed: day0 end={end_day0}, day1 start={start_day1}"
     )
+
+
+def test_storage_actually_shifts_energy_across_days():
+    """Storage should charge on a cheap surplus day and discharge on a scarce day."""
+    zones_per_day = [
+        [
+            {
+                "name": "Hub",
+                "supply": [{"price": 5, "qty": 200}],
+                "demand": [{"price": 100, "qty": 100}],
+            },
+        ],
+        [
+            {
+                "name": "Hub",
+                "supply": [],
+                "demand": [{"price": 100, "qty": 40}],
+            },
+        ],
+    ]
+    storage_config = {
+        "capacity": 50.0,
+        "max_power": 50.0,
+        "eff_in": 1.0,
+        "eff_out": 1.0,
+        "initial_soc": 0.0,
+    }
+
+    result = solve_multi_day(zones_per_day, [{}, {}], storage_config, horizon_days=2)
+
+    assert result["status"] == "Optimal"
+    assert result["storage_schedule"]["day_0"][0]["charge"] == 40.0
+    assert result["storage_schedule"]["day_1"][0]["discharge"] == 40.0
+    assert result["total_energy_shifted"] == 40.0
 
 # ── 4. Infeasible storage configuration ───────────────────────────
 

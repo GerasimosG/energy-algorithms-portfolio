@@ -26,7 +26,7 @@ The ENTSO-E Transparency Platform is a REST API providing near-real-time electri
 ### API Access
 
 **Registration:** https://transparency.entsoe.eu
-**API Key Format:** UUID (stored in `energy_data/config.py`)
+**API Key Format:** UUID (provided via the `ENTSOE_API_KEY` environment variable)
 **Rate Limits:** ~100 requests/minute for personal use
 **Format:** XML responses
 

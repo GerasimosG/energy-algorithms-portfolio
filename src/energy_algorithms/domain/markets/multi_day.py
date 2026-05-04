@@ -61,6 +61,8 @@ def solve_multi_day(
         - ``"eff_in"`` — charging efficiency, fraction ∈ (0, 1]
         - ``"eff_out"`` — discharging efficiency, fraction ∈ (0, 1]
         - ``"initial_soc"`` — MWh at start of day 0
+        - ``"zone"`` — optional zone index where storage is connected
+          on each day; defaults to 0
 
         If ``None``, no storage is modelled (pure per-day coupling).
     horizon_days : int
@@ -117,6 +119,7 @@ def solve_multi_day(
         eta_in = storage_config["eff_in"]
         eta_out = storage_config["eff_out"]
         initial_soc = storage_config["initial_soc"]
+        storage_zone = int(storage_config.get("zone", 0))
 
         for d in range(horizon_days):
             soc_in.append(
@@ -162,17 +165,34 @@ def solve_multi_day(
         Z = len(zones)
         znames = [z["name"] for z in zones]
 
-        # Flow variables (only for ATC pairs)
+        # Flow variables (one signed variable per bidirectional ATC corridor).
         atc_dict = atc_per_day[d]
         flows = {}
-        pairs = set()
+        pairs = {}
         for (i, j), cap in atc_dict.items():
+            if i < 0 or j < 0 or i >= Z or j >= Z:
+                raise ValueError(f"ATC pair ({i}, {j}) references an unknown zone")
+            if i == j:
+                raise ValueError("ATC pair endpoints must be different zones")
+            if cap < 0:
+                raise ValueError(f"ATC capacity must be non-negative, got {cap}")
+
+            corridor = tuple(sorted((i, j)))
+            if corridor in pairs:
+                _, _, prev_cap = pairs[corridor]
+                if cap != prev_cap:
+                    raise ValueError(
+                        f"Duplicate ATC corridor {corridor} has conflicting "
+                        f"capacities: {prev_cap} and {cap}"
+                    )
+                continue
+
             flows[(i, j)] = pulp.LpVariable(
                 f"flow_d{d}_{znames[i]}_to_{znames[j]}",
-                lowBound=0,
+                lowBound=-cap,
                 upBound=cap,
             )
-            pairs.add((i, j))
+            pairs[corridor] = (i, j, cap)
 
         # Acceptance fraction variables
         s_frac = {}
@@ -206,6 +226,11 @@ def solve_multi_day(
             )
 
         # Per-zone energy balance
+        if has_storage and storage_zone >= Z:
+            raise ValueError(
+                f"storage zone {storage_zone} is invalid for day {d} "
+                f"with {Z} zones"
+            )
         for zi in range(Z):
             supply_qty = pulp.lpSum(
                 zones[zi]["supply"][si]["qty"] * s_frac[zi][si]
@@ -215,14 +240,18 @@ def solve_multi_day(
                 zones[zi]["demand"][di]["qty"] * d_frac[zi][di]
                 for di in range(len(zones[zi]["demand"]))
             )
-            exports = pulp.lpSum(
-                flows.get((zi, zj), 0) for zj in range(Z) if (zi, zj) in pairs
+            net_exports = pulp.lpSum(
+                var if i == zi else -var
+                for (i, j), var in flows.items()
+                if zi in (i, j)
             )
-            imports = pulp.lpSum(
-                flows.get((zj, zi), 0) for zj in range(Z) if (zj, zi) in pairs
+            storage_injection = (
+                discharge_day[d] - charge_day[d]
+                if has_storage and zi == storage_zone
+                else 0
             )
             prob += (
-                supply_qty + imports == demand_qty + exports,
+                supply_qty + storage_injection == demand_qty + net_exports,
                 f"balance_d{d}_{znames[zi]}",
             )
 
@@ -274,8 +303,12 @@ def solve_multi_day(
         flow_results = {}
         for (i, j), var in flows.items():
             val = pulp.value(var)
-            if val is not None and val > 0.01:
+            if val is None:
+                continue
+            if val > 0.01:
                 flow_results[f"{znames[i]}→{znames[j]}"] = round(val, 1)
+            elif val < -0.01:
+                flow_results[f"{znames[j]}→{znames[i]}"] = round(abs(val), 1)
 
         zone_results = {}
         for zi in range(len(zones)):

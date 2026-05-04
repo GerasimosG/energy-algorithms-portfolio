@@ -63,7 +63,7 @@ Energy_Algorithms/
 │       │   ├── entsoe_client.py    #   ENTSO-E Transparency Platform REST client
 │       │   ├── yfinance_fetcher.py #   Yahoo Finance data fetcher
 │       │   ├── sqlite_store.py     #   SQLite persistence adapter
-│       │   └── config.py           #   App config (API keys, ENTSOE_TOKEN)
+│       │   └── config.py           #   App config (ENTSOE_API_KEY env lookup)
 │       ├── application/            # Use-case orchestrators — wires domain + adapters
 │       │   ├── live_pipeline.py    #   ENTSO-E live data → PCR market clearing
 │       │   ├── live_backtest.py    #   Live market data → backtest
@@ -130,6 +130,9 @@ Energy_Algorithms/
 ### Error Avoidance (Lessons Learned)
 - When you make an error, update AGENTS.md so it's not repeated.
 - **Synthetic data fallback**: Always try real data (yfinance, ENTSO-E, SQLite) before falling back to synthetic. Synthetic must be clearly labeled as `[WARN]`.
+- **No tracked API tokens**: Live ENTSO-E access must read `ENTSOE_API_KEY` from the environment. Tests must pass with no local token and use demo fallback unless they explicitly monkeypatch live data.
+- **Bidirectional ATC corridors**: A single ATC pair means capacity in both directions. Model it as one signed flow variable; never silently treat tuple order as physical direction.
+- **Located storage in market coupling**: Multi-day storage must be connected to a zone balance (default zone 0). A global storage balance plus already-balanced zones forces net storage injection to zero.
 - **Grid search for strategy params**: Fixed-param strategies may lose on recent data. Grid-search over parameter ranges to demonstrate profitability.
 - **Suppress known library noise**: Wrap import of libraries with known version-mismatch stderr noise (e.g., numpy/pyarrow) in stderr-redirect to keep output clean.
 - **Plots directory**: Generated plots go to `src/energy_algorithms/notebooks/plots/` and are excluded from git via `**/plots/` in `.gitignore`.
@@ -189,7 +192,7 @@ Energy_Algorithms/
 - **No module-level mutable state** (except OPTIONS dict which is intentional and tested)
 - **Every test is independent** — no shared state, no test ordering dependencies
 - **Seeds for reproducibility** — all stochastic tests use `random_seed` or `numpy.random.seed()`
-- **Idempotent config** — `config.py` reads once; `ENTS`O_E_TOKEN` from environment or file
+- **Idempotent config** — `config.py` reads once; `ENTSOE_API_KEY` comes from the environment only
 
 ### Edge Cases (Must-Test)
 
@@ -219,7 +222,7 @@ Energy_Algorithms/
 1. **"Why PuLP not Gurobi?"** → PuLP is frictionless for open-source portfolios. We document tradeoffs (CBC vs Gurobi vs CPLEX) in README and solver_config.py.
 2. **"Why hexagonal architecture?"** → Ports/adapters means we can swap solvers without touching domain logic. Demonstrated by `PuLPSolverAdapter` and `SolverPort`.
 3. **"Why is FBMC better than ATC?"** → Flow-based captures loop flows, uses full network PTDF, enables 3× more cross-zonal capacity. Demonstrated by `fbmc.py` 3-zone loop flow demo.
-4. **"How do you test optimization code?"** → Known-optimal values, property-based invariants, edge-case matrix. 232 tests covering all 18 modules.
+4. **"How do you test optimization code?"** → Known-optimal values, property-based invariants, edge-case matrix. 246 passing tests covering all 18 modules.
 5. **"Tell me about a bug you fixed."** → Surplus shading fix (rectangles → area-between-curves), MCP wasn't including block prices, min up/down at horizon edge, UC reserve/demand were conflated.
 
 ### Interview Checklist (Euphemia   & Industry)
@@ -249,7 +252,7 @@ Energy_Algorithms/
 - ✅ Metadata: variable registry, model summary
 
 **Engineering:**
-- ✅ 232 passing tests (2 skipped for uninstalled solvers)
+- ✅ 246 passing tests (2 skipped for uninstalled solvers)
 - ✅ CI/CD: GitHub Actions (3 Python versions), tests + demos
 - ✅ Dockerfile: multi-stage, reproducible environment
 - ✅ Knowledge base: 12 files, 3,610 lines across all domains
@@ -371,6 +374,6 @@ Every significant change updates these three files simultaneously:
 | Known-optimal tests | ❌ | ❌ | ✅ | ✅ |
 | Physical invariants | ❌ | ❌ | ✅ | ✅ |
 | Hexagonal architecture | ❌ | ❌ | ❌ | ✅ |
-| 200+ passing tests | ❌ (~25) | ✅ (60+) | ❌ (~30) | ✅ (232) |
+| 200+ passing tests | ❌ (~25) | ✅ (60+) | ❌ (~30) | ✅ (246) |
 | Interview-focused docs | ❌ | ❌ | ❌ | ✅ |
 | Stochastic + EVPI | ❌ | ✅ | ❌ | ✅ |
