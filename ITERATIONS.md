@@ -1,5 +1,29 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-19 10:45 CEST — Euphemia   application prep: gap analysis, benchmark, application email
+
+**What changed:**
+- **Euphemia Gap Analysis** added to README.md — expanded table comparing each feature (social welfare LP, IP pricing, FBMC, block orders, multi-period, scalability, solvers, data pipeline) against Euphemia   production with bridge plan for each
+- **Standalone benchmark script** (`scripts/run_benchmark.py`) — 7 Pi-friendly benchmarks: solver detection, PCR clearing, FBMC 3-zone, block orders, unit commitment, storage site, multi-zone ATC. All run in ~122ms total on Pi
+- **Application email drafted** (`docs/application-email-nside.md`) — ready for review and sending
+- **README updated** with interview-ready gap response quote and Euphemia   talking points
+- **solvers unchanged** — HiGHS already resolved correctly via `highspy 1.14` (CBC, CPLEX, GLPK, Gurobi, HiGHS all available)
+
+**Benchmark results (Raspberry Pi 4, 8GB):**
+```
+  Benchmark                           Time (ms)
+  solver_detection                    0.0
+  pcr_clearing_1zone                  7.2
+  fbmc_3zone                          8.1
+  block_orders_linked_exclusive       19.0
+  unit_commitment_demo                68.7
+  storage_site_demo                   12.5
+  multi_zone_atc_2zone                6.5
+  TOTAL                               122.0
+```
+
+**Test suite:** 246 passed, 2 skipped (PC-only benchmarks), 0 failed
+
 ## 2026-05-04 16:25 CEST — GPT 5.5 code review: PC benchmarks + property-based tests (Hermes fix pass)
 
 **What changed (GPT 5.5 via commit `6b6ea2e`):**

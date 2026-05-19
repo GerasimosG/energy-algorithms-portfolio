@@ -290,6 +290,24 @@ max Σ_j(p_j^d · q_j^d · x_j^d) − Σ_i(p_i^s · q_i^s · x_i^s) − Σ_k(p_k
 
 > See `energy_markets/EUPHEMIA_INTERVIEW.md` for the full interview question bank and talking points.
 
+### 🎯 Euphemia Gap Analysis — My Implementation vs Euphemia   Production
+
+This table goes deeper than the mapping above. It's the honest technical assessment you'd discuss in an interview:
+
+| Feature | My Implementation | Production (Euphemia) | Gap | Bridge |
+|---|---|---|---|---|
+| **Social welfare LP** | Continuous vars, linear objective | MIP with integer vars | Model complexity | Understand MIP formulation, can extend |
+| **IP pricing** | `max(accepted_prices)` = simple MCP | IP pricing pass for make-whole payments | ⚠️ No make-whole | Theory covered in `EUPHEMIA_INTERVIEW.md`. First thing I'd learn |
+| **Flow-Based MC** | `fbmc.py`: PTDF × net position ≤ RAM, LODF, GSK | Full FBMC + remedial actions, CBCO management | LODF ✓ GSK ✓ Need: remedial actions | Implementation exists; needs production hardening |
+| **Block orders** | Simple, linked (`group=`), exclusive (`excl_*`) | Full: simple, linked, exclusive, flexible, min-acceptance | No flexible blocks | Flexible = continuous ∈ [min%, 100%] — trivial extension |
+| **Multi-period** | 24h UC (`scheduling.py`), 7d multi-day | Full inter-temporal + hydro cascades, must-run | Storage ✓ Hydro cascades missing | Linear extension of storage pattern |
+| **Scalability** | 10-zone, 50-gen — <5s on Pi | Millions of orders, 25+ zones, sub-minute | 3-4 orders of magnitude | Understand theory (sparse matrices, decomposition). Production experience is the gap |
+| **Solvers** | CBC + HiGHS (via `highspy 1.14`) | Gurobi/CPLEX with tuned parameters | Licensing | Know tradeoffs: presolve, barrier, crossover, MIP gap tuning |
+| **Data pipeline** | Demo data + ENTSO-E API client | Real-time feeds from multiple PXs + SCADA + weather | Live integration | ENTSO-E structure correct; needs caching, alerting, failover |
+
+**Interview-ready response when asked about gaps:**
+> *"I've implemented the core concepts — social welfare LP, block orders, FBMC with PTDF/LODF, multi-zone coupling — in clean hexagonal architecture with 246 tests and 5 solvers available including HiGHS. I understand where my implementation simplifies reality: IP pricing, production scalability, and commercial solvers. I'd rather be honest about the gaps than pretend otherwise. The fundamentals are solid; the production experience is what I'm applying to gain."*
+
 ### Known Limitations (Documented for Interview Transparency)
 
 - ⚠ **MCP pricing**: Uses simple `max(accepted_prices)` — real Euphemia uses IP pricing
