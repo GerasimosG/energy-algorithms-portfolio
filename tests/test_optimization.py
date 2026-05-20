@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from energy_algorithms.domain.optimization.portfolio import demo_portfolio, optimize_portfolio_scipy
+from energy_algorithms.domain.optimization.portfolio import demo_portfolio, optimize_portfolio, optimize_portfolio_scipy
 from energy_algorithms.domain.optimization.scheduling import demo_uc, solve_unit_commitment
 from energy_algorithms.domain.optimization.storage import demo_storage, solve_storage
 from energy_algorithms.domain.optimization.transportation import (
@@ -75,6 +75,49 @@ def test_portfolio_min_variance():
     assert r["status"] == "Optimal"
     assert r["weights"] is not None
     assert abs(sum(r["weights"]) - 1.0) < 0.01
+
+
+def test_portfolio_lp_basic():
+    """optimize_portfolio (LP version) finds feasible solution."""
+    er = [0.12, 0.10, 0.08, 0.15]
+    cov = [[0.04, 0.01, 0.01, 0.0],
+           [0.01, 0.04, 0.0, 0.01],
+           [0.01, 0.0, 0.04, 0.01],
+           [0.0, 0.01, 0.01, 0.04]]
+    sectors = ["Tech", "Tech", "Finance", "Finance"]
+    limits = {"Tech": (0.2, 0.6), "Finance": (0.2, 0.6)}
+    r = optimize_portfolio(
+        expected_returns=er,
+        cov_matrix=cov,
+        risk_target=0.15,
+        sector_map=sectors,
+        sector_limits=limits,
+        weight_bounds=(0.0, 0.4),
+    )
+    assert r["status"] == "Optimal"
+    assert r["weights"] is not None
+    assert abs(sum(r["weights"]) - 1.0) < 0.01
+    assert r["n_assets_selected"] > 0
+
+
+def test_portfolio_lp_cardinality():
+    """optimize_portfolio with cardinality constraint."""
+    er = [0.12, 0.10, 0.08, 0.15, 0.09]
+    n = 5
+    cov = (np.eye(n) * 0.04).tolist()
+    sectors = ["A"] * n
+    limits = {"A": (0.0, 1.0)}
+    r = optimize_portfolio(
+        expected_returns=er,
+        cov_matrix=cov,
+        risk_target=0.20,
+        sector_map=sectors,
+        sector_limits=limits,
+        weight_bounds=(0.0, 0.5),
+        cardinality=2,
+    )
+    assert r["status"] == "Optimal"
+    assert r["n_assets_selected"] <= 2
 
 # ── Unit Commitment ──────────────────────────────────────────────────
 

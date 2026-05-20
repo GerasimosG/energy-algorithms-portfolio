@@ -6,6 +6,8 @@ from energy_algorithms.domain.markets.intraday import demo_intraday, simulate_in
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 
+# ── Basic PCR ─────────────────────────────────────────────────────────
+
 def test_simple_clearing():
     """Simple market clears with correct MCP and welfare."""
 
@@ -152,3 +154,90 @@ def test_intraday_vwap():
     r = simulate_intraday(orders)
     # Two trades at 50 and 60, VWAP = (50*5 + 60*5)/10 = 55
     assert abs(r["vwap"] - 55.0) < 0.01
+
+
+# ── IP Pricing ────────────────────────────────────────────────────────
+
+def test_ip_pricing_basic():
+    """solve_with_ip_pricing returns pricing_method='ip' and ip_price."""
+    model = PCRModel("test_ip")
+    model.add_supply("Cheap", 10, 100)
+    model.add_supply("Expensive", 80, 100)
+    model.add_demand("Buyer", 150, 150)
+    model.add_block("Nuclear", 50, 50)
+    r = model.solve_with_ip_pricing()
+    assert r["status"] == "Optimal"
+    assert r["pricing_method"] == "ip"
+    assert "ip_price" in r
+    assert "make_whole_payments" in r
+    assert r["ip_price"] >= 0  # could be int from pulp but semantically float
+
+
+def test_ip_pricing_no_blocks():
+    """IP pricing with no blocks — degenerate case, ip_price == mcp."""
+    model = PCRModel("test_no_blocks")
+    model.add_supply("Cheap", 10, 100)
+    model.add_supply("Expensive", 80, 100)
+    model.add_demand("Buyer", 150, 150)
+    # No blocks — solve_with_ip_pricing should still work
+    r = model.solve_with_ip_pricing()
+    assert r["status"] == "Optimal"
+    assert r["pricing_method"] == "ip"
+    assert r["ip_price"] == r["mcp"]
+    assert r["make_whole_payments"] == {}
+
+
+def test_ip_pricing_with_paradoxical():
+    """IP pricing handles paradoxically accepted/rejected blocks."""
+    model = PCRModel("test_paradox")
+    model.add_supply("Wind", 5, 100)
+    model.add_supply("Gas", 100, 200)
+    model.add_demand("Grid", 120, 200)
+    # A block at 80 between wind and gas — interesting case
+    model.add_block("Coal", 80, 60)
+    r = model.solve_with_ip_pricing()
+    assert r["status"] == "Optimal"
+    assert r["pricing_method"] == "ip"
+    # ip_price should be >= 0
+    assert r["ip_price"] >= 0
+
+
+def test_ip_pricing_exclusive_blocks():
+    """IP pricing with exclusive blocks."""
+    model = PCRModel("test_ip_excl")
+    model.add_supply("Wind", 5, 100)
+    model.add_demand("Grid", 150, 80)
+    model.add_block("Option_A", 30, 50, group="excl_ip")
+    model.add_block("Option_B", 45, 50, group="excl_ip")
+    r = model.solve_with_ip_pricing()
+    assert r["status"] == "Optimal"
+    accepted = [b for b in r["orders"]["blocks"].values() if b["accepted"]]
+    assert len(accepted) <= 1
+
+
+# ── report() ──────────────────────────────────────────────────────────
+
+def test_report_runs():
+    """report() executes without error (produces stdout)."""
+    model = PCRModel("test_report")
+    model.add_supply("Gas", 80, 100)
+    model.add_demand("Load", 150, 80)
+    model.solve()
+    # Just verify it runs without exception
+    model.report()
+
+
+def test_report_no_result():
+    """report() handles missing result gracefully."""
+    model = PCRModel("test_no_result")
+    model.report()  # prints "No result. Run solve() first."
+
+
+def test_report_with_ip():
+    """report() with IP pricing result."""
+    model = PCRModel("test_report_ip")
+    model.add_supply("Wind", 5, 100)
+    model.add_demand("Grid", 150, 100)
+    model.add_block("Storage", 30, 40)
+    model.solve_with_ip_pricing()
+    model.report()

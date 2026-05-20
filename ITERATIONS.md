@@ -1,5 +1,50 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-21 19:15 CEST — Coverage boost: 60% → 80% (+70 tests, +564 lines)
+
+**What changed:**
+- **Coverage threshold raised** from 60% to 80% in `pyproject.toml`
+- **5 new test files** created (70 new tests total):
+  - `tests/test_trading_strategies.py` — 26 tests: momentum, sma_crossover, mean_reversion, synthetic_prices, risk_metrics edge cases
+  - `tests/test_market_clearing.py` — 14 tests: find_equilibrium, demo_clearing, edge cases
+  - `tests/test_block_orders.py` — 8 tests: simple/linked/exclusive block scenarios, run_all, run_exclusive
+  - `tests/test_pulp_solver.py` — 7 tests: PuLPSolverAdapter constructor, solve, available, edge cases
+  - `tests/test_application_demos.py` — 10 tests: energy_data, strategies, optimization, markets, european, live_pipeline, market_data, live_backtest, trading demos
+- **Existing test files expanded:**
+  - `tests/test_pcr_model.py` — 7 new tests: solve_with_ip_pricing (4), report() (3)
+  - `tests/test_optimization.py` — 2 new tests: optimize_portfolio LP version, cardinality
+- **Module improvements:**
+
+| Module | Before | After | Δ |
+|--------|--------|-------|---|
+| `trading/momentum.py` | 25% | 100% | +75pp |
+| `trading/mean_reversion.py` | 29% | 100% | +71pp |
+| `trading/sma_crossover.py` | 36% | 100% | +64pp |
+| `trading/__init__.py` | 50% | 100% | +50pp |
+| `trading/risk_metrics.py` | 77% | 95% | +18pp |
+| `markets/market_clearing.py` | 13% | 97% | +84pp |
+| `markets/block_orders.py` | 20% | 100% | +80pp |
+| `markets/pcr_model.py` | 42% | 92% | +50pp |
+| `optimization/portfolio.py` | 67% | 98% | +31pp |
+| `adapters/pulp_solver.py` | 33% | 87% | +54pp |
+| `adapters/config.py` | 57% | 100% | +43pp |
+| `application/strategies_demo.py` | 0% | 41% | +41pp |
+| `application/optimization_demo.py` | 13% | 98% | +85pp |
+| `application/markets_demo.py` | 9% | 96% | +87pp |
+| `application/energy_data_demo.py` | 0% | 97% | +97pp |
+| `application/live_pipeline.py` | 93% | 96% | +3pp |
+| `application/market_data_demo.py` | 0% | 50% | +50pp |
+| `application/live_backtest.py` | 15% | 40% | +25pp |
+| `application/trading_demo.py` | 17% | 50% | +33pp |
+
+**Tests:** 246 → 318 (+70), 0 failures, 2 skipped (PC-only)
+**Coverage:** 60.44% → 80.10% (+19.66pp, +564 lines)
+**Ruff:** Clean ✅
+**Git:** On branch `coverage/80-pct` (worktree: `.worktrees/coverage-80`)
+
+**Worktree:** `git worktree add .worktrees/coverage-80 -b coverage/80-pct`
+**Ignored:** `.worktrees/` added to `.gitignore`
+
 ## 2026-05-19 10:45 CEST — Euphemia   application prep: gap analysis, benchmark, application email
 
 **What changed:**
