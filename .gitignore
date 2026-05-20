@@ -49,5 +49,8 @@ docs/build/
 src/energy_algorithms/application/.data_cache/
 
 
+# Worktrees
+.worktrees/
+
 # Hypothesis cache
 .hypothesis/
