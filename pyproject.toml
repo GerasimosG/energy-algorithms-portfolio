@@ -32,6 +32,7 @@ dependencies = [
     "matplotlib>=3.8",
     "pulp>=3.0",
     "yfinance>=0.2.30",
+    "backtrader>=1.9.78",
 ]
 
 [project.optional-dependencies]

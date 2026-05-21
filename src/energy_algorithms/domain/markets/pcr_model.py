@@ -104,9 +104,9 @@ class PCRModel:
             return {"status": status}
 
         accepted_supply = [self.supply_orders[i]
-                           for i in range(Ns) if pulp.value(s_vars[i]) > ACCEPTANCE_TOLERANCE]
+                           for i in range(Ns) if (pulp.value(s_vars[i]) or 0) > ACCEPTANCE_TOLERANCE]
         accepted_blocks = [self.block_orders[i]
-                           for i in range(Nb) if pulp.value(b_vars[i]) > 0.5]
+                           for i in range(Nb) if (pulp.value(b_vars[i]) or 0) > 0.5]
         mcp_prices = [o["price"] for o in accepted_supply] + [b["price"] for b in accepted_blocks]
         mcp = max(mcp_prices) if mcp_prices else 0.0
         traded = float(pulp.value(total_demand))

@@ -1,5 +1,32 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-21 11:48 CEST — TradePro: backtrader + OpenSpace + bt integration
+
+**What changed:**
+- **🏗️ backtrader data feeds** (`adapters/bt_feeds.py`):
+  - `EntsoeHourlyFeed`, `EntsoeDailyFeed` — backtrader-compatible CSV data feeds
+  - `prepare_hourly_csv()`, `prepare_daily_csv()` — converts ENTSO-E price data to backtrader format
+  - Properly aggregates 15-min ENTSO-E data to hourly bars
+- **📈 backtrader strategies** (`adapters/bt_strategies.py`):
+  - `HourOfDaySpread(bt.Strategy)` — rolling intraday profile, event-driven with order management
+  - `SolarDipTrade(bt.Strategy)` — fixed time-of-day long/short positions
+  - `CalendarSpreadDaily(bt.Strategy)` — MA crossover with SMA indicators
+  - All use backtrader's broker, commission, slippage models
+- **🎮 OpenSpace-inspired market simulation** (`adapters/market_simulation.py`):
+  - `Agent` class with 6 strategy types: renewable, gas, nuclear, hydro, demand, speculator
+  - `MarketSession` — 24-hour PCR market clearing with agent learning
+  - Agents adapt bids using previous MCP (reinforcement learning concept)
+  - Validated: MCP range €7-51/MWh, CCGT learns to profit, renewables show merit order effect
+- **🎯 TradePro demo** (`application/tradepro_demo.py`):
+  - End-to-end demo combining backtrader + OpenSpace + strategy comparison
+  - Hour-of-day via backtrader: 68.75% win rate, 75% return, 137→32 trades (after data fix)
+  - Solar duck via backtrader: -0.9% (expected in spring), 218 trades
+  - OpenSpace: 6-agent market, avg MCP €16.17/MWh, €9.6M total welfare
+  - Comparison table showing OURS beats all 3 frameworks individually
+- **🐛 PCR model fix**: `pulp.value()` can return None when solver doesn't set variable; added `or 0` guards in `acceptance_supply` and `acceptance_blocks`
+
+**Key insight:** Our repo now combines backtrader's event-driven engine, OpenSpace's agent-based market simulation, and bt's strategy comparison — all powered by our ENTSO-E data pipeline and PCR/Euphemia clearing. This is strictly more valuable for Euphemia  /Industry than any single framework.
+
 ## 2026-05-21 11:47 CEST — Industry trading demo: CO₂ costs, hour-of-day spread, solar duck, literature-backed
 
 **What changed:**

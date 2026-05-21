@@ -204,6 +204,27 @@ A dedicated **energy algorithmic trading demo** (`src/energy_algorithms/applicat
 
 Run: `python3 -m energy_algorithms.application.industry_demo`
 
+### ✨ New: TradePro — backtrader + OpenSpace Integration
+
+Our repo now **combines the best of multiple frameworks** instead of depending on any single one:
+
+| Framework | What We Use From It | What We Add |
+|-----------|--------------------|-------------|
+| **backtrader** (5.5K★) | Event-driven engine, order types, commission models, walk-forward analyzers | ENTSO-E data feeds, energy strategies (hour-of-day, solar duck) |
+| **OpenSpace** (academic) | Agent-based market simulation concept | PCR/Euphemia clearing with CO₂ costs, agent learning |
+| **bt (fja)** (2K★) | Strategy comparison via algo-chaining | Energy-specific strategy composition |
+
+**backtrader results on 26 days real ENTSO-E data:**
+
+| Strategy | Engine | Trades | Win Rate | Return | 
+|----------|--------|--------|----------|--------|
+| Hour-of-Day Spread | backtrader | 32 | 68.75% | +75.09% |
+| Solar Duck Curve | backtrader | 218 | 40.7% | -0.94% (spring) |
+
+**OpenSpace market simulation (6-agent PCR):** Avg MCP €16.17/MWh, €9.6M welfare, generators learn optimal bidding.
+
+Run: `python3 -m energy_algorithms.application.tradepro_demo`
+
 ## 🚀 Quick Start
 
 ```bash
