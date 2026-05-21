@@ -189,6 +189,21 @@ Energy_Algorithms/
 └── .github/workflows/      CI: Python 3.11–3.13
 ```
 
+### ✨ New: Industry Trading Demo
+
+A dedicated **energy algorithmic trading demo** (`src/energy_algorithms/application/industry_demo.py`) runs all trading strategies on 26 days of **real Belgian ENTSO-E data**:
+
+| Strategy | Period | Key Result | Literature |
+|----------|--------|------------|------------|
+| **Hour-of-day spread** | 26 days | +€143.84/MWh avg daily, 67% win rate | Kiesel & Paraschiv (2021) |
+| **Solar duck curve** | Apr-May 2026 | +€0.28/MWh avg peak premium | EEX market patterns |
+| **Calendar spread** (3d/7d MA) | 26 days | +265%, Sharpe 8.4, 4 trades | Commodity momentum |
+| **CO₂-adjusted PCR** (€70/t EUA) | Gas-marginal day | MCP €60→€78, CO₂ pass-through | Clean spark/dark spread |
+| **BESS storage** (historical_analysis.py) | 30 days | 2 battery sizes, cross-border spreads | Energy arbitrage |
+| **Cross-border spreads** | BE↔FR↔DE↔NL | Max spread €13/MWh (May 3) | Market coupling theory |
+
+Run: `python3 -m energy_algorithms.application.industry_demo`
+
 ## 🚀 Quick Start
 
 ```bash

@@ -52,6 +52,35 @@ MARGINAL_COSTS: dict[str, float] = {
 # Fallback marginal cost for unknown types
 DEFAULT_MARGINAL_COST = 50.0
 
+# CO₂-adjusted costs (€/MWh) — includes EUA carbon pass-through
+# Literature: "Clean spark spread" — Gas margin = power price - gas cost - CO₂ cost
+# CO₂ at €70/ton (EU ETS 2025-2026) adds:
+#   Gas:      0.40 t/MWh × €70 = €28/MWh
+#   Hard coal: 0.82 t/MWh × €70 = €57/MWh
+#   Lignite:  1.05 t/MWh × €70 = €74/MWh
+#   Nuclear/RE: 0 t/MWh × €70 = €0/MWh
+CO2_PRICE = 70.0  # €/tonne EUA
+
+# Emission factors (tCO₂/MWh) — from domain/emissions.py
+EMISSION_FACTORS: dict[str, float] = {
+    "Fossil Gas": 0.40, "Fossil Hard coal": 0.82,
+    "Fossil Brown coal/Lignite": 1.05, "Fossil Oil": 0.75,
+    "Waste": 0.30, "Biomass": 0.0,
+    "Other": 0.40,
+}
+
+def _co2_cost(gen_type: str) -> float:
+    """CO₂ cost adder for a generation type."""
+    factor = EMISSION_FACTORS.get(gen_type, 0.4 if "Fossil" in gen_type else 0.0)
+    return factor * CO2_PRICE
+
+# CO₂-adjusted marginal costs (fuel + carbon)
+CO2_ADJUSTED_COSTS: dict[str, float] = {
+    k: round(v + _co2_cost(k), 1) for k, v in MARGINAL_COSTS.items()
+}
+# Ensure unknown types have a reasonable CO₂-adjusted fallback
+DEFAULT_CO2_ADJUSTED_COST = round(DEFAULT_MARGINAL_COST + 0.4 * CO2_PRICE, 1)
+
 
 # ── API helpers ──────────────────────────────────────────────────────
 
@@ -121,11 +150,20 @@ def _aggregate_generation_data(gen_data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _build_pcr_model(prices_data: dict, gen_data: dict, area: str) -> PCRModel:
+def _build_pcr_model(
+    prices_data: dict,
+    gen_data: dict,
+    area: str,
+    use_co2_costs: bool = False,
+) -> PCRModel:
     """Build a PCR market clearing model from live/demo data.
 
     Supply: each generation type at its representative marginal cost,
     offering its full MW capacity.
+
+    When use_co2_costs=True, includes EU ETS carbon pass-through
+    (€70/ton) in fossil fuel costs — the "clean spark/dark spread"
+    calculation used by European energy trading desks.
 
     Demand: constructed from the day-ahead price distribution.
     Total demand equals total generation; willingness-to-pay steps
@@ -139,6 +177,8 @@ def _build_pcr_model(prices_data: dict, gen_data: dict, area: str) -> PCRModel:
         Generation mix result from fetcher (has "generation" key).
     area : str
         Bidding zone EIC code.
+    use_co2_costs : bool
+        If True, includes CO₂ costs in marginal costs (default: False).
 
     Returns
     -------
@@ -148,10 +188,13 @@ def _build_pcr_model(prices_data: dict, gen_data: dict, area: str) -> PCRModel:
     gen_data = _aggregate_generation_data(gen_data)
 
     # ── Supply: one order per generation type ────────────────────────
+    cost_dict = CO2_ADJUSTED_COSTS if use_co2_costs else MARGINAL_COSTS
+    default_cost = DEFAULT_CO2_ADJUSTED_COST if use_co2_costs else DEFAULT_MARGINAL_COST
+
     for g in gen_data["generation"]:
         if g["mw"] <= 0:
             continue
-        mc = MARGINAL_COSTS.get(g["type"], DEFAULT_MARGINAL_COST)
+        mc = cost_dict.get(g["type"], default_cost)
         model.add_supply(
             oid=g["type"],
             price=mc,
