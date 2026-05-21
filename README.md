@@ -206,6 +206,9 @@ Run: `python3 -m energy_algorithms.application.industry_demo`
 
 ### ✨ New: TradePro — backtrader + OpenSpace Integration
 
+> **Full benchmark comparison vs PyPSA, POMATO, backtrader, LEAN, freqtrade:**
+> See [`docs/BENCHMARK_REPORT.md`](docs/BENCHMARK_REPORT.md) with 4 professional plots.
+
 Our repo now **combines the best of multiple frameworks** instead of depending on any single one:
 
 | Framework | What We Use From It | What We Add |
