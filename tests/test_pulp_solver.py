@@ -79,3 +79,44 @@ def test_available_cbc():
     # implemented on all PuLP solver classes
     assert adapter is not None
     assert adapter._solver_cls is not None
+
+
+def test_available_returns_bool():
+    """available() returns a truthy value for CBC on this system."""
+    adapter = PuLPSolverAdapter("cbc")
+    result = adapter.available()
+    # In some PuLP versions, available() returns the path string (truthy)
+    # instead of True. Either way, it should be truthy for CBC.
+    assert result
+
+
+def test_available_false_on_exception(monkeypatch):
+    """available() returns False when solver construction raises."""
+    adapter = PuLPSolverAdapter("cbc")
+
+    def _raising_solver(*args, **kwargs):
+        raise RuntimeError("Solver binary not found")
+
+    monkeypatch.setattr(adapter, "_solver_cls", lambda *a, **kw: type(
+        "FakeSolver", (), {"available": lambda self: (_ for _ in ()).throw(RuntimeError("fail"))}
+    )())
+    # Or more cleanly: monkeypatch the class so available() raises
+    result = adapter.available()
+    assert result is False
+
+
+def test_available_false_on_solver_not_available():
+    """available() returns False if solver.available() returns False."""
+    adapter = PuLPSolverAdapter("cbc")
+
+    # Monkey-patch the solver class to a class whose available() returns False
+    class FakeSolver:
+        def available(self):
+            return False
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+    adapter._solver_cls = FakeSolver
+    result = adapter.available()
+    assert result is False

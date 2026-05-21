@@ -257,3 +257,59 @@ def test_compute_all_keys():
     expected = {"sharpe", "sortino", "max_drawdown", "calmar", "var_95", "var_99", "kelly"}
     assert set(result.keys()) == expected
     assert all(isinstance(v, float) for v in result.values())
+
+
+# ── Additional risk_metrics edge cases ────────────────────────────
+
+
+def test_sortino_single_return():
+    """Single return → zero Sortino (need >=2)."""
+    assert sortino_ratio(np.array([0.01])) == 0.0
+
+
+def test_sortino_short_returns():
+    """Two identical returns with no downside → zero Sortino."""
+    # All positive returns → zero downside deviation → zero Sortino
+    assert sortino_ratio(np.full(2, 0.01)) == 0.0
+
+
+def test_kelly_b_zero():
+    """When b=0 (mean winners = 0), Kelly returns 0.0."""
+    # Tiny winners vs huge losers makes b underflow to 0
+    returns = np.array([1e-300, -1e308])
+    result = kelly_fraction(returns)
+    assert result == 0.0
+
+
+def test_kelly_bound_clipping():
+    """Kelly fraction is clipped to [0, 1]."""
+    # With p=1, b=2: f = (1*2 - 0)/2 = 1.0
+    # But we need losers too... let's construct carefully.
+    # winners = [0.01, 0.01], losers = [-0.01]
+    # p = 2/3, b = 0.01/0.01 = 1.0
+    # f = (2/3*1 - 1/3)/1 = 1/3
+    returns = np.array([0.01, 0.01, -0.01])
+    result = kelly_fraction(returns)
+    assert 0.0 <= result <= 1.0
+
+
+def test_calmar_no_drawdown_exact():
+    """Strictly increasing equity → no drawdown → finite Calmar."""
+    returns = np.full(100, 0.01)  # always positive
+    result = calmar_ratio(returns)
+    assert np.isfinite(result)
+
+
+def test_value_at_risk_default_confidence():
+    """VaR with default 95% confidence."""
+
+    rng = np.random.default_rng(42)
+    returns = rng.normal(0, 0.02, 1000)
+    var95 = value_at_risk(returns)
+    assert var95 < 0
+
+
+def test_max_drawdown_rising():
+    """Strictly rising equity → zero drawdown."""
+    equity = np.array([100, 110, 120, 130])
+    assert max_drawdown(equity) == 0.0

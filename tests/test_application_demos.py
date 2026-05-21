@@ -179,3 +179,77 @@ def test_trading_demo_load_prices_fallback():
         sys.stdout = old_stdout
     assert len(prices) > 200  # real or synthetic — both give substantial data
     assert len(dates) > 200
+
+
+def test_trading_demo_main_runs(monkeypatch, capsys):
+    """trading_demo.main() runs with synthetic data and prints results."""
+    from energy_algorithms.application.trading_demo import main as trading_main
+
+    # main() uses _load_prices which falls back to synthetic
+    trading_main()
+    captured = capsys.readouterr()
+    assert "Backtester Demo" in captured.out or "SMA Crossover" in captured.out
+    assert "Return" in captured.out
+
+
+def test_trading_demo_main_prints_metrics(monkeypatch, capsys):
+    """trading_demo.main() prints risk metrics for each ticker."""
+    from energy_algorithms.application.trading_demo import main as trading_main
+
+    trading_main()
+    captured = capsys.readouterr()
+    assert "Sharpe" in captured.out
+    assert "Max DD" in captured.out
+
+
+# ── strategies_demo (extended) ──────────────────────────────────────
+
+
+def test_strategies_demo_load_prices_fallback():
+    """strategies_demo._load_prices falls back to synthetic data."""
+    from energy_algorithms.application.strategies_demo import _load_prices
+    from energy_algorithms.domain.trading import synthetic_prices
+
+    prices, dates = _load_prices("UNKNOWN_TEST_TICKER123")
+    assert len(prices) > 0
+    assert len(dates) > 0
+
+
+def test_strategies_demo_main_runs(monkeypatch, capsys):
+    """strategies_demo.main() runs and produces strategy output."""
+    from energy_algorithms.application.strategies_demo import main as strategies_main
+
+    strategies_main()
+    captured = capsys.readouterr()
+    assert "Strategies Demo" in captured.out
+    assert "SMA Crossover" in captured.out or "Bollinger" in captured.out
+
+
+def test_strategies_demo_main_prints_best_params(monkeypatch, capsys):
+    """strategies_demo.main() prints best parameters per strategy."""
+    from energy_algorithms.application.strategies_demo import main as strategies_main
+
+    strategies_main()
+    captured = capsys.readouterr()
+    assert "Return" in captured.out
+    assert "Sharpe" in captured.out
+
+
+def test_strategies_demo_best_params_returns_valid_shapes():
+    """_best_params returns dict with correct strategy param keys."""
+    from energy_algorithms.application.strategies_demo import _best_params
+    from energy_algorithms.domain.trading import synthetic_prices
+
+    prices, _dates = synthetic_prices(200, seed=42)
+    best = _best_params(prices)
+    assert "sma" in best
+    assert "mr" in best
+    assert "mom" in best
+
+    # Individual param dicts
+    assert "fast" in best["sma"]
+    assert "slow" in best["sma"]
+    assert "window" in best["mr"]
+    assert "n_std" in best["mr"]
+    assert "lookback" in best["mom"]
+    assert "hold" in best["mom"]

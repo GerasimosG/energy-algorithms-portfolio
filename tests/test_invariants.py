@@ -213,6 +213,51 @@ def test_assert_invariants_lambda_str():
             lambda r: r["x"] > 10,
         ])
 
+
+def test_assert_invariants_check_that_raises_exception():
+    """A check that raises an exception is recorded as a failure, not a crash."""
+    def broken_check(result):
+        raise RuntimeError("unexpected error")
+
+    result = {"status": "Optimal"}
+    with pytest.raises(AssertionError) as exc_info:
+        assert_invariants(result, [
+            (broken_check, "broken_check"),
+        ])
+    assert "broken_check raised RuntimeError" in str(exc_info.value)
+
+
+def test_assert_invariants_check_with_faulty_getattr():
+    """Getattr failure on the check function is handled gracefully."""
+    class WeirdCheck:
+        def __call__(self, result):
+            return False
+
+        @property
+        def __name__(self):
+            raise RuntimeError("name error")
+
+    result = {"status": "Optimal"}
+    with pytest.raises(AssertionError) as exc_info:
+        assert_invariants(result, [
+            WeirdCheck(),
+        ])
+    assert "failed" in str(exc_info.value)
+
+
+def test_assert_invariants_named_check_with_exception():
+    """Named check that raises exception records name + exception type."""
+    def failing_check(result):
+        raise ValueError("bad data")
+
+    result = {"status": "Optimal"}
+    with pytest.raises(AssertionError) as exc_info:
+        assert_invariants(result, [
+            (failing_check, "my_validation"),
+        ])
+    assert "my_validation raised ValueError" in str(exc_info.value)
+
+
 # ── Integration with demo_site ──────────────────────────────────────
 
 def test_invariants_on_demo_site():
