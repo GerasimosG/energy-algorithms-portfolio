@@ -1,5 +1,22 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-21 11:33 CEST — Pipeline resolved + ENTSO-E month-long validation + Industry trading gap
+
+**What changed:**
+- **🔧 ENTSO-E live pipeline fixed:** Added `.env` auto-loading to `config.py` (loads from repo root `.env` at import time). Pipeline now works without manual `export`.
+- **📊 Month-long validation (26 days):** Ran PCR model on real ENTSO-E data for Apr 24–May 19:
+  - **26/26 days OK**, 0 API failures, 0 solve failures
+  - **Energy balance: 0.0000 MW** every single day ✅
+  - **All solves Optimal** ✅
+  - **Mean real price:** €84.08/MWh vs **model MCP:** €55.15/MWh (€28.93 gap — expected, model uses marginal costs without CO₂)
+  - Gap varies: from -€22.85 (model overestimates on low-wind days) to +€57.68 (model misses CO₂/scarcity on peak days)
+  - Report: `data/entsoe_month_report.md`
+  - Raw prices: `data/entsoe_prices.csv` (4,946 rows, 15-min intervals)
+- **📖 README updated:** All 6 references to "246 tests" → "318+ tests (80% coverage)"
+- **🔍 Industry trading gap acknowledged:** Current trading strategies (momentum, SMA, mean reversion) use stock data (AAPL via YFinance). For Industry we need energy-price-based trading demos. Raw ENTSO-E price data is now saved for this.
+
+**Key insight:** The PCR model validates the **clearing mechanism** perfectly (constraints, energy balance), but doesn't predict real prices because it uses marginal costs instead of real bids with CO₂ (~€70/ton).
+
 ## 2026-05-21 19:15 CEST — Coverage boost: 60% → 80% (+70 tests, +564 lines)
 
 **What changed:**

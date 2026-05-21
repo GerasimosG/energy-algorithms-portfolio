@@ -23,7 +23,7 @@ This portfolio is laser-targeted at two specific roles. Below is a detailed brea
 | **LP/MIP formulation** | Can you translate a business problem into mathematical constraints? | `pcr_model.py` — social welfare LP with binary block orders. `scheduling.py` — unit commitment MIP with min up/down, ramp rates, reserve. `storage.py` — BESS revenue-maximizing LP |
 | **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `fbmc.py` — FBMC with PTDF/RAM (the real Euphemia algorithm). `block_orders.py` — linked + exclusive group mechanisms |
 | **Solver experience** | Have you used optimization solvers? Understand their limitations? | PuLP/CBC used throughout. README documents PuLP's quadratic limitation (why scipy handles portfolio risk). Honest about CBC vs commercial solvers |
-| **Python + software engineering** | Can you write production code, not just notebooks? | 246 passing pytest tests, CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
+| **Python + software engineering** | Can you write production code, not just notebooks? | 318+ passing pytest tests (80% coverage), CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
 | **Non-convexity awareness** | Do you know that block orders make the problem non-convex? | Explicitly documented: MCP vs IP pricing gap, make-whole payments, PUN pricing. The README's "Implementation → Real Euphemia Mapping" table shows exactly where we simplify |
 
 #### Edge Cases — What Separates Good from Exceptional
@@ -72,7 +72,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 | Requirement | What Interviewers Look For | This Repo's Answer |
 |---|---|---|
-| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 246 passing tests, error handling throughout, `pyproject.toml` |
+| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 318+ passing tests (80% coverage), error handling throughout, `pyproject.toml` |
 | **Backtesting** | Do you understand look-ahead bias, survivorship bias, transaction costs? | `engine.py` — vectorized, signal-shifted to avoid look-ahead. Commission and slippage modeled per trade. 7 risk metrics |
 | **Quantitative modeling** | Can you build and validate statistical models? | 3 strategy types (momentum, mean-reversion, SMA crossover) with parameterized thresholds. Portfolio optimization with cardinality constraints |
 | **Risk management** | Do you understand VaR, drawdown, Sharpe, Sortino, Kelly? | `metrics.py` — 7 metrics. Kelly fraction properly bounded. Sortino uses downside deviation only |
@@ -112,7 +112,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 **The Portfolio Walkthrough** — When an interviewer says "walk me through this repo":
 1. Open with: "This is my optimization portfolio, built for energy market and quantitative trading roles. The hero module is `energy_markets/` — it implements a PCR market coupling LP that maps directly to Euphemia concepts."
 2. Show the README's "Implementation → Real Euphemia Mapping" table — it demonstrates you know exactly where your model simplifies reality.
-3. Run `pytest tests/ -v` live if possible — 246 green tests with coverage is compelling.
+3. Run `pytest tests/ -v` live if possible — 318 green tests at 80% coverage is compelling.
 4. Open `notebooks/walkthrough.ipynb` and run a few cells — the multi-zone coupling or BESS storage demos are visually impressive.
 
 **Technical Questions They Will Ask Both Roles:**
@@ -184,7 +184,7 @@ Energy_Algorithms/
 ├── strategies/             3 signal-based strategies
 ├── market_data/            Yahoo Finance → SQLite pipeline
 ├── knowledge/              12-file theory + Q&A curriculum ★
-├── tests/                  246 passing pytest tests (21 test files) ★
+├── tests/                  318+ passing pytest tests (21 test files, 80% cov) ★
 ├── notebooks/              Walkthrough notebook for Euphemia   demo
 └── .github/workflows/      CI: Python 3.11–3.13
 ```
@@ -306,7 +306,7 @@ This table goes deeper than the mapping above. It's the honest technical assessm
 | **Data pipeline** | Demo data + ENTSO-E API client | Real-time feeds from multiple PXs + SCADA + weather | Live integration | ENTSO-E structure correct; needs caching, alerting, failover |
 
 **Interview-ready response when asked about gaps:**
-> *"I've implemented the core concepts — social welfare LP, block orders, FBMC with PTDF/LODF, multi-zone coupling — in clean hexagonal architecture with 246 tests and 5 solvers available including HiGHS. I understand where my implementation simplifies reality: IP pricing, production scalability, and commercial solvers. I'd rather be honest about the gaps than pretend otherwise. The fundamentals are solid; the production experience is what I'm applying to gain."*
+> *"I've implemented the core concepts — social welfare LP, block orders, FBMC with PTDF/LODF, multi-zone coupling — in clean hexagonal architecture with 318+ tests (80% coverage) and 5 solvers available including HiGHS. I understand where my implementation simplifies reality: IP pricing, production scalability, and commercial solvers. I'd rather be honest about the gaps than pretend otherwise. The fundamentals are solid; the production experience is what I'm applying to gain."*
 
 ### Known Limitations (Documented for Interview Transparency)
 
@@ -323,7 +323,7 @@ This table goes deeper than the mapping above. It's the honest technical assessm
 | Python modules | 18 |
 | Total source files | 35+ |
 | Test files | 10 |
-| Test cases | 246 (all passing, 2 PC-only skipped) |
+| Test cases | 318 (all passing, 2 PC-only skipped, 80%+ coverage) |
 | Knowledge base | 12 files, 3,610 lines |
 | Risk metrics | 7 (Sharpe, Sortino, maxDD, Calmar, VaR95, VaR99, Kelly) |
 | Optimization solvers | 2+ (PuLP/CBC, scipy SLSQP, HiGHS/Gurobi/CPLEX configs) |
