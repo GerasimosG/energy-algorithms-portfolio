@@ -1,5 +1,15 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-22 09:00 CEST — Mandatory workflow skills documented in AGENTS.md
+
+**What changed:**
+- Added **Mandatory Completion Workflow Skills** table to AGENTS.md documenting the three-skills chain: `superpowers/test-driven-development`, `superpowers/verification-before-completion`, `superpowers/finishing-a-development-branch`
+- Updated Skill Selection by Task section to use unambiguous categorized paths (`@superpowers:...`) instead of bare `@` prefixes that collide with duplicate skill copies
+- Added note about the naming collision and why the `superpowers/` versions are canonical
+
+**Files changed:**
+- `AGENTS.md` — new section added
+
 ## 2026-05-21 12:00 CEST — Benchmark report: 4 plots, comparison vs PyPSA/POMATO/backtrader/LEAN
 
 **What changed:**

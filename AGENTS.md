@@ -32,6 +32,20 @@ ls ~/.config/opencode/skills/
 ls ~/.config/opencode/skills/ | grep <keyword>
 ```
 
+## Mandatory Completion Workflow Skills
+
+These three Hermes skills form the **mandatory workflow chain** for every feature/bugfix iteration:
+
+| Skill | Categorized Path | When To Use |
+|-------|-----------------|-------------|
+| **test-driven-development** | `superpowers/test-driven-development` | Before writing any implementation code — write the test first, watch it fail, then code. Red-Green-Refactor loop. |
+| **verification-before-completion** | `superpowers/verification-before-completion` | Before claiming any work as "done" or "passing" — run fresh verification commands, read output, then claim. |
+| **finishing-a-development-branch** | `superpowers/finishing-a-development-branch` | When implementation is complete and tests pass — structured options for merge, PR, keep, or discard with workspace cleanup. |
+
+Use the categorized path (e.g., `skill_view('superpowers/test-driven-development')`) when loading via Hermes — both `test-driven-development` and `verification-before-completion` have duplicate copies in the system, and the `superpowers/` versions are the canonical ones.
+
+## Skill-Aware Operation (MANDATORY - continued)
+
 ---
 
 ## Identity & Strategy
@@ -177,10 +191,10 @@ Energy_Algorithms/
 - **Architecture changes**: use `@software-architecture` + `@clean-code`.
 - **Multi-file refactors or interface changes**: use `@plan-writing` before edits.
 - **Performance work**: use `@performance-profiling` before and after optimization.
-- **Test regressions**: use `@test-fixing`, or `@test-driven-development` when adding new behavior.
+- **Test regressions**: use `@test-fixing`, or `@superpowers:test-driven-development` when adding new behavior.
 - **Results analysis / post-processing**: use `@jupyter-notebook` and `@spreadsheet`.
 - **Markdown/docs updates**: use `@writing-skills`.
-- **Final completion gate**: use `@verification-before-completion` and `@finishing-a-development-branch`.
+- **Final completion gate**: use `@superpowers:verification-before-completion` and `@superpowers:finishing-a-development-branch`.
 - **Prompt engineering**: use `@prompt-engineering` + `@prompt-engineer` for writing efficient prompts.
 - **Code review**: use `@requesting-code-review` when reviewing code.
 
