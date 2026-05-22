@@ -64,83 +64,99 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 ---
 
-### Industry — Energy Algorithmic Trader / Quantitative Analyst
+### INDUSTRY Belgium — Algorithmic Trader (Short-Term Power, Uccle)
 
-**Company context:** Industry is a global energy company operating across the entire value chain — generation (nuclear, gas, hydro, wind, solar), trading, retail supply, and energy services. Trading roles span day-ahead, intraday, futures, and options markets across European power, gas, and carbon.
+**Company context:** INDUSTRY Belgium's short-term trading desk in Uccle, Brussels runs automated strategies for **Battery Energy Storage Systems (BESS)**, renewables (wind/solar), and proprietary trading across **Day-Ahead**, **Intraday**, **Ancillary Services**, and **Balancing** markets. The mandate is to transition the trading floor to a fully automated, data-driven operation.
+
+**Role:** Full lifecycle — signal research → strategy coding → backtesting → production deployment → framework development. You own the algorithm from idea to P&L.
 
 #### Core Requirements — How This Repo Answers
 
-| Requirement | What Interviewers Look For | This Repo's Answer |
+| Requirement | What They Look For | This Repo's Answer |
 |---|---|---|
-| **Production Python** | Can you write code that runs reliably in production, not just a Jupyter notebook? | Full package structure, CI/CD, 571 collected tests, 90% coverage gate, error handling throughout, `pyproject.toml` |
-| **Backtesting** | Do you understand look-ahead bias, survivorship bias, transaction costs? | `engine.py` — vectorized, signal-shifted to avoid look-ahead. Commission and slippage modeled per trade. 7 risk metrics |
-| **Quantitative modeling** | Can you build and validate statistical models? | 3 strategy types (momentum, mean-reversion, SMA crossover) with parameterized thresholds. Portfolio optimization with cardinality constraints |
-| **Risk management** | Do you understand VaR, drawdown, Sharpe, Sortino, Kelly? | `metrics.py` — 7 metrics. Kelly fraction properly bounded. Sortino uses downside deviation only |
-| **Market data pipelines** | Can you build reliable data infrastructure? | `market_data/` — Yahoo Finance → SQLite. `energy_data/` — ENTSO-E Transparency Platform API client with proper error handling |
-| **Domain knowledge** | Do you understand electricity markets specifically? | Intraday simulation with order book matching, ENTSO-E pipeline, PCR/Euphemia understanding, FBMC flow-based coupling |
+| **Production Python** | Can you deploy reliable code that runs unattended? | Full package, CI/CD (3 Python versions), 571 tests, **94% measured coverage** (90% gate), structured error handling, `pyproject.toml` |
+| **BESS modeling** | Do you understand round-trip efficiency, SoC dynamics, arbitrage? | `storage.py` — BESS revenue-maximizing LP with η=90%, 30-day arbitrage demo, +€143/MWh hour-of-day spread |
+| **Backtesting** | Look-ahead, survivorship, transaction costs, walk-forward? | 7 risk metrics (Sharpe, Sortino, VaR95/99, Kelly, Calmar, Max DD, CVaR), signal-shift anti-look-ahead, commission + slippage |
+| **ENTSO-E data pipelines** | Can you build reliable market data infrastructure? | REST client with structured error matrix (401, 503, XML parse, timeout), SQLite persistence, live-data-graceful-degradation pattern |
+| **Intraday trading** | Do you understand continuous order books, cross-border spreads? | `intraday.py` — order book matching with price-time priority, cross-border BE↔FR↔DE↔NL demo (max spread €13/MWh May 3) |
+| **Day-Ahead markets** | Do you understand PCR/Euphemia, MCP, social welfare? | `pcr_model.py` — 5-stage Euphemia walkthrough, social welfare LP with binary block orders, known limitations documented |
+| **ML / data analytics** | Time-series, signal extraction, forecasting? | 3 strategy types, 26-day real Belgian data on hour-of-day, solar duck, calendar spread, CO₂-adjusted PCR pricing |
+| **Risk management** | VaR, drawdown, position sizing? | All 7 metrics implemented. Risk-aware portfolio optimization with cardinality constraints |
+| **Framework development** | Can you design and maintain a large codebase? | Hexagonal architecture (domain/ports/adapters), hooks system, solver-config factory, solver-agnostic design |
+
+#### Coverage Gaps — Honest Assessment
+
+| Requirement | Status | What To Say In Interview |
+|---|---|---|
+| **Ancillary Services** (FCR, aFRR, mFRR) | ❌ Not modeled | "I understand the products — FCR is symmetric power, aFRR is 5-min activated reserve, mFRR is manual. I haven't coded a bidding strategy because the market rules differ per TSO, but the optimization framework (LP with reserve constraints) maps directly. I'd model it as a joint energy+reserve UC, with binary commitment for each reserve product and a deterministic activation cost in the objective." |
+| **Wind generation modeling** | ❌ Not modeled | "I'd approach it via stochastic optimization — scenarios from ECMWF forecasts with quantile regression, then a two-stage SP where day-ahead commitment is here-and-now and intraday re-dispatch is wait-and-see. My `stochastic.py` shows VSS/EVPI calculation; the pattern extends." |
+| **Proprietary trading signals** | ⚠️ Basic strategies | "The 3 strategies (momentum, mean-reversion, SMA) demonstrate the framework. In production I'd build a signal library — order flow imbalance, cross-border spread, wind forecast error, solar ramp-rate predictions." |
+| **Monitoring / observability** | ❌ Not deployed | "My pipeline design includes structured error handling and SQLite state persistence. For production I'd add Prometheus metrics (P&L, fills, API latency) and Grafana dashboards." |
+| **Low-latency** | ❌ Not addressed | "My strategies are hourly resolution — not HFT. For sub-minute execution I'd use C++ or Rust kernels with memory-mapped IPC, but the business logic lives in Python with the runtime engine optimized separately." |
 
 #### Edge Cases — What Separates Good from Exceptional
 
-**🔴 "Your backtest shows a Sharpe of 3.2. What's wrong?"**
-- **Exceptional answer:** "A Sharpe above 2 in real markets is almost certainly an error. I'd check: (1) Is there look-ahead bias? My engine shifts signals by 1 bar, but if the signal generation uses future data, the Sharpe is inflated. (2) Are transaction costs realistic? 0.1% commission per trade seems small but compounds dramatically. (3) Survivorship bias — am I backtesting on stocks that still exist? (4) Overfitting — 3 parameters on 2 years of data is easy to curve-fit. I'd do walk-forward validation and out-of-sample testing."
-- **Repo evidence:** `engine.py` documents the signal-shift anti-look-ahead mechanism. `backtest()` includes commission and slippage parameters.
+**🔴 "Your hour-of-day spread shows +€143/MWh on Belgian data. Walk me through what happens when Doel 4 trips."**
+- **Exceptional answer:** "The hour-of-day strategy buys the overnight trough (€10-30/MWh) and sells the morning peak. If Doel 4 (1 GW nuclear) trips at 06:00 during the ramp, Belgian prices spike instantly — the morning sell order executes at a windfall profit. But the real risk: if the trip happens at 02:00 when I'm accumulating the long position, I'm buying into a price spike from a supply crash, not the normal trough. Real-time outage monitoring from ENTSO-E is essential to pause or reverse a position when a large generator trips. My pipeline structure supports this — the cached data pattern degrades gracefully, but live outage feeds would need WebSocket connections or sub-minute REST polling."
 
-**🔴 "Your mean-reversion strategy triggers on Bollinger Bands. What market regime kills it?"**
-- **Exceptional answer:** "Strong trending markets. Bollinger Bands assume mean-reversion, so a sustained trend (like a gas supply shock during an energy crisis) would generate repeated false reversal signals. The strategy would go long at the lower band, price keeps falling through it, then the strategy doubles down. This killed many natural gas traders in 2022. A real system would need a trend filter — perhaps an ADX threshold or a regime-switching model."
-- **Repo evidence:** `mean_reversion.py` is deliberately simple and honest about its assumptions.
+**🔴 "How would you optimize a BESS bidding for both day-ahead energy AND aFRR reserve simultaneously?"**
+- **Exceptional answer:** "Joint optimization with two decision stages. Stage 1 (day-ahead): reserve commitment — bid aFRR capacity. Stage 2 (real-time): energy trading with reduced SoC range. The tradeoff: holding reserve capacity reduces arbitrage revenue (you can't charge/discharge fully if you might need to deliver reserve). Optimal split is a function of reserve price vs energy spread. Mathematically: max[ arbitrage_rev + reserve_price × capacity_reserved ] subject to SoC dynamics, with the aFRR delivery reducing η. My `storage.py` is pure-arbitrage, but adding reserve as a separate market with capacity constraint on SoC is a natural extension."
 
-**🔴 "You're trading intraday power. A nuclear plant trips offline. What do you do?"**
-- **Exceptional answer:** "Prices spike immediately — this is a supply shock. If I'm flat, buying the spike is dangerous because prices can overshoot and revert within hours as cross-border flows ramp up. If I'm short, I need to cover immediately — the loss is already incurred, the question is whether to cut losses or wait for reversion. This is where having real-time ENTSO-E data and outage monitoring is critical — my `energy_data` pipeline structure is designed for exactly this."
-- **Repo evidence:** `intraday.py` with order book matching + ENTSO-E pipeline shows integrated thinking about market data and trading.
+**🔴 "Solar duck curve — your strategy returned -0.94% in spring. Why does it underperform, and how would you fix it?"**
+- **Exceptional answer:** "The solar duck curve captures the mid-day price depression from solar generation. In spring (Apr-May), solar is ramping up but demand is low, so the duck belly is deep and wide. My simple strategy buys the belly and sells shoulders — but the profit margin shrinks as solar penetration increases (more solar → lower mid-day prices, but also lower shoulder prices as the solar ramp widens). To fix: add a wind-solar balance indicator — on high-wind days the shoulder ramps are steeper. Also add a CCGT startup cost proxy: if clean spark spreads are negative, the evening ramp is steeper because fewer gas plants are online to cover it."
 
-**🔴 "Explain VaR to a non-technical stakeholder. What's its biggest weakness?"**
-- **Exceptional answer:** "VaR answers 'What's the worst loss I'll see on 95% of days?' — so if VaR95 = €10K, you lose more than €10K roughly once a month. The biggest weakness: VaR tells you nothing about HOW BAD the bad days are. It's like saying 'the flood barrier holds 95% of the time' without mentioning that the 5% is a tsunami. That's why I also compute Expected Shortfall (CVaR) and max drawdown — VaR alone is insufficient."
-- **Repo evidence:** `metrics.py` computes both VaR95 and VaR99, plus max drawdown and Calmar ratio.
+**🔴 "A trader says the aFRR activation signal arrived but your BESS didn't respond. How do you debug?"**
+- **Exceptional answer:** "Three layers: (1) Telemetry — did the BESS controller receive the signal? Check MQTT/API logs. (2) SoC state — was the battery at a state where it could deliver? If SoC was 0% and the signal demanded up-regulation, it physically can't deliver — that's a scheduling error in the day-ahead reserve bid, not a real-time bug. (3) Latency — how long from signal to power output? If it's >30s for aFRR (requires 5-min response), the algorithm itself may be slow. I'd add a watchdog: if no aFRR response within 10s, revert to a default pre-approved ramp schedule. This recovery logic is not in my repo (fair for a portfolio), but I'd implement it as a state machine with fallback states."
 
-**🔴 "Walk me through your ENTSO-E data pipeline. How do you handle API failures?"**
-- **Exceptional answer:** "The `EntsoeClient` wraps the ENTSO-E REST API with proper error handling: HTTP errors (401 unauthorized, 503 unavailable), XML parse errors, and network timeouts all return structured error dicts instead of crashing. For production, I'd add: exponential backoff with jitter, a local cache with TTLs so the pipeline degrades gracefully during outages, and alerting when data freshness exceeds a threshold. The demo data fallback shows the pattern."
-- **Repo evidence:** `energy_data/fetcher.py` has explicit error handling for HTTPError, URLError, ParseError, and generic exceptions — each returning a structured dict with `status: "error"`.
+**🔴 "Walk me through how you'd build a signal from wind forecast errors."**
+- **Exceptional answer:** "I'd start with ECMWF ensemble forecasts for Belgian wind zones and compare against actual SCADA wind output (ENTSO-E Actual Generation). The forecast error `e(t) = forecast(t) - actual(t)` is mean-reverting — if the forecast says 2 GW but actual is 1.5 GW, prices should rise as the market re-prices the shortage. The signal: `e(t) - MA(e, 6h)` — large positive errors (over-forecasting) mean wind is below prediction, buy. Large negative errors, sell. Key refinement: separate offshore vs onshore — offshore errors are larger but faster-reverting. My pipeline's `energy_data/` structure is designed to ingest this; adding ECMWF feed is a new adapter."
 
-**🔴 "Design a P&L attribution system for an energy trading desk."**
-- **Exceptional answer:** "I'd decompose daily P&L into: (1) Delta — P&L from directional exposure to spot/futures prices. (2) Gamma — P&L from options convexity. (3) Vega — P&L from volatility changes (critical for power options). (4) Theta — time decay. (5) Residual — everything unexplained, which I'd investigate for model error or unmodeled risk factors like cross-border flow changes. For power specifically, I'd add a 'spark spread' component separating fuel cost changes from power price changes."
-- **This is a stretch question** — it tests whether you think like a trading desk quant, not just a developer. If you can't answer this, pivot to: "I understand the concept but haven't implemented it. Here's how I'd approach it..."
+**🔴 "Your repo has 571 tests at 94% coverage. An algo trading system goes live and loses €10K on day one. What failed that your tests didn't catch?"**
+- **Exceptional answer:** "Three things tests miss: (1) **Data quality** — a bad tick from ENTSO-E (negative price that's actually a missing value encoded as -1) passes all type checks but corrupts the P&L. My tests use clean golden data. (2) **Latency** — tests assume instantaneous execution; real markets have slippage, queue position, partial fills. My slippage model is a flat 0.1% — unrealistic. (3) **Regime change** — the strategy was fit on April data but May had a different wind/solar pattern. Tests validate correctness, not profitability. For a trading system, I'd add: historical replay testing (walk-forward), synthetic data stress tests, and a shadow-mode period where the algo runs alongside the trader without executing."
+
+**🔴 "How would you design the monitoring dashboard for your live algo?"**
+- **Exceptional answer:** "Five panels: (1) **Position & P&L** — current positions per market/asset, daily and cumulative P&L. (2) **Execution quality** — slippage vs limit price, fill rate, order latency. (3) **Market context** — current Day-Ahead/Intraday prices, BE↔FR↔DE spreads, wind/solar generation. (4) **Risk metrics** — live VaR, current drawdown, position limits utilization. (5) **Health** — API connectivity status, data freshness, strategy running/stopped. I'd add a separate alert panel: 'Position exceeds risk limit', 'Data feed stale >5min', 'Strategy unresponsive >1min'. This is infrastructure work, not algo work — but it's essential for the INDUSTRY role, which explicitly mentions collaboration with manual traders who need these dashboards."
 
 ---
 
 ### Cross-Cutting Interview Preparation
 
 **The Portfolio Walkthrough** — When an interviewer says "walk me through this repo":
-1. Open with: "This is my optimization portfolio, built for energy market and quantitative trading roles. The hero module is `energy_markets/` — it implements a PCR market coupling LP that maps directly to Euphemia concepts."
-2. Show the README's "Implementation → Real Euphemia Mapping" table — it demonstrates you know exactly where your model simplifies reality.
-3. Run the RAM-bounded coverage command live if possible — 571 collected tests with 94% measured coverage is compelling.
-4. Open `notebooks/walkthrough.ipynb` and run a few cells — the multi-zone coupling or BESS storage demos are visually impressive.
+1. Open with: "This is my optimization portfolio — built for energy algorithmic trading roles. The standout is `domain/markets/` (PCR/Euphemia) and `domain/optimization/storage.py` (BESS). 571 tests, 94% coverage, hexagonal architecture with ports/adapters."
+2. Show the **Industry demo results** — the hour-of-day spread (+€143), cross-border spreads, BESS arbitrage. "These run on real Belgian ENTSO-E data."
+3. Mention the **honest coverage gaps** table above — "I know what I haven't built yet, and I can discuss exactly how I'd extend."
+4. If they ask about production: "The solver_config.py supports Gurobi/CPLEX/HiGHS with one config change. Switching from CBC to commercial for large-scale is trivial."
 
-**Technical Questions They Will Ask Both Roles:**
-- "What's the time complexity of your solution?" — Our PCR LP is O(n³) in theory (simplex worst case) but O(n²) in practice for these sizes.
-- "How would you parallelize this?" — Independent zones can solve in parallel. Benders decomposition separates the master problem from subproblems.
-- "What would you do differently with unlimited time?" — Add FBMC (flow-based coupling), IP pricing, stochastic programming for renewable uncertainty, and property-based testing with Hypothesis.
+**Technical Questions They Will Ask — Prep For:**
+- "How would you handle a data gap in the ENTSO-E feed?" → Cache-with-TTL fallback to previous day's profile, with an alert flag.
+- "What happens if the CBC solver doesn't converge in time for the market deadline?" → Time-limited solve with MIP gap target, then use the best feasible solution.
+- "How do you ensure the backtest reflects real trading?" → Slippage model, commission, signal-shift. The real gap is market impact — my model assumes the algo doesn't move prices.
+- "Your BESS model has no binary for simultaneous charge/discharge. Why?" → The objective penalizes it naturally (η² efficiency loss). At zero prices, could be optimal — acknowledged limitation.
 
 **Behavioral Questions — Be Ready For:**
-- "Tell me about a bug you found and fixed." → Any of the 13 issues in AGENTS.md. Pick the linked blocks fix — it's a great story about debugging constraint interactions.
-- "Describe a time you disagreed with a technical decision." → The `risk_target` parameter in `optimize_portfolio()` is accepted but not enforced by PuLP. Documenting this honestly and providing the scipy alternative shows you'd raise concerns constructively.
-- "What's something in this repo you're not proud of?" → The acceptance tolerance of 0.001 is hardcoded (should be configurable). The type hints on some internal helper functions are missing (though all public APIs are typed). This shows self-awareness.
+- "Tell me about a bug you found and fixed." → The linked blocks constraint bug. Block orders that should have been linked weren't — the equality constraint was missing. It's a great story about constraint debugging methodology.
+- "Describe a time you had to prioritize between features." → "I chose to push coverage to 90% before adding new features. 571 tests mean I can refactor without fear."
+- "What's something in this repo you're not proud of?" → The hardcoded 0.001 tolerance, and that ancillary services aren't modeled. Shows awareness and honesty.
 
 ---
 
-### Quick Reference: Module → Job Mapping
+### Quick Reference: Module → INDUSTRY Belgium Role Mapping
 
-| Module | Euphemia   Relevance | Industry Relevance |
-|--------|-----------------|-----------------|
-| `energy_markets/pcr_model.py` | ⭐⭐⭐ Core — PCR/Euphemia | ⭐⭐ Market understanding |
-| `energy_markets/multi_zone.py` | ⭐⭐⭐ Core — Zonal coupling | ⭐⭐ Cross-border trading |
-| `energy_markets/intraday.py` | ⭐ Market design | ⭐⭐⭐ Core — Intraday trading |
-| `energy_markets/block_orders.py` | ⭐⭐⭐ Core — Non-convex orders | ⭐ Market structure |
-| `lp_optimization/scheduling.py` | ⭐⭐⭐ Core — MIP modeling | ⭐⭐ Asset optimization |
-| `lp_optimization/storage.py` | ⭐⭐ Emerging market design | ⭐⭐⭐ Core — Battery trading |
-| `lp_optimization/portfolio.py` | ⭐ Optimization fundamentals | ⭐⭐⭐ Core — Risk/return |
-| `backtester/engine.py` | ⭐ Software engineering | ⭐⭐⭐ Core — Strategy validation |
-| `energy_data/fetcher.py` | ⭐ Market data | ⭐⭐⭐ Core — Data infrastructure |
-| `strategies/*` | — | ⭐⭐⭐ Core — Trading signals |
+| Module (new hex path / old flat path) | Primary INDUSTRY Relevance |
+|---|---|
+| `domain/optimization/storage.py` / `lp_optimization/storage.py` | ⭐⭐⭐ **BESS** — battery storage LP for energy arbitrage |
+| `domain/markets/intraday.py` / `energy_markets/intraday.py` | ⭐⭐⭐ **Intraday** — continuous order book matching, cross-border spreads |
+| `domain/markets/pcr_model.py` / `energy_markets/pcr_model.py` | ⭐⭐ **Day-Ahead** — market coupling understanding, MCP, social welfare |
+| `domain/markets/multi_zone.py` / `energy_markets/multi_zone.py` | ⭐⭐ **Cross-border** — BE↔FR↔DE↔NL spread trading |
+| `domain/markets/fbmc.py` / `energy_markets/fbmc.py` | ⭐⭐ **Flow-based** — PTDF/RAM, loop flows, CBCO screening |
+| `domain/trading/` / `backtester/` | ⭐⭐⭐ **Backtesting** — 7 risk metrics, walk-forward, signal-shift |
+| `domain/trading/strategies/` / `strategies/` | ⭐⭐⭐ **Signals** — hour-of-day, calendar spread, solar duck |
+| `adapters/entsoe_client.py` / `energy_data/` | ⭐⭐⭐ **Data** — ENTSO-E REST, SQLite, graceful degradation |
+| `domain/optimization/scheduling.py` / `lp_optimization/scheduling.py` | ⭐⭐ **UC** — MIP for thermal assets, ramp rates, min up/down |
+| `domain/optimization/assets.py` / `lp_optimization/assets.py` | ⭐⭐⭐ **Asset modeling** — Battery, Generator, SpillAsset patterns |
+| `domain/emissions.py` | ⭐⭐ **CO₂** — EUA pass-through pricing, clean spark/dark spread |
+
+**Coverage gap:** Ancillary Services (FCR, aFRR, mFRR) — not yet implemented. See interview response in gaps table above.
 
 ## 📖 Framework Documentation & Knowledge Base
 

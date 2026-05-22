@@ -28,7 +28,7 @@ This folder is a structured curriculum covering all theory, edge cases, intervie
 | 7 | [Backtesting & Metrics](backtesting.md) | Look-ahead bias, Sharpe, Sortino, VaR, Kelly |
 | 8 | [ENTSO-E & Energy Data](entsoe.md) | Transparency Platform, bidding zones, PSR types |
 | 9 | [Competitor Analysis](competitor-analysis.md) | pomato, PyPSA, energy-py-linear — what they do better |
-| 10 | [Interview Q&A](interview-qa.md) | 30+ questions with exceptional answers, edge cases |
+| 10 | [Interview Q&A](interview-qa.md) | 30+ questions (28 core + 8 INDUSTRY-specific) with exceptional answers across Euphemia   + INDUSTRY roles |
 | 11 | [Self-Assessment Quiz](quiz.md) | 50 questions across all domains with answer key |
 
 ---

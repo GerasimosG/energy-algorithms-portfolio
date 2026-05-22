@@ -1,5 +1,28 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-22 13:45 CEST — Industry interview prep updated for Algorithmic Trader (Uccle) role
+
+**Status:** Updated README + interview-qa.md for the specific INDUSTRY Belgium job posting.
+
+**What changed:**
+- **README.md** — Replaced generic Industry section with role-specific content for the Algorithmic Trader (Short-Term Power, Uccle) position:
+  - New coverage gaps table with honest assessment (ancillary services, wind, monitoring, low-latency)
+  - 7 new edge-case questions specific to BESS, aFRR, cross-border signals, nuke trips, algo post-mortems
+  - Updated module→job mapping with new hexagonal architecture paths
+  - Refined portfolio walkthrough and behavioral prep for this role
+- **knowledge/interview-qa.md** — Added Part 5: 8 new INDUSTRY-specific questions (Q21-Q28) covering:
+  - BESS storage LP walkthrough (Q21)
+  - Joint energy+aFRR optimization for batteries (Q22)
+  - Intraday vs auction market design (Q23)
+  - Cross-border spread signal design (Q24)
+  - FCR/aFRR/mFRR product definitions and modeling (Q25)
+  - Production algo post-mortem (Q26)
+  - Testing trading systems vs testing software (Q27)
+  - Power price forecasting with intellectual honesty (Q28)
+- **knowledge/README.md** — Updated TOC to reflect new interview count
+
+**Coverage assessment:** ~70% coverage of this JD. Major gaps: ancillary services, wind modeling, monitoring/observability.
+
 ## 2026-05-22 10:25 CEST — 90% coverage gate completed and RAM-bounded workflow documented
 
 **Status:** Branch `coverage/90-pct` verified and ready to merge to `main`.

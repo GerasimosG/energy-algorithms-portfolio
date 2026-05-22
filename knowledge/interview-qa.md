@@ -213,4 +213,89 @@ For each question, there are three levels:
 
 **Exceptional answer:** "Property-based testing with Hypothesis. My 185 tests cover specific scenarios, but they can't explore the combinatorial space of possible order books. Hypothesis would generate 10,000 random market scenarios per CI run, verifying that energy balance holds, welfare is non-negative, and no block order constraints are violated. This catches edge cases I never thought to test — I found this exact approach in energy-py-linear (250 random examples per test) and it's the single biggest gap between portfolio testing and production testing. It requires zero infrastructure changes and would catch 90% of the bugs that current tests miss."
 
-**Why they ask:** Gauges maturity — do you recommend shiny features or the boring work that actually prevents bugs?
+| **Why they ask:** Gauges maturity — do you recommend shiny features or the boring work that actually prevents bugs?
+
+---
+
+## Part 5: INDUSTRY Belgium — Algorithmic Trader (Short-Term Power, Uccle)
+
+*Questions specific to this role — focus on BESS, renewables, intraday, ancillary services, and production deployment.*
+
+### Q21: "Walk me through your BESS storage optimization model."
+
+**Good answer:** "Maximize arbitrage revenue subject to SoC dynamics, efficiency, and capacity constraints."
+
+**Exceptional answer:** "The storage LP maximizes `Σ(revenue[t] - cost[t])` subject to: SoC[t+1] = SoC[t] + η_charge · P_charge[t] − P_discharge[t]/η_discharge, capacity limits 0 ≤ SoC ≤ E_max, power limits 0 ≤ P ≤ P_max, and terminal SoC constraint to prevent end-of-horizon depletion. Round-trip efficiency η² = 0.9025 means losing 10% per cycle — this is the key economic constraint. No binary for charge/discharge because the objective naturally prevents simultaneous operation (you lose η² for zero gain). My `storage.py` demonstrates this on 30 days of Belgian data. The limitation: it's pure energy arbitrage — no joint bidding into reserve markets, which is where real BESS value is."
+
+**Why they ask:** This role is 30% BESS optimization. They need to know you understand the LP, not just call a library.
+
+---
+
+### Q22: "How would you model a battery bidding into both day-ahead energy AND aFRR reserve?"
+
+**Good answer:** "Add reserve capacity as a decision variable with SoC headroom constraint."
+
+**Exceptional answer:** "Two-stage stochastic optimization. Stage 1 (day-ahead): commit reserve capacity R_aFRR ≤ P_max. The SoC must have headroom: SoC + R_aFRR/η ≤ E_max (up-regulation means discharging). Stage 2 (real-time): actual energy arbitrage with reduced power capacity (P_available = P_max − activated_reserve). The objective: max[ energy_rev + λ_aFRR · R_aFRR − expected_activation_cost ]. Key tradeoff: holding reserve reduces arbitrage capacity. Optimal split depends on λ_aFRR vs energy spread. At high reserve prices (>€50/MW·h), reserve beats arbitrage. At low prices, pure arbitrage wins. My `storage.py` is Stage 1 only, but the pattern extends cleanly."
+
+**Why they ask:** Joint energy+reserve optimization is core to modern BESS operation. Tests understanding of multi-market optimization.
+
+---
+
+### Q23: "Your intraday order book matching — walk me through the price-time priority. How does it differ from Euphemia's algorithm?"
+
+**Good answer:** "Price-time priority: best price first, then earliest order."
+
+**Exceptional answer:** "Price-time priority is standard for continuous intraday trading: (1) best bid/ask match, (2) for equal prices, earlier timestamp wins. This differs from Euphemia in three ways: (a) **Discrete vs continuous** — Euphemia solves a single MIP at gate closure; intraday is continuous matching as orders arrive. (b) **Uniform pricing** — Euphemia produces a uniform MCP per zone per hour; intraday uses pay-as-bid (discriminatory pricing). (c) **Block orders** — intraday has hourly orders only; block orders (linked, exclusive) only exist in day-ahead. My `intraday.py` implements continuous matching with price-time priority — suitable for XBID-style trading."
+
+**Why they ask:** Tests understanding of the difference between auction and continuous trading — fundamental knowledge for a role that spans both DA and ID markets.
+
+---
+
+### Q24: "Design a signal for trading the German-French cross-border spread."
+
+**Good answer:** "Buy the spread when FR price > DE price, sell when DE price > FR price."
+
+**Exceptional answer:** "The BE↔FR↔DE spread is influenced by three factors: (1) **Nuclear availability** — French nuclear outages widen the FR↔DE spread (France imports). Signal: track EDF outage schedules vs ENTSO-E Unavailability of Generation Units. (2) **Wind balance** — North German wind depresses DE prices below FR. Signal: ECMWF wind forecast delta. (3) **CO₂ cost pass-through** — when FR is nuclear-marginal and DE is gas-marginal, the spread is driven by EUA × gas_efficiency. Signal: clean spark spread. Combined signal: `α · nuclear_outage_delta + β · wind_forecast_delta + γ · EUA_x_gas_spread`. My industry_demo captured BE↔FR spread at €13/MWh (May 3) — pure nuclear-outage event."
+
+**Why they ask:** Tests domain knowledge of what actually drives European power spreads, not just math.
+
+---
+
+### Q25: "Explain what FCR, aFRR, and mFRR are, and how you'd model bidding into each."
+
+**Good answer:** "FCR is instantaneous frequency response, aFRR is automatic 5-min reserve, mFRR is manual 15-min reserve."
+
+**Exceptional answer:** "**FCR** (Frequency Containment Reserve): symmetric, ± capacity, must respond within 30s, sustained for 15min. Bid into weekly auctions. Low price (€5-20/MW·h), high volume. Model: fixed capacity reservation, no energy delivery assumed. **aFRR** (automatic Frequency Restoration Reserve): 5-min activation, proportional to ACE. Bid daily. Medium price (€20-80/MW·h). Model: two-stage — commit reserve day-ahead, then expect fraction α activated real-time. **mFRR** (manual FRR): instructed by TSO, typically 15-min blocks. Bid hourly. Higher price (€30-150/MW·h). Model: deterministic activation in one direction. The optimization hierarchy: FCR is must-take, aFRR is probabilistic, mFRR is event-driven. For BESS, aFRR is the sweet spot — fast enough response, high enough price, manageable capacity requirement."
+
+**Why they ask:** The JD explicitly mentions ancillary services. If you can't explain the products, you're disqualified regardless of math skills.
+
+---
+
+### Q26: "A production algo goes live and loses money on day one. Walk me through your post-mortem."
+
+**Good answer:** "Check the data, check the model, check the execution."
+
+**Exceptional answer:** "Structured post-mortem: (1) **Data**: verify ENTSO-E feed for the day — were there missing hours, corrupted XML, stale prices? Compare to independent source (e.g., SMARD for DE, RTE for FR). (2) **Model**: replay the day's data through the backtest — does the offline result match live? Any divergence means a code bug or config issue. (3) **Execution**: check fill prices vs limit prices — was slippage higher than modeled? Queue position? Partial fills? (4) **Regime**: compare the day's market conditions (wind, solar, outages) to the backtest period — if the distribution differs, the model is overfit, not broken. (5) **Mitigation**: add safeguards — max daily loss limit (stop trading), position limits, data quality pre-flight checks. Document in a blameless post-mortem as per INDUSTRY's culture."
+
+**Why they ask:** They want to see systematic debugging under pressure, not blame-shifting or panic.
+
+---
+
+### Q27: "Your framework has 571 tests at 94% coverage. How do you test automatically if you wouldn't test software?"
+
+**Good answer:** "Test the correct module and then into the live staging environment."
+
+**Exceptional answer:** "Testing an algorithmic trading system is different from pure software QA. I'd add: (1) **Historical replay** — replay the last 30 days of live data through the algo in shadow mode and compare every signal/order to the recorded strategy. (2) **Synthetic scenario stress tests** — generate extreme but plausible scenarios (nuclear trip + wind drought + interconnector outage) and verify the algo doesn't violate risk limits. (3) **Change-detection tests** — if the algo produces 20 orders/day on average and today it produces 200, flag for manual review. (4) **A/B test with trader** — run the algo alongside the manual trader in paper mode and compare P&L over a month before going live. My test suite covers the software correctness side; these additions cover the trading correctness side."
+
+**Why they ask:** Tests your understanding of the gap between "code works" and "algo trades profitably."
+
+---
+
+### Q28: "What's your experience with time-series forecasting for power prices?"
+
+**Good answer:** "I've used ARIMA, Prophet, and LSTM."
+
+**Exceptional answer:** "My experience is with fundamentals-driven approaches, not black-box models. Power prices are driven by known physical factors (fuel prices, renewables, outages, demand) that statistical models can't capture well without feature engineering. My approach: (1) **Fundamentals baseline** — merit order stack with fuel/CO₂ costs, renewable infeed, and outage data. This sets the 'physics-based' price. (2) **Residual correction** — apply a statistical model (LASSO with lagged prices + weather features) to predict the deviation from fundamentals. (3) **Regime detection** — separate normal hours (good for fundamentals) from tight hours (better for momentum/sentiment). My repo doesn't have a price forecaster — I'd add one as an adapter matching the EntsoeClient pattern. The key insight for an interview: don't claim you can forecast power prices with high accuracy — you can't. The goal is relative accuracy for signal generation."
+
+**Why they ask:** The JD lists ML/data analytics. But in power markets, forecasting is a minefield — they want intellectual honesty about its limits.
+
