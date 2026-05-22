@@ -65,7 +65,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "--cov=energy_algorithms --cov-fail-under=80"
+addopts = "--cov=energy_algorithms --cov-fail-under=90"
 markers = [
     "slow: slow tests (>5s solve time) — run only on PC",
     "pc: PC-only tests (requires >1GB RAM, >1GHz CPU)",

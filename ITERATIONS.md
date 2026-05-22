@@ -1,5 +1,76 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-22 10:25 CEST — 90% coverage gate completed and RAM-bounded workflow documented
+
+**Status:** Branch `coverage/90-pct` verified and ready to merge to `main`.
+
+**What changed:**
+- **Coverage gate raised to 90%** in `pyproject.toml`.
+- **New lightweight coverage tests** in `tests/test_lightweight_coverage.py`:
+  - Covers risk metrics, stochastic VSS/EVPI, yfinance success/retry/batch paths.
+  - Covers application demo orchestration with mocked plotting, fake data, and cheap backtest results.
+  - Covers TradePro, markets, optimization, market data, and live backtest reporting paths without live network calls or large plot outputs.
+- **Application demo tests made laptop-safe** in `tests/test_application_demos.py`:
+  - Replaced expensive multi-ticker/grid-search demo execution with deterministic monkeypatched data, backtests, and plotting doubles.
+  - Prevents the previous multi-GB RSS spike from monolithic application coverage.
+- **PuLP adapter robustness** in `src/energy_algorithms/adapters/pulp_solver.py`:
+  - Normalizes PuLP/CBC's unbounded-problem `PulpSolverError` into a `SolverResult(status="Unbounded")` for unconstrained problems.
+- **AGENTS.md updated** with the RAM-bounded coverage workflow and the rule to mock expensive demo dependencies in coverage tests.
+- **Worktree-safe coverage imports documented** with `PYTHONPATH="$(pwd)/src"` to avoid measuring a sibling editable install.
+- **Framework metrics script updated** for the `src/energy_algorithms` layout and lightweight `pytest --collect-only --no-cov` test counting.
+
+**Verification:**
+- **Coverage:** 94% total (`3563` statements, `221` missed), `coverage report --fail-under=90` passed.
+- **Tests:** 571 collected; RAM-bounded file-by-file fast coverage run completed without the earlier memory spike.
+- **Lint:** `ruff check tests/test_lightweight_coverage.py tests/test_application_demos.py src/energy_algorithms/adapters/pulp_solver.py pyproject.toml` passed.
+
+**Workflow note:** On laptops, use the file-by-file coverage append loop documented in `AGENTS.md` and `README.md` instead of a single monolithic coverage process.
+
+## 2026-05-21 20:30 CEST — Coverage push to 90% (+241 tests, +4K lines)
+
+**Superseded by 2026-05-22:** Branch `coverage/90-pct` now verifies at 94% coverage with a RAM-bounded workflow.
+
+**What changed:**
+- **13 new test files** (created):
+  - `test_emissions.py` (156L) — CO₂-adjusted cost calculations, factor lookup, full edge coverage
+  - `test_energy_strategies.py` (301L) — hour-of-day spread, solar duck, calendar spread, P&L/win-rate validation
+  - `test_bt_feeds.py` (106L) — ENTSO-E to backtrader CSV feeds, prepare_hourly_csv, prepare_daily_csv
+  - `test_bt_strategies.py` (280L) — HourOfDaySpread, SolarDipTrade, CalendarSpreadDaily with broker models
+  - `test_market_simulation.py` (281L) — 6-agent types, PCR market sessions, agent learning, welfare metrics
+  - `test_entsoe_client.py` (378L) — full ENTSO-E REST client: auth, XML parsing, 27 EU zones
+  - `test_sqlite_store.py` (147L) — CRUD, search, load/save market data
+  - `test_european_coupling.py` (209L) — multi-zone European coupling demos
+  - `test_industry_demo.py` (681L) — end-to-end Industry demo coverage
+  - `test_tradepro_demo.py` (370L) — backtrader + OpenSpace integration
+  - `test_adapters_init.py`, `test_domain_init.py` — package init coverage
+  - `test_historical_analysis_extended.py` (95L) — extended historical analysis tests
+- **8 test files expanded** (+627 lines): `test_application_demos`, `test_gsk`, `test_invariants`, `test_live_demo`, `test_market_clearing`, `test_multi_zone`, `test_pulp_solver`, `test_solver_config`, `test_trading_strategies`
+
+**Coverage highlights (without slow demo tests, 457 fast tests):**
+- **Domain**: all modules 95-100% ✅ (emissions, energy_strategies, hooks, backtest_engine, risk_metrics, momentum, mean_reversion, sma_crossover)
+- **Adapters**: bt_feeds 92%, bt_strategies 90%, entsoe_client 100%, market_simulation 97%, pulp_solver 100%, sqlite_store 100%
+- **Markets**: block_orders 100%, fbmc 98%, gsk 100%, market_clearing 97%, multi_day 92%, multi_zone 97%, pcr_model 92%
+- **Optimization**: assets 99%, invariants 100%, portfolio 98%, scheduling 95%, stochastic 98%, storage 96%, transportation 100%
+- **Total**: 67% (demo modules untested on fast path — adds ~10pp when included)
+
+**Module coverage matrix:**
+
+| Module | Coverage |
+|--------|----------|
+| `domain/emissions.py` | **100%** |
+| `domain/trading/energy_strategies.py` | **100%** |
+| `adapters/bt_feeds.py` | **92%** |
+| `adapters/bt_strategies.py` | **90%** |
+| `adapters/entsoe_client.py` | **100%** |
+| `adapters/market_simulation.py` | **97%** |
+| `adapters/pulp_solver.py` | **100%** |
+| `adapters/sqlite_store.py` | **100%** |
+| `application/european_coupling.py` | **98%** |
+
+**Tests:** 318 → 559 (+241), 0 failures, 3 skipped
+**Ruff:** Clean ✅
+**Git:** On branch `coverage/90-pct` (worktree: `.worktrees/coverage-90`)
+
 ## 2026-05-22 09:00 CEST — Mandatory workflow skills documented in AGENTS.md
 
 **What changed:**

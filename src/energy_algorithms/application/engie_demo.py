@@ -11,10 +11,28 @@ Demonstrates skills relevant to Industry energy algorithmic trader / quant roles
 
 All run on 26 days of real Belgian ENTSO-E data.
 """
-import os, sys
+import os
 from datetime import datetime, timedelta
 
-# Load .env
+import numpy as np
+
+from energy_algorithms.adapters.entsoe_client import EntsoeClient
+from energy_algorithms.application.live_pipeline import (
+    CO2_ADJUSTED_COSTS,
+    DEFAULT_CO2_ADJUSTED_COST,
+    DEFAULT_MARGINAL_COST,
+    MARGINAL_COSTS,
+    _aggregate_generation_data,
+)
+from energy_algorithms.domain.emissions import adjusted_marginal_cost
+from energy_algorithms.domain.markets.pcr_model import PCRModel
+from energy_algorithms.domain.trading.energy_strategies import (
+    calendar_spread_strategy,
+    hour_of_day_strategy,
+    solar_dip_strategy,
+)
+
+# Load .env for direct CLI execution.
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 if os.path.exists(env_path):
     with open(env_path) as f:
@@ -23,22 +41,6 @@ if os.path.exists(env_path):
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 os.environ[k] = v
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-import numpy as np
-from energy_algorithms.adapters.entsoe_client import EntsoeClient
-from energy_algorithms.domain.markets.pcr_model import PCRModel
-from energy_algorithms.domain.trading.energy_strategies import (
-    hour_of_day_strategy, solar_dip_strategy, calendar_spread_strategy,
-    energy_backtest,
-)
-from energy_algorithms.application.live_pipeline import (
-    MARGINAL_COSTS, DEFAULT_MARGINAL_COST,
-    CO2_ADJUSTED_COSTS, DEFAULT_CO2_ADJUSTED_COST,
-    _aggregate_generation_data,
-)
-from energy_algorithms.domain.emissions import adjusted_marginal_cost
 
 
 def _load_env_key() -> str:
@@ -149,7 +151,7 @@ def main():
     print("  INDUSTRY TRADING DEMO — Energy Algorithmic Trading on Real Data")
     print("=" * 72)
     print(f"  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    print(f"  Zone: Belgium (10YBE----------2)")
+    print("  Zone: Belgium (10YBE----------2)")
     print()
 
     # Load data
@@ -184,11 +186,11 @@ def main():
     print(f"\n{'─' * 72}")
     print("  1️⃣  PCR MARKET CLEARING — With CO₂ Cost Pass-Through")
     print(f"{'─' * 72}")
-    print(f"  CO₂ price: €70/tonne EUA (EU ETS 2025-2026)")
-    print(f"  Gas adds:   0.40 t/MWh × €70 = €28/MWh")
-    print(f"  Hard coal:  0.82 t/MWh × €70 = €57/MWh")
-    print(f"  Renewables: 0 t/MWh × €70 = €0/MWh")
-    print(f"  Literature: Clean spark/dark spread (EC Directorate-General for Energy, 2024)")
+    print("  CO₂ price: €70/tonne EUA (EU ETS 2025-2026)")
+    print("  Gas adds:   0.40 t/MWh × €70 = €28/MWh")
+    print("  Hard coal:  0.82 t/MWh × €70 = €57/MWh")
+    print("  Renewables: 0 t/MWh × €70 = €0/MWh")
+    print("  Literature: Clean spark/dark spread (EC Directorate-General for Energy, 2024)")
     print()
 
     # Pick a gas-marginal day for realistic CO₂ comparison
@@ -245,7 +247,7 @@ def main():
 
     if not gen_list:
         gen_list = gen_data_full.get("generation", [])
-    print(f"\n  CO₂-adjusted costs for this day:")
+    print("\n  CO₂-adjusted costs for this day:")
     for g in gen_list[:6]:
         base = MARGINAL_COSTS.get(g["type"], 50)
         co2 = adjusted_marginal_cost(g["type"], base, 70.0)
@@ -256,10 +258,10 @@ def main():
     print(f"\n{'─' * 72}")
     print("  2️⃣  HOUR-OF-DAY SPREAD TRADING (Literature-based)")
     print(f"{'─' * 72}")
-    print(f"  Literature basis: Kiesel & Paraschiv (2021) — Int. Review of")
-    print(f"  Financial Analysis: 'Intraday Electricity Trading: A Survey'")
-    print(f"  Strategy: Buy hours where price < daily avg, sell where > avg")
-    print(f"  Captures the fundamental night-peak spread in power markets")
+    print("  Literature basis: Kiesel & Paraschiv (2021) — Int. Review of")
+    print("  Financial Analysis: 'Intraday Electricity Trading: A Survey'")
+    print("  Strategy: Buy hours where price < daily avg, sell where > avg")
+    print("  Captures the fundamental night-peak spread in power markets")
     print()
 
     hod_results = []
@@ -287,8 +289,8 @@ def main():
     print(f"\n{'─' * 72}")
     print("  3️⃣  SOLAR DUCK CURVE TRADING")
     print(f"{'─' * 72}")
-    print(f"  Strategy: Buy solar dip (12-16h), sell evening peak (18-21h)")
-    print(f"  Most reliable summer pattern in European power markets")
+    print("  Strategy: Buy solar dip (12-16h), sell evening peak (18-21h)")
+    print("  Most reliable summer pattern in European power markets")
     print()
 
     solar_results = []
@@ -307,7 +309,7 @@ def main():
     print(f"  {'Max Premium':<30} {max(spreads):>7.2f}")
     print(f"  {'Profitable Days':<30} {sum(1 for s in spreads if s > 0):>3d}/{len(spreads)}")
     print(f"  {'Win Rate':<30} {np.mean(np.array(spreads) > 0):>7.1%}")
-    print(f"\n  Top 5 days:")
+    print("\n  Top 5 days:")
     best_days = sorted(zip(spreads, dates), reverse=True)[:5]
     for s, d in best_days:
         print(f"    {d} — €{s:>6.2f}/MWh spread")
@@ -316,7 +318,7 @@ def main():
     print(f"\n{'─' * 72}")
     print("  4️⃣  CALENDAR SPREAD TRADING (Daily Average)")
     print(f"{'─' * 72}")
-    print(f"  Strategy: 3-day vs 7-day MA crossover on daily avg prices")
+    print("  Strategy: 3-day vs 7-day MA crossover on daily avg prices")
     print()
 
     daily_avgs = np.array([np.mean(p) for p in prices_list])
@@ -330,7 +332,7 @@ def main():
     print(f"\n{'=' * 72}")
     print("  📊 INDUSTRY ROLE READINESS SUMMARY")
     print(f"{'=' * 72}")
-    print(f"")
+    print("")
 
     checks = [
         ("Energy price data pipeline", "ENTSO-E API → local cache, 26d real data", True),
@@ -356,14 +358,14 @@ def main():
 
     # ── Key Insight for Interview ──
     print(f"{'─' * 72}")
-    print(f"  💡 KEY INSIGHT FOR INDUSTRY INTERVIEWS:")
-    print(f"  This demo shows end-to-end energy algorithmic trading capability:")
-    print(f"  1. Data: Live ENTSO-E pipeline (actual market data, not synthetic)")
-    print(f"  2. Market: PCR/Euphemia clearing with CO₂-adjusted costs")
-    print(f"  3. Trading: Hour-of-day spread, solar duck, calendar spread")
-    print(f"  4. Infrastructure: BESS storage, cross-border arbitrage")
-    print(f"  5. Risk: 7-metric framework (Sharpe, Sortino, VaR, MaxDD, Kelly)")
-    print(f"  Next step: Add ML-based price forecasting (see literature)")
+    print("  💡 KEY INSIGHT FOR INDUSTRY INTERVIEWS:")
+    print("  This demo shows end-to-end energy algorithmic trading capability:")
+    print("  1. Data: Live ENTSO-E pipeline (actual market data, not synthetic)")
+    print("  2. Market: PCR/Euphemia clearing with CO₂-adjusted costs")
+    print("  3. Trading: Hour-of-day spread, solar duck, calendar spread")
+    print("  4. Infrastructure: BESS storage, cross-border arbitrage")
+    print("  5. Risk: 7-metric framework (Sharpe, Sortino, VaR, MaxDD, Kelly)")
+    print("  Next step: Add ML-based price forecasting (see literature)")
     print(f"{'─' * 72}")
     print()
 

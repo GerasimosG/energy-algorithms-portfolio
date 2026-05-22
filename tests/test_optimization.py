@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from energy_algorithms.domain.optimization.portfolio import demo_portfolio, optimize_portfolio, optimize_portfolio_scipy
+from energy_algorithms.domain.optimization.portfolio import (
+    demo_portfolio,
+    optimize_portfolio,
+    optimize_portfolio_scipy,
+)
 from energy_algorithms.domain.optimization.scheduling import demo_uc, solve_unit_commitment
 from energy_algorithms.domain.optimization.storage import demo_storage, solve_storage
 from energy_algorithms.domain.optimization.transportation import (

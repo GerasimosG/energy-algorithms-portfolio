@@ -75,8 +75,14 @@ def test_flat_gsk_zero_zones_raises():
     with pytest.raises(ValueError):
         flat_gsk(n_zones=0, nodes_per_zone=[])
 
-# ── gmax_gsk tests ───────────────────────────────────────────────
 
+def test_flat_gsk_negative_nodes_raises():
+    """Negative nodes_per_zone entry raises ValueError."""
+    with pytest.raises(ValueError, match="non-negative"):
+        flat_gsk(n_zones=2, nodes_per_zone=[3, -1])
+
+
+# ── gmax_gsk tests ───────────────────────────────────────────────
 def test_gmax_gsk_shape():
     """Gmax GSK: shape (n_nodes, n_zones)."""
     capacity = np.array([100.0, 200.0, 50.0, 150.0])  # 4 nodes
@@ -155,8 +161,16 @@ def test_gmax_gsk_negative_capacity():
     with pytest.raises(ValueError, match="non-negative"):
         gmax_gsk(capacity_vector=capacity, zone_map=zone_map)
 
-# ── dynamic_gsk tests ────────────────────────────────────────────
 
+def test_gmax_gsk_zero_zones_with_nodes_raises():
+    """Gmax with n_zones=0 and nodes present raises ValueError."""
+    capacity = np.array([100.0])
+    zone_map = [0]
+    with pytest.raises(ValueError, match="positive"):
+        gmax_gsk(capacity_vector=capacity, zone_map=zone_map, n_zones=0)
+
+
+# ── dynamic_gsk tests ────────────────────────────────────────────
 def test_dynamic_gsk_shape():
     """Dynamic GSK based on actual dispatch."""
     capacity = np.array([100.0, 200.0, 50.0])
@@ -212,8 +226,48 @@ def test_dynamic_gsk_validation():
         dynamic_gsk(capacity_vector=capacity, dispatch_vector=dispatch,
                     zone_map=zone_map)
 
-# ── apply_gsk tests ──────────────────────────────────────────────
 
+def test_dynamic_gsk_validation_zone_map_length():
+    """zone_map length must match number of nodes."""
+    capacity = np.array([100.0, 200.0])
+    dispatch = np.array([50.0, 60.0])
+    zone_map = [0]  # too short
+    with pytest.raises(ValueError, match="zone_map length"):
+        dynamic_gsk(capacity_vector=capacity, dispatch_vector=dispatch,
+                    zone_map=zone_map)
+
+
+def test_dynamic_gsk_negative_capacity():
+    """Negative capacity raises ValueError in dynamic_gsk."""
+    capacity = np.array([100.0, -50.0])
+    dispatch = np.array([50.0, 60.0])
+    zone_map = [0, 1]
+    with pytest.raises(ValueError, match="non-negative"):
+        dynamic_gsk(capacity_vector=capacity, dispatch_vector=dispatch,
+                    zone_map=zone_map)
+
+
+def test_dynamic_gsk_negative_dispatch():
+    """Negative dispatch raises ValueError."""
+    capacity = np.array([100.0, 200.0])
+    dispatch = np.array([50.0, -10.0])
+    zone_map = [0, 1]
+    with pytest.raises(ValueError, match="non-negative"):
+        dynamic_gsk(capacity_vector=capacity, dispatch_vector=dispatch,
+                    zone_map=zone_map)
+
+
+def test_dynamic_gsk_zero_zones_with_nodes_raises():
+    """Dynamic GSK with n_zones=0 and nodes present raises ValueError."""
+    capacity = np.array([100.0])
+    dispatch = np.array([50.0])
+    zone_map = [0]
+    with pytest.raises(ValueError, match="positive"):
+        dynamic_gsk(capacity_vector=capacity, dispatch_vector=dispatch,
+                    zone_map=zone_map, n_zones=0)
+
+
+# ── apply_gsk tests ──────────────────────────────────────────────
 def test_apply_gsk_basic():
     """Apply GSK matrix to zonal net positions -> nodal injections."""
     gsk = np.array([

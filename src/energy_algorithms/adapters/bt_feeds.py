@@ -6,7 +6,6 @@ backtrader GenericCSVDataFeeds compatible with backtrader's event-driven engine.
 from __future__ import annotations
 
 import os
-from datetime import datetime
 
 import backtrader as bt
 

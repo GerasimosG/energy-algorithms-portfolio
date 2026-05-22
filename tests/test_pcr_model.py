@@ -5,7 +5,6 @@ from __future__ import annotations
 from energy_algorithms.domain.markets.intraday import demo_intraday, simulate_intraday
 from energy_algorithms.domain.markets.pcr_model import PCRModel
 
-
 # ── Basic PCR ─────────────────────────────────────────────────────────
 
 def test_simple_clearing():

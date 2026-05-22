@@ -98,7 +98,7 @@ Energy_Algorithms/
 │           ├── options.py          #   Identical copy; domain/options.py is canonical
 │           ├── metadata.py         #   Model introspection (VariableRegistry, ModelMetadata)
 │           └── solver_config.py    #   Solver-agnostic factory (CBC, HiGHS, Gurobi, CPLEX)
-├── tests/                          # Unit tests (pytest, 246 tests, 2 PC-only skipped)
+├── tests/                          # Unit tests (pytest, 571 collected; 90% coverage gate)
 ├── knowledge/                      # Theory, Q&A, interview prep, competitor analysis
 ├── notebooks/                      # Jupyter walkthrough (24-cell Euphemia   interview tour)
 ├── scripts/                        # update_framework_metrics.sh
@@ -128,11 +128,11 @@ Energy_Algorithms/
 | 14 | GPT 5.5: test_multi_day broken | Fixed args: zones_per_day/atc_per_day split, horizon_days=7, welfare key |
 | 15 | GPT 5.5: FBMC balance tolerance | 0.01 → 1.0 (rounding noise, not LP bug) |
 
-### 🔬 New: PC Benchmark + Property-Based Testing
+### 🔬 New: Coverage Gate + Property-Based Testing
 
 - `tests/test_benchmarks.py` — 11 stress tests (9 PC-only, 2 Pi-friendly)
 - `tests/test_hypothesis.py` — 4 property-based tests (1 requires hypothesis)
-- **Tests:** 246 passed, 2 skipped (PC-only), 0 failed
+- **Tests:** 571 collected; bounded coverage gate verifies 94% total coverage with a 90% fail-under.
 
 ---
 
@@ -181,6 +181,17 @@ Energy_Algorithms/
 ### RAM & Performance Discipline
 - Monitor memory during bulk operations (large yfinance fetches, grid searches over many param combinations).
 - Limit grid search to at most ~30 backtests per demo to stay under 500MB RSS.
+- For coverage on memory-constrained laptops, avoid one monolithic `pytest tests/ --cov` run if RSS climbs. Use a file-by-file coverage append loop so each Python process exits and releases memory:
+  ```bash
+  python -m coverage erase
+  for f in tests/test_*.py; do
+      PYTHONPATH="$(pwd)/src" python -m pytest "$f" -m "not slow and not pc" \
+        --cov=energy_algorithms --cov-append --cov-report= --cov-fail-under=0 -q
+  done
+  PYTHONPATH="$(pwd)/src" python -m coverage report --fail-under=90
+  ```
+- Pin `PYTHONPATH="$(pwd)/src"` when validating from a worktree or after using editable installs, so coverage measures the current checkout instead of a sibling worktree.
+- Demo/application tests must mock plotting, live data, and expensive backtest loops when the purpose is coverage. Do not let application coverage tests fetch live data, write large plot outputs, or run multi-ticker grid searches.
 - Vectorized operations only (numpy/pandas) — no Python loops over price data.
 - Close SQLite connections promptly after reads/writes.
 
@@ -332,6 +343,7 @@ pytest tests/ -v                             # All tests
 pytest tests/ -v -m "not slow and not pc"    # Fast tests only (Pi-friendly)
 pytest tests/test_pcr_model.py -v            # Single file
 pytest tests/ --cov=energy_algorithms        # Coverage report
+python -m coverage erase && for f in tests/test_*.py; do PYTHONPATH="$(pwd)/src" python -m pytest "$f" -m "not slow and not pc" --cov=energy_algorithms --cov-append --cov-report= --cov-fail-under=0 -q || exit $?; done && PYTHONPATH="$(pwd)/src" python -m coverage report --fail-under=90  # RAM-bounded coverage gate
 pytest tests/ -v -k "stochastic"            # Keyword match
 
 # Lint & Type Check
@@ -401,6 +413,7 @@ Every significant change updates these three files simultaneously:
 8. **Inverses must verify** — `LODF[i,j]*LODF[j,i]` should approximate identity. PTDF row sums ≈ 0. Test these.
 9. **Known-optimal > "solves without error"** — Every optimization test should have a pre-computed correct answer.
 10. **Backward compat during refactors** — When moving code, keep re-export stubs in the old location so the working tree isn't broken mid-iteration.
+11. **Coverage can be memory-heavy** — Monolithic coverage runs can climb into multi-GB RSS because application/backtrader imports accumulate in one process. Use the file-by-file coverage append loop and lightweight mocks for demo tests.
 
 ---
 

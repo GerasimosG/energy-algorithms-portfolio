@@ -13,7 +13,6 @@ from energy_algorithms.domain.markets.market_clearing import (
     find_equilibrium,
 )
 
-
 # ── Basic equilibrium ─────────────────────────────────────────────────
 
 def test_basic_cross():
@@ -182,3 +181,56 @@ def test_demand_cum_qty_monotonic():
     result = find_equilibrium(supply, demand)
     dem_cum = result["demand_cum_qty"]
     assert np.all(np.diff(dem_cum) >= 0)
+
+
+# ── plot_supply_demand_stack ─────────────────────────────────────────
+
+def test_plot_supply_demand_stack_creates_file(tmp_path) -> None:
+    """plot_supply_demand_stack saves a PNG and returns the path."""
+    from energy_algorithms.domain.markets.market_clearing import (
+        plot_supply_demand_stack,
+    )
+
+    supply = [
+        {"id": "Solar", "price": 5, "quantity": 200},
+        {"id": "Gas", "price": 80, "quantity": 200},
+    ]
+    demand = [
+        {"id": "Industry", "price": 150, "quantity": 300},
+    ]
+
+    save_path = str(tmp_path / "market_clearing.png")
+    result = plot_supply_demand_stack(supply, demand, save_path)
+
+    assert result == save_path
+    import os
+    assert os.path.exists(save_path)
+    assert os.path.getsize(save_path) > 0
+
+
+def test_plot_supply_demand_stack_multiple_buyers(tmp_path) -> None:
+    """Plot with 5 suppliers and 3 buyers — covers surplus shading branches."""
+    from energy_algorithms.domain.markets.market_clearing import (
+        plot_supply_demand_stack,
+    )
+
+    supply = [
+        {"id": "Solar", "price": 5, "quantity": 200},
+        {"id": "Wind", "price": 15, "quantity": 150},
+        {"id": "Hydro", "price": 35, "quantity": 100},
+        {"id": "Gas", "price": 80, "quantity": 200},
+        {"id": "Diesel", "price": 120, "quantity": 100},
+    ]
+    demand = [
+        {"id": "Ind_Base", "price": 200, "quantity": 300},
+        {"id": "Ind_Peak", "price": 150, "quantity": 200},
+        {"id": "Residential", "price": 100, "quantity": 150},
+    ]
+
+    save_path = str(tmp_path / "market_full.png")
+    result = plot_supply_demand_stack(supply, demand, save_path)
+
+    assert result == save_path
+    import os
+    assert os.path.exists(save_path)
+    assert os.path.getsize(save_path) > 1000  # full plot > 1KB

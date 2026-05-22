@@ -8,8 +8,6 @@ Compatible with backtrader (pip install backtrader).
 """
 from __future__ import annotations
 
-from datetime import datetime
-
 import backtrader as bt
 import numpy as np
 

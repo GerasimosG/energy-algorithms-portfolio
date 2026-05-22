@@ -14,7 +14,6 @@ from energy_algorithms.domain.markets.block_orders import (
     scenario_simple_block,
 )
 
-
 # ── Simple block ──────────────────────────────────────────────────────
 
 def test_simple_block_returns_result():

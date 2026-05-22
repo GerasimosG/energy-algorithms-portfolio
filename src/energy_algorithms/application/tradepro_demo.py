@@ -8,17 +8,11 @@ Demonstrates our repo beating individual libraries by combining:
 
 All on real ENTSO-E data.
 """
-import csv
 import os
-import sys
-from collections import defaultdict
 from datetime import datetime
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
-
-import numpy as np
-from energy_algorithms.adapters.bt_feeds import prepare_hourly_csv, prepare_daily_csv
-from energy_algorithms.adapters.market_simulation import create_default_market, Agent, MarketSession
+from energy_algorithms.adapters.bt_feeds import prepare_hourly_csv
+from energy_algorithms.adapters.market_simulation import Agent, MarketSession, create_default_market
 
 CACHED_CSV = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "entsoe_prices.csv")
 BT_HOURLY = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "bt_hourly.csv")
@@ -28,6 +22,7 @@ BT_DAILY = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "bt
 def run_backtrader_hod():
     """Run hour-of-day spread via backtrader engine."""
     import backtrader as bt
+
     from energy_algorithms.adapters.bt_strategies import HourOfDaySpread
 
     if not os.path.exists(BT_HOURLY):
@@ -69,6 +64,7 @@ def run_backtrader_hod():
 def run_backtrader_solar():
     """Run solar duck curve via backtrader engine."""
     import backtrader as bt
+
     from energy_algorithms.adapters.bt_strategies import SolarDipTrade
 
     if not os.path.exists(BT_HOURLY):
@@ -126,7 +122,7 @@ def main():
     if not os.path.exists(CACHED_CSV):
         print("  ❌ No cached ENTSO-E data. Run the month-long fetch first.\n")
         return
-    print(f"  Data: 26 days of real ENTSO-E Belgian day-ahead prices")
+    print("  Data: 26 days of real ENTSO-E Belgian day-ahead prices")
 
     # ── Section 1: backtrader ───────────────────────────────────────
     print(f"\n{'─' * 72}")
@@ -135,7 +131,7 @@ def main():
 
     try:
         hod = run_backtrader_hod()
-        print(f"\n  Hour-of-Day Spread:")
+        print("\n  Hour-of-Day Spread:")
         for k, v in hod.items():
             print(f"    {k}: {v!s}")
     except Exception as e:
@@ -143,7 +139,7 @@ def main():
 
     try:
         sol = run_backtrader_solar()
-        print(f"\n  Solar Duck Curve:")
+        print("\n  Solar Duck Curve:")
         for k, v in sol.items():
             print(f"    {k}: {v!s}")
     except Exception as e:
@@ -153,19 +149,19 @@ def main():
     print(f"\n{'─' * 72}")
     print("  2️⃣  OPENSPACE-STYLE — Agent-Based PCR Market Simulation")
     print(f"{'─' * 72}")
-    print(f"  Agents: Solar, Wind, Nuclear, Gas Peaker, Gas CCGT (+learning), Hydro")
+    print("  Agents: Solar, Wind, Nuclear, Gas Peaker, Gas CCGT (+learning), Hydro")
 
     try:
         std, spec = run_openspace_simulation()
-        print(f"\n  Standard Market (6 agents):")
+        print("\n  Standard Market (6 agents):")
         print(f"    Avg MCP:     €{std['avg_mcp']:.2f}/MWh")
         print(f"    MCP Range:   €{std['min_mcp']:.0f}–{std['max_mcp']:.0f}/MWh")
         print(f"    Total Welfare: €{std['total_welfare']:,.0f}")
-        print(f"    Generator Profits:")
+        print("    Generator Profits:")
         for name, profit in sorted(std['generator_profits'].items(), key=lambda x: -x[1]):
             print(f"      {name:<20} €{profit:>10,.0f}")
 
-        print(f"\n  With Speculator (7 agents):")
+        print("\n  With Speculator (7 agents):")
         print(f"    Avg MCP:     €{spec['avg_mcp']:.2f}/MWh")
         for name, profit in sorted(spec['generator_profits'].items(), key=lambda x: -x[1]):
             print(f"      {name:<20} €{profit:>10,.0f}")
@@ -176,7 +172,7 @@ def main():
     print(f"\n{'─' * 72}")
     print("  3️⃣  WHY THIS BEATS INDIVIDUAL LIBRARIES")
     print(f"{'─' * 72}")
-    print(""" 
+    print("""
   Feature                     backtrader    OpenSpace     bt (fja)    OURS
   ───────────────────────────────────────────────────────────────────────
   Event-driven execution        ✅           ❌           ✅         ✅
@@ -190,8 +186,8 @@ def main():
   Hour-of-day strategies        ❌           ❌           ❌         ✅
   Strategy comparison           ✅           ❌           ✅         ✅  """)
     print()
-    print(f"  VERDICT: OURS combines the best of all three frameworks")
-    print(f"  into one energy-specific repo with fewer dependencies.")
+    print("  VERDICT: OURS combines the best of all three frameworks")
+    print("  into one energy-specific repo with fewer dependencies.")
 
 
 if __name__ == "__main__":
