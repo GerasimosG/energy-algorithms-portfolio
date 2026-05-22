@@ -19,6 +19,7 @@ import time
 from typing import Any
 
 import pulp
+from pulp.apis.core import PulpSolverError
 
 from energy_algorithms.ports.solver import SolverPort, SolverResult
 
@@ -73,7 +74,19 @@ class PuLPSolverAdapter(SolverPort):
 
         # Build the solver instance with options
         solver_instance = self._solver_cls(**options)
-        problem.solve(solver_instance)
+        try:
+            problem.solve(solver_instance)
+        except PulpSolverError:
+            elapsed = time.perf_counter() - t0
+            if not problem.constraints:
+                return SolverResult(
+                    status="Unbounded",
+                    objective=None,
+                    variables={},
+                    solve_time=elapsed,
+                    solver_name=self.name,
+                )
+            raise
 
         elapsed = time.perf_counter() - t0
 

@@ -1,8 +1,33 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-05-22 10:25 CEST — 90% coverage gate completed and RAM-bounded workflow documented
+
+**Status:** Branch `coverage/90-pct` verified and ready to merge to `main`.
+
+**What changed:**
+- **Coverage gate raised to 90%** in `pyproject.toml`.
+- **New lightweight coverage tests** in `tests/test_lightweight_coverage.py`:
+  - Covers risk metrics, stochastic VSS/EVPI, yfinance success/retry/batch paths.
+  - Covers application demo orchestration with mocked plotting, fake data, and cheap backtest results.
+  - Covers TradePro, markets, optimization, market data, and live backtest reporting paths without live network calls or large plot outputs.
+- **Application demo tests made laptop-safe** in `tests/test_application_demos.py`:
+  - Replaced expensive multi-ticker/grid-search demo execution with deterministic monkeypatched data, backtests, and plotting doubles.
+  - Prevents the previous multi-GB RSS spike from monolithic application coverage.
+- **PuLP adapter robustness** in `src/energy_algorithms/adapters/pulp_solver.py`:
+  - Normalizes PuLP/CBC's unbounded-problem `PulpSolverError` into a `SolverResult(status="Unbounded")` for unconstrained problems.
+- **AGENTS.md updated** with the RAM-bounded coverage workflow and the rule to mock expensive demo dependencies in coverage tests.
+- **Framework metrics script updated** for the `src/energy_algorithms` layout and lightweight `pytest --collect-only --no-cov` test counting.
+
+**Verification:**
+- **Coverage:** 94% total (`3572` statements, `211` missed), `coverage report --fail-under=90` passed.
+- **Tests:** 571 collected; RAM-bounded file-by-file fast coverage run completed without the earlier memory spike.
+- **Lint:** `ruff check tests/test_lightweight_coverage.py tests/test_application_demos.py src/energy_algorithms/adapters/pulp_solver.py pyproject.toml` passed.
+
+**Workflow note:** On laptops, use the file-by-file coverage append loop documented in `AGENTS.md` and `README.md` instead of a single monolithic coverage process.
+
 ## 2026-05-21 20:30 CEST — Coverage push to 90% (+241 tests, +4K lines)
 
-**⚠️ Work-in-progress:** Branch `coverage/90-pct` — not yet merged to main. Full suite too heavy for Pi (559 tests). Final coverage pending PC run.
+**Superseded by 2026-05-22:** Branch `coverage/90-pct` now verifies at 94% coverage with a RAM-bounded workflow.
 
 **What changed:**
 - **13 new test files** (created):

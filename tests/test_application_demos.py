@@ -7,9 +7,61 @@ All demos use deterministic demo data (no live API calls).
 from __future__ import annotations
 
 import numpy as np
-import pytest
+import pandas as pd
 
 from energy_algorithms.application.energy_data_demo import demo_energy_data
+
+
+class DummyAxis:
+    """Minimal matplotlib axis double for demo plotting tests."""
+
+    transAxes = object()
+
+    def plot(self, *args, **kwargs) -> None:
+        pass
+
+    def fill_between(self, *args, **kwargs) -> None:
+        pass
+
+    def axhline(self, *args, **kwargs) -> None:
+        pass
+
+    def set_title(self, *args, **kwargs) -> None:
+        pass
+
+    def set_ylabel(self, *args, **kwargs) -> None:
+        pass
+
+    def set_xlabel(self, *args, **kwargs) -> None:
+        pass
+
+    def grid(self, *args, **kwargs) -> None:
+        pass
+
+    def text(self, *args, **kwargs) -> None:
+        pass
+
+
+def fake_backtest_result() -> dict:
+    """Return the result shape expected by plotting demos."""
+    return {
+        "equity_curve": pd.Series([100_000.0, 101_000.0, 102_000.0]),
+        "total_return": 0.02,
+        "sharpe": 1.2,
+        "max_drawdown": -0.01,
+        "n_trades": 2,
+        "win_rate": 0.5,
+    }
+
+
+def patch_plotting(monkeypatch, module, tmp_path) -> None:
+    """Patch matplotlib and output paths for cheap demo tests."""
+    axes = [DummyAxis(), DummyAxis(), DummyAxis()]
+    monkeypatch.setattr(module.plt, "subplots", lambda *a, **kw: (object(), axes))
+    monkeypatch.setattr(module.plt, "tight_layout", lambda: None)
+    monkeypatch.setattr(module.plt, "savefig", lambda *a, **kw: None)
+    monkeypatch.setattr(module.plt, "close", lambda: None)
+    monkeypatch.setattr(module.os.path, "dirname", lambda path: str(tmp_path))
 
 
 # ── energy_data_demo ─────────────────────────────────────────────────
@@ -44,11 +96,11 @@ def test_strategies_demo_best_params():
 
 def test_optimization_demo_main_runs():
     """optimization_demo.main() runs all three LP problems successfully."""
-    from energy_algorithms.application.optimization_demo import main as opt_main
-
     # Capture stdout to avoid noise, just verify it doesn't crash
     import io
     import sys
+
+    from energy_algorithms.application.optimization_demo import main as opt_main
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
@@ -66,10 +118,10 @@ def test_optimization_demo_main_runs():
 
 def test_markets_demo_main_runs():
     """markets_demo.main() runs PCR, block orders, FBMC, market clearing."""
-    from energy_algorithms.application.markets_demo import main as markets_main
-
     import io
     import sys
+
+    from energy_algorithms.application.markets_demo import main as markets_main
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
@@ -99,15 +151,14 @@ def test_european_coupling_functions_exist():
 
 def test_live_pipeline_demo_runs():
     """live_pipeline demo runs using demo data (no API key)."""
-    from energy_algorithms.application.live_pipeline import demo_live_pipeline
-
     import io
     import sys
+
+    from energy_algorithms.application.live_pipeline import demo_live_pipeline
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
         result = demo_live_pipeline()
-        output = sys.stdout.getvalue()
     finally:
         sys.stdout = old_stdout
     assert isinstance(result, dict)
@@ -117,10 +168,10 @@ def test_live_pipeline_demo_runs():
 
 def test_market_data_demo_main_runs():
     """market_data_demo.main() fetches and stores data (will use demo data if available)."""
-    from energy_algorithms.application.market_data_demo import main as mdata_main
-
     import io
     import sys
+
+    from energy_algorithms.application.market_data_demo import main as mdata_main
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
@@ -135,15 +186,14 @@ def test_market_data_demo_main_runs():
 
 def test_live_backtest_demo_runs():
     """demo_live_backtest falls back to synthetic data and returns results."""
-    from energy_algorithms.application.live_backtest import demo_live_backtest
-
     import io
     import sys
+
+    from energy_algorithms.application.live_backtest import demo_live_backtest
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
         result = demo_live_backtest()
-        output = sys.stdout.getvalue()
     finally:
         sys.stdout = old_stdout
     assert isinstance(result, dict)
@@ -167,10 +217,10 @@ def test_trading_demo_best_sma_params():
 
 def test_trading_demo_load_prices_fallback():
     """_load_prices falls back to synthetic when no DB/yfinance."""
-    from energy_algorithms.application.trading_demo import _load_prices
-
     import io
     import sys
+
+    from energy_algorithms.application.trading_demo import _load_prices
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
@@ -181,22 +231,47 @@ def test_trading_demo_load_prices_fallback():
     assert len(dates) > 200
 
 
-def test_trading_demo_main_runs(monkeypatch, capsys):
+def test_trading_demo_main_runs(monkeypatch, capsys, tmp_path):
     """trading_demo.main() runs with synthetic data and prints results."""
-    from energy_algorithms.application.trading_demo import main as trading_main
+    from energy_algorithms.application import trading_demo
 
-    # main() uses _load_prices which falls back to synthetic
-    trading_main()
+    prices = np.array([100.0, 101.0, 102.0])
+    dates = pd.date_range("2024-01-01", periods=3)
+    monkeypatch.setattr(trading_demo, "_load_prices", lambda ticker: (prices, dates))
+    monkeypatch.setattr(trading_demo, "_best_sma_params", lambda prices: (1, 2))
+    monkeypatch.setattr(trading_demo, "sma_crossover", lambda prices, fast, slow: np.array([0, 1, 1]))
+    monkeypatch.setattr(trading_demo, "backtest", lambda prices, signal: fake_backtest_result())
+    monkeypatch.setattr(
+        trading_demo,
+        "compute_all",
+        lambda returns, equity: {"sharpe": 1.0, "max_drawdown": -0.01},
+    )
+    patch_plotting(monkeypatch, trading_demo, tmp_path)
+
+    trading_demo.main()
     captured = capsys.readouterr()
     assert "Backtester Demo" in captured.out or "SMA Crossover" in captured.out
     assert "Return" in captured.out
 
 
-def test_trading_demo_main_prints_metrics(monkeypatch, capsys):
+def test_trading_demo_main_prints_metrics(monkeypatch, capsys, tmp_path):
     """trading_demo.main() prints risk metrics for each ticker."""
-    from energy_algorithms.application.trading_demo import main as trading_main
+    from energy_algorithms.application import trading_demo
 
-    trading_main()
+    prices = np.array([100.0, 101.0, 102.0])
+    dates = pd.date_range("2024-01-01", periods=3)
+    monkeypatch.setattr(trading_demo, "_load_prices", lambda ticker: (prices, dates))
+    monkeypatch.setattr(trading_demo, "_best_sma_params", lambda prices: (1, 2))
+    monkeypatch.setattr(trading_demo, "sma_crossover", lambda prices, fast, slow: np.array([0, 1, 1]))
+    monkeypatch.setattr(trading_demo, "backtest", lambda prices, signal: fake_backtest_result())
+    monkeypatch.setattr(
+        trading_demo,
+        "compute_all",
+        lambda returns, equity: {"sharpe": 1.0, "max_drawdown": -0.01},
+    )
+    patch_plotting(monkeypatch, trading_demo, tmp_path)
+
+    trading_demo.main()
     captured = capsys.readouterr()
     assert "Sharpe" in captured.out
     assert "Max DD" in captured.out
@@ -208,28 +283,63 @@ def test_trading_demo_main_prints_metrics(monkeypatch, capsys):
 def test_strategies_demo_load_prices_fallback():
     """strategies_demo._load_prices falls back to synthetic data."""
     from energy_algorithms.application.strategies_demo import _load_prices
-    from energy_algorithms.domain.trading import synthetic_prices
 
     prices, dates = _load_prices("UNKNOWN_TEST_TICKER123")
     assert len(prices) > 0
     assert len(dates) > 0
 
 
-def test_strategies_demo_main_runs(monkeypatch, capsys):
+def test_strategies_demo_main_runs(monkeypatch, capsys, tmp_path):
     """strategies_demo.main() runs and produces strategy output."""
-    from energy_algorithms.application.strategies_demo import main as strategies_main
+    from energy_algorithms.application import strategies_demo
 
-    strategies_main()
+    prices = np.array([100.0, 101.0, 102.0])
+    dates = pd.date_range("2024-01-01", periods=3)
+    monkeypatch.setattr(strategies_demo, "_load_prices", lambda ticker: (prices, dates))
+    monkeypatch.setattr(
+        strategies_demo,
+        "_best_params",
+        lambda prices: {
+            "sma": {"fast": 1, "slow": 2},
+            "mr": {"window": 2, "n_std": 1.0},
+            "mom": {"lookback": 1, "hold": 1, "threshold": 0.01},
+        },
+    )
+    monkeypatch.setattr(strategies_demo, "sma_crossover", lambda prices, **kwargs: np.array([0, 1, 1]))
+    monkeypatch.setattr(strategies_demo, "mean_reversion", lambda prices, **kwargs: np.array([0, -1, -1]))
+    monkeypatch.setattr(strategies_demo, "momentum", lambda prices, **kwargs: np.array([0, 1, 0]))
+    monkeypatch.setattr(strategies_demo, "backtest", lambda prices, signal: fake_backtest_result())
+    patch_plotting(monkeypatch, strategies_demo, tmp_path)
+
+    strategies_demo.main()
     captured = capsys.readouterr()
     assert "Strategies Demo" in captured.out
     assert "SMA Crossover" in captured.out or "Bollinger" in captured.out
 
 
-def test_strategies_demo_main_prints_best_params(monkeypatch, capsys):
+def test_strategies_demo_main_prints_best_params(monkeypatch, capsys, tmp_path):
     """strategies_demo.main() prints best parameters per strategy."""
-    from energy_algorithms.application.strategies_demo import main as strategies_main
+    from energy_algorithms.application import strategies_demo
 
-    strategies_main()
+    prices = np.array([100.0, 101.0, 102.0])
+    dates = pd.date_range("2024-01-01", periods=3)
+    monkeypatch.setattr(strategies_demo, "_load_prices", lambda ticker: (prices, dates))
+    monkeypatch.setattr(
+        strategies_demo,
+        "_best_params",
+        lambda prices: {
+            "sma": {"fast": 1, "slow": 2},
+            "mr": {"window": 2, "n_std": 1.0},
+            "mom": {"lookback": 1, "hold": 1, "threshold": 0.01},
+        },
+    )
+    monkeypatch.setattr(strategies_demo, "sma_crossover", lambda prices, **kwargs: np.array([0, 1, 1]))
+    monkeypatch.setattr(strategies_demo, "mean_reversion", lambda prices, **kwargs: np.array([0, -1, -1]))
+    monkeypatch.setattr(strategies_demo, "momentum", lambda prices, **kwargs: np.array([0, 1, 0]))
+    monkeypatch.setattr(strategies_demo, "backtest", lambda prices, signal: fake_backtest_result())
+    patch_plotting(monkeypatch, strategies_demo, tmp_path)
+
+    strategies_demo.main()
     captured = capsys.readouterr()
     assert "Return" in captured.out
     assert "Sharpe" in captured.out
