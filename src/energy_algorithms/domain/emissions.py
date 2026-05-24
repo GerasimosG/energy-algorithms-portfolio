@@ -9,6 +9,8 @@ References:
 - EEX: EUA (European Emission Allowance) market data
 """
 
+from __future__ import annotations
+
 # CO₂ emissions factors (tonnes per MWh electrical output)
 # Based on typical EU power plant efficiencies
 EMISSION_FACTORS: dict[str, float] = {

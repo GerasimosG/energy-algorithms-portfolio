@@ -5,7 +5,7 @@ and application configuration.
 """
 from __future__ import annotations
 
-from energy_algorithms.adapters.config import ENTSOE_API_KEY
+from energy_algorithms.adapters.config import ENTSOE_API_KEY, create_entsoe_client
 from energy_algorithms.adapters.entsoe_client import (
     EntsoeClient,
     fetch_demo_day_ahead,
@@ -30,6 +30,7 @@ __all__ = [
     "PuLPSolverAdapter",
     # Config
     "ENTSOE_API_KEY",
+    "create_entsoe_client",
     # ENTSO-E
     "EntsoeClient",
     "fetch_demo_day_ahead",

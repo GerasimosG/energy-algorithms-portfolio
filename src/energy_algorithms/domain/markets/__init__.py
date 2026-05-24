@@ -6,6 +6,12 @@ flow-based market coupling (PTDF + RAM), continuous intraday matching.
 """
 from __future__ import annotations
 
+from energy_algorithms.domain.markets.coupling_utils import (
+    compute_social_welfare,
+    extract_flow_results,
+    extract_zone_results,
+    validate_atc,
+)
 from energy_algorithms.domain.markets.fbmc import solve_fbmc
 from energy_algorithms.domain.markets.gsk import (
     apply_gsk,
@@ -26,6 +32,10 @@ from energy_algorithms.domain.markets.pcr_model import PCRModel
 
 __all__ = [
     "PCRModel",
+    "compute_social_welfare",
+    "extract_flow_results",
+    "extract_zone_results",
+    "validate_atc",
     "simulate_intraday",
     "demo_intraday",
     "solve_fbmc",

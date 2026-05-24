@@ -13,12 +13,15 @@ import os
 import sys
 import time
 from datetime import datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from energy_algorithms.adapters.config import ENTSOE_API_KEY
-from energy_algorithms.adapters.entsoe_client import BIDDING_ZONES, EntsoeClient
+if TYPE_CHECKING:
+    from energy_algorithms.adapters.entsoe_client import EntsoeClient
+
+from energy_algorithms.adapters.config import create_entsoe_client
+from energy_algorithms.adapters.entsoe_client import BIDDING_ZONES
 from energy_algorithms.domain.markets.multi_zone import solve_multi_zone
 from energy_algorithms.domain.optimization.storage import solve_storage
 
@@ -194,7 +197,7 @@ def analyze_day(
 def run_30day_analysis(num_days: int = 30) -> list[dict[str, Any]]:
     """Fetch and analyze N days of historical data."""
     _ensure_cache()
-    client = EntsoeClient(api_key=ENTSOE_API_KEY, timeout=30)
+    client = create_entsoe_client()
 
     results: list[dict[str, Any]] = []
     errors = 0
