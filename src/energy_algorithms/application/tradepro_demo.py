@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""TradePro — backtrader + OpenSpace + bt integration for energy algorithmic
-trading with real ENTSO-E data feeds.
+"""TradePro Demo — backtrader + OpenSpace + bt integration for energy trading.
 
 Demonstrates our repo beating individual libraries by combining:
   1. backtrader engine — event-driven backtesting with order types, commission, walk-forward
@@ -9,9 +8,6 @@ Demonstrates our repo beating individual libraries by combining:
 
 All on real ENTSO-E data.
 """
-
-from __future__ import annotations
-
 import os
 from datetime import datetime
 

@@ -413,7 +413,8 @@ pytest tests/ -v --cov=energy_algorithms --cov-report=term-missing
 
 ## 🔒 Status
 
-**Production-ready** — 571 tests, 94% coverage, hexagonal architecture. Ready for portfolio submission.
+**Currently private** — not yet ready for public portfolio. Targeted for public release
+when the remaining limitations are addressed and CI is green.
 
 ## Author
 

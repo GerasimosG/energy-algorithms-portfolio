@@ -349,7 +349,7 @@ def test_run_30day_analysis_mocked(monkeypatch, capsys, tmp_path):
         return {"prices": [50.0] * 24, "avg": 50.0}
 
     monkeypatch.setattr(ha, "fetch_day", fake_fetch_day)
-    monkeypatch.setattr(ha, "create_entsoe_client", lambda **kw: mock_client)
+    monkeypatch.setattr(ha, "EntsoeClient", lambda **kw: mock_client)
 
     try:
         results = ha.run_30day_analysis(num_days=3)
@@ -372,7 +372,7 @@ def test_run_30day_analysis_handles_errors(monkeypatch, capsys, tmp_path):
         raise ValueError("API Error")
 
     monkeypatch.setattr(ha, "fetch_day", failing_fetch)
-    monkeypatch.setattr(ha, "create_entsoe_client", lambda **kw: MagicMock())
+    monkeypatch.setattr(ha, "EntsoeClient", lambda **kw: MagicMock())
 
     try:
         results = ha.run_30day_analysis(num_days=5)
@@ -395,7 +395,7 @@ def test_run_30day_analysis_no_data(monkeypatch, capsys, tmp_path):
         return {"prices": [], "avg": 0.0}
 
     monkeypatch.setattr(ha, "fetch_day", zero_data_fetch)
-    monkeypatch.setattr(ha, "create_entsoe_client", lambda **kw: MagicMock())
+    monkeypatch.setattr(ha, "EntsoeClient", lambda **kw: MagicMock())
 
     try:
         results = ha.run_30day_analysis(num_days=3)

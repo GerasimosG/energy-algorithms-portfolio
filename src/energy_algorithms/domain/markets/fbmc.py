@@ -22,11 +22,6 @@ from typing import Any
 import numpy as np
 import pulp
 
-from energy_algorithms.domain.markets.coupling_utils import (
-    compute_social_welfare,
-    extract_zone_results,
-)
-
 
 def solve_fbmc(
     zones: list[dict],
@@ -136,7 +131,18 @@ def solve_fbmc(
     # ── Objective: social welfare ───────────────────────────────
     welfare = 0
     for zi in range(Z):
-        welfare += compute_social_welfare(zones[zi], s_vars[zi], d_vars[zi])
+        welfare += pulp.lpSum(
+            zones[zi]["demand"][di]["price"]
+            * zones[zi]["demand"][di]["qty"]
+            * d_vars[zi][di]
+            for di in range(len(zones[zi]["demand"]))
+        )
+        welfare -= pulp.lpSum(
+            zones[zi]["supply"][si]["price"]
+            * zones[zi]["supply"][si]["qty"]
+            * s_vars[zi][si]
+            for si in range(len(zones[zi]["supply"]))
+        )
     prob += welfare
 
     # ── Constraints ─────────────────────────────────────────────
@@ -183,10 +189,30 @@ def solve_fbmc(
     for zi in range(Z):
         zname = zone_names[zi]
         z = zones[zi]
-        zone_results.update(extract_zone_results(z, s_vars[zi], d_vars[zi], zname))
-        zone_results[zname]["net_position_mw"] = round(
-            float(pulp.value(net_position[zi]) or 0), 1
+        supply_cleared = sum(
+            float(pulp.value(s_vars[zi][si]) or 0) * z["supply"][si]["qty"]
+            for si in range(len(z["supply"]))
         )
+        demand_cleared = sum(
+            float(pulp.value(d_vars[zi][di]) or 0) * z["demand"][di]["qty"]
+            for di in range(len(z["demand"]))
+        )
+        # MCP = highest accepted supply price (simplified)
+        marginal_prices = [
+            z["supply"][si]["price"]
+            for si in range(len(z["supply"]))
+            if float(pulp.value(s_vars[zi][si]) or 0) > 0.001
+        ]
+        mcp = max(marginal_prices) if marginal_prices else 0.0
+
+        zone_results[zname] = {
+            "supply_cleared_mw": round(supply_cleared, 1),
+            "demand_cleared_mw": round(demand_cleared, 1),
+            "net_position_mw": round(
+                float(pulp.value(net_position[zi]) or 0), 1
+            ),
+            "mcp": mcp,
+        }
 
     # ── Extract branch flow results ──────────────────────────────
     branch_flows: list[dict[str, Any]] = []

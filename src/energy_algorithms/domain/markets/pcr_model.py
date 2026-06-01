@@ -10,8 +10,6 @@ from __future__ import annotations
 
 import pulp
 
-from energy_algorithms.domain.markets.coupling_utils import compute_social_welfare
-
 # ---------------------------------------------------------------------------
 # Tolerance: minimum fill fraction for an order to be considered "accepted"
 # ---------------------------------------------------------------------------
@@ -65,14 +63,12 @@ class PCRModel:
 
         # Objective: social welfare
         welfare = (
-            compute_social_welfare(
-                {"supply": self.supply_orders, "demand": self.demand_orders},
-                s_vars, d_vars,
-            )
-            - pulp.lpSum(
-                self.block_orders[i]["price"] * self.block_orders[i]["quantity"] * b_vars[i]
-                for i in range(Nb)
-            )
+            pulp.lpSum(self.demand_orders[i]["price"] * self.demand_orders[i]["quantity"] * d_vars[i]
+                       for i in range(Nd))
+            - pulp.lpSum(self.supply_orders[i]["price"] * self.supply_orders[i]["quantity"] * s_vars[i]
+                         for i in range(Ns))
+            - pulp.lpSum(self.block_orders[i]["price"] * self.block_orders[i]["quantity"] * b_vars[i]
+                         for i in range(Nb))
         )
         prob += welfare
 

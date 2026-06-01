@@ -139,7 +139,7 @@ def test_run_european_coupling_uses_multi_zone(monkeypatch):
     }
 
     monkeypatch.setattr(
-        european_coupling, "create_entsoe_client", lambda **kw: mock_client
+        european_coupling, "EntsoeClient", lambda **kw: mock_client
     )
 
     # Mock solve_multi_zone to return a known result
@@ -176,7 +176,7 @@ def test_run_european_coupling_handles_no_prices(monkeypatch):
         "status": "ok",
         "prices": [],
     }
-    monkeypatch.setattr(european_coupling, "create_entsoe_client", lambda **kw: mock_client)
+    monkeypatch.setattr(european_coupling, "EntsoeClient", lambda **kw: mock_client)
 
     fake_result = {"status": "Optimal", "welfare": 0, "flows": {}, "zones": {}}
     monkeypatch.setattr(

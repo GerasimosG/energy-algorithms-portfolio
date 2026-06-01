@@ -10,14 +10,11 @@ are binding.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
 
 import numpy as np
 
-if TYPE_CHECKING:
-    from energy_algorithms.adapters.entsoe_client import EntsoeClient
-
-from energy_algorithms.adapters.config import create_entsoe_client
+from energy_algorithms.adapters.config import ENTSOE_API_KEY
+from energy_algorithms.adapters.entsoe_client import EntsoeClient
 from energy_algorithms.domain.markets.multi_zone import solve_multi_zone
 
 # ── European bidding zones and typical ATC capacities ──────────────────
@@ -163,7 +160,7 @@ def run_european_coupling() -> dict:
 
     Returns the coupling result with flows, zone-level MCPs, and welfare.
     """
-    client = create_entsoe_client()
+    client = EntsoeClient(api_key=ENTSOE_API_KEY, timeout=30)
     date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     print("=" * 70)

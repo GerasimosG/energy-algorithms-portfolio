@@ -11,9 +11,6 @@ Demonstrates skills relevant to Industry energy algorithmic trader / quant roles
 
 All run on 26 days of real Belgian ENTSO-E data.
 """
-
-from __future__ import annotations
-
 import os
 from datetime import datetime, timedelta
 

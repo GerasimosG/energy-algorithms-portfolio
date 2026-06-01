@@ -185,8 +185,8 @@ def test_trading_demo_main_with_small_fake_backtest(monkeypatch, capsys, tmp_pat
     dates = pd.date_range("2024-01-01", periods=3)
     axes = [DummyAxis(), DummyAxis(), DummyAxis()]
 
-    monkeypatch.setattr(demo, "load_price_data", lambda ticker: (prices, dates))
-    monkeypatch.setattr(demo, "grid_search_best_params", lambda *a, **kw: ({"fast": 1, "slow": 2}, 1.0))
+    monkeypatch.setattr(demo, "_load_prices", lambda ticker: (prices, dates))
+    monkeypatch.setattr(demo, "_best_sma_params", lambda prices: (1, 2))
     monkeypatch.setattr(demo, "sma_crossover", lambda prices, fast, slow: np.array([0, 1, 1]))
     monkeypatch.setattr(demo, "backtest", lambda prices, signal: fake_backtest_result())
     monkeypatch.setattr(demo, "compute_all", lambda returns, equity: {"sharpe": 1.0, "max_drawdown": -0.01})
@@ -208,18 +208,15 @@ def test_strategies_demo_main_with_small_fake_backtest(monkeypatch, capsys, tmp_
     dates = pd.date_range("2024-01-01", periods=3)
     axes = [DummyAxis(), DummyAxis(), DummyAxis()]
 
-    monkeypatch.setattr(demo, "load_price_data", lambda ticker: (prices, dates))
+    monkeypatch.setattr(demo, "_load_prices", lambda ticker: (prices, dates))
     monkeypatch.setattr(
         demo,
-        "grid_search_best_params",
-        lambda prices, strategy_fn, param_grid, **kw: (
-            {
-                "sma": {"fast": 1, "slow": 2},
-                "mr": {"window": 2, "n_std": 1.0},
-                "mom": {"lookback": 1, "hold": 1, "threshold": 0.01},
-            },
-            0.5,
-        ),
+        "_best_params",
+        lambda prices: {
+            "sma": {"fast": 1, "slow": 2},
+            "mr": {"window": 2, "n_std": 1.0},
+            "mom": {"lookback": 1, "hold": 1, "threshold": 0.01},
+        },
     )
     monkeypatch.setattr(demo, "sma_crossover", lambda prices, **kwargs: np.array([0, 1, 1]))
     monkeypatch.setattr(demo, "mean_reversion", lambda prices, **kwargs: np.array([0, -1, -1]))
@@ -317,7 +314,7 @@ def test_live_backtest_demo_with_fake_strategy_stack(monkeypatch, capsys) -> Non
     """Live backtest demo covers parameter loops with synthetic small prices."""
     from energy_algorithms.application import live_backtest as demo
 
-    monkeypatch.setattr(demo, "load_price_data", lambda ticker, **kw: np.array([100.0, 101.0, 99.0, 102.0]))
+    monkeypatch.setattr(demo, "_load_or_fetch", lambda ticker: np.array([100.0, 101.0, 99.0, 102.0]))
     monkeypatch.setattr(demo, "momentum", lambda prices, **kwargs: np.array([0, 1, 1, 0]))
     monkeypatch.setattr(demo, "mean_reversion", lambda prices, **kwargs: np.array([0, -1, 0, 1]))
     monkeypatch.setattr(demo, "sma_crossover", lambda prices, **kwargs: np.array([0, 1, 0, 1]))

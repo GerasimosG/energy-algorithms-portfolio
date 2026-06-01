@@ -241,27 +241,24 @@ def test_live_backtest_best_params():
     """_best_params finds best SMA parameters via grid search."""
     import numpy as np
 
-    from energy_algorithms.application.data_loader import grid_search_best_params
-    from energy_algorithms.domain.trading import sma_crossover
-
+    from energy_algorithms.application.live_backtest import _best_params
     prices = np.array([100 + i + 10 * np.sin(i / 5) for i in range(200)], dtype=float)
-    param_grid = [{"fast": 10, "slow": 30}, {"fast": 20, "slow": 50}]
-    best_kwargs, score = grid_search_best_params(prices, sma_crossover, param_grid)
-    assert best_kwargs["fast"] < best_kwargs["slow"]
+    param_grid = [(10, 30), (20, 50)]
+    best = _best_params(prices, param_grid)
+    assert len(best) == 2
+    assert best[0] < best[1]  # fast < slow
 
 
 def test_live_backtest_best_params_returns_first_on_equal():
     """_best_params returns first param set when all sharpe equal."""
     import numpy as np
 
-    from energy_algorithms.application.data_loader import grid_search_best_params
-    from energy_algorithms.domain.trading import sma_crossover
-
+    from energy_algorithms.application.live_backtest import _best_params
     # Flat prices -> all param sets have same sharpe
     prices = np.array([100.0] * 100, dtype=float)
-    param_grid = [{"fast": 5, "slow": 20}, {"fast": 10, "slow": 30}]
-    best_kwargs, score = grid_search_best_params(prices, sma_crossover, param_grid)
-    assert best_kwargs["fast"] < best_kwargs["slow"]
+    param_grid = [(5, 20), (10, 30)]
+    best = _best_params(prices, param_grid)
+    assert best == (5, 20)  # First in grid
 
 
 def test_live_backtest_demo_returns_dict(monkeypatch):
@@ -285,7 +282,7 @@ def test_live_backtest_demo_returns_dict(monkeypatch):
             "win_rate": 0.5,
         }
 
-    monkeypatch.setattr(live_backtest, "load_price_data", lambda ticker, **kw: np.array([100.0, 101.0, 102.0]))
+    monkeypatch.setattr(live_backtest, "_load_or_fetch", lambda ticker: np.array([100.0, 101.0, 102.0]))
     monkeypatch.setattr(live_backtest, "momentum", fake_strategy)
     monkeypatch.setattr(live_backtest, "mean_reversion", fake_strategy)
     monkeypatch.setattr(live_backtest, "sma_crossover", fake_strategy)
@@ -334,7 +331,7 @@ def test_live_backtest_demo_prints_comparison(monkeypatch):
             "win_rate": 1.0,
         }
 
-    monkeypatch.setattr(live_backtest, "load_price_data", lambda ticker, **kw: np.array([100.0, 101.0, 102.0]))
+    monkeypatch.setattr(live_backtest, "_load_or_fetch", lambda ticker: np.array([100.0, 101.0, 102.0]))
     monkeypatch.setattr(live_backtest, "momentum", fake_strategy)
     monkeypatch.setattr(live_backtest, "mean_reversion", fake_strategy)
     monkeypatch.setattr(live_backtest, "sma_crossover", fake_strategy)
