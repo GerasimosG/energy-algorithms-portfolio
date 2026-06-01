@@ -26,6 +26,8 @@ Thumbs.db
 *.sqlite
 market-data/*.sqlite
 market-data/*.db
+data/*.csv
+data/*.json
 
 # Notebooks
 .ipynb_checkpoints/
@@ -33,6 +35,7 @@ market-data/*.db
 # Plots (any depth)
 **/plots/
 output/
+docs/fig*.png
 
 # Environment
 .env
