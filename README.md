@@ -1,5 +1,7 @@
 # Energy Algorithms
 
+> **Note:** The original long-form README (with the full Euphemia   + Industry interview Q&A, Euphemia algorithm walkthrough, and known-limitations table) is preserved at [`docs/README_LEGACY.md`](docs/README_LEGACY.md) for reference. The interview Q&A is now in [`docs/INTERVIEW_PREP.md`](docs/INTERVIEW_PREP.md).
+
 [![Tests](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
