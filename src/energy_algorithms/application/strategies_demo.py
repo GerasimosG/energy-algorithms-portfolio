@@ -8,104 +8,50 @@ import os
 
 import matplotlib
 import numpy as np
-import pandas as pd
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
 
-from energy_algorithms.adapters.sqlite_store import (
-    get_connection,
-    get_ticker_data,
-    init_db,
-    insert_ohlcv,
+from energy_algorithms.application.data_loader import (
+    grid_search_best_params,
+    load_price_data,
 )
 from energy_algorithms.domain.trading import (
     backtest,
     mean_reversion,
     momentum,
     sma_crossover,
-    synthetic_prices,
 )
 
-try:
-    from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker as _fetch_ticker
-except Exception:
-    _fetch_ticker = None
-
-
-def _load_prices(ticker: str) -> tuple[np.ndarray, pd.DatetimeIndex]:
-    """Try SQLite → yfinance → synthetic fallback."""
-    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-
-    conn = get_connection(db_path)
-    init_db(conn)
-
-    # 1. Try SQLite
-    try:
-        rows = get_ticker_data(conn, ticker)
-        if rows:
-            conn.close()
-            prices = np.array([r["close"] for r in rows], dtype=float)
-            dates = pd.to_datetime([r["date"] for r in rows])
-            print(f"\n  Loaded {len(prices)} days of real {ticker} data")
-            return prices, dates
-    except Exception:
-        pass
-
-    # 2. Try yfinance
-    if _fetch_ticker is not None:
-        print(f"  Fetching {ticker} from Yahoo Finance...")
-        data = _fetch_ticker(ticker, period="2y")
-        if data:
-            insert_ohlcv(conn, data)
-            conn.close()
-            prices = np.array([r["close"] for r in data], dtype=float)
-            dates = pd.to_datetime([r["date"] for r in data])
-            print(f"  Loaded {len(prices)} days of real {ticker} data")
-            return prices, dates
-    conn.close()
-
-    # 3. Fallback
-    print(f"  [WARN] Using synthetic data for {ticker}")
-    seed = hash(ticker) % (2**31)
-    return synthetic_prices(500, seed=seed)
+# Backward-compatible alias for tests that import or monkeypatch this
+_load_prices = load_price_data
 
 
 def _best_params(prices: np.ndarray) -> dict:
     """Grid search all 3 strategies, return best kwargs per strategy."""
     best = {}
     # SMA crossover
-    best_sharpe = -999
-    best_sma = {"fast": 20, "slow": 50}
-    for f, s in [(5, 20), (10, 30), (20, 50), (30, 80), (50, 120), (50, 200)]:
-        sig = sma_crossover(prices, fast=f, slow=s)
-        bt = backtest(prices, sig)
-        if bt["sharpe"] > best_sharpe:
-            best_sharpe = bt["sharpe"]
-            best_sma = {"fast": f, "slow": s}
+    sma_grid = [
+        {"fast": f, "slow": s}
+        for f, s in [(5, 20), (10, 30), (20, 50), (30, 80), (50, 120), (50, 200)]
+    ]
+    best_sma, _ = grid_search_best_params(prices, sma_crossover, sma_grid)
     best["sma"] = best_sma
 
     # Mean reversion
-    best_sharpe = -999
-    best_mr = {"window": 20, "n_std": 2.0}
-    for w, n in [(10, 1.5), (15, 2.0), (20, 2.0), (20, 2.5), (30, 2.0), (30, 2.5)]:
-        sig = mean_reversion(prices, window=w, n_std=n)
-        bt = backtest(prices, sig)
-        if bt["sharpe"] > best_sharpe:
-            best_sharpe = bt["sharpe"]
-            best_mr = {"window": w, "n_std": n}
+    mr_grid = [
+        {"window": w, "n_std": n}
+        for w, n in [(10, 1.5), (15, 2.0), (20, 2.0), (20, 2.5), (30, 2.0), (30, 2.5)]
+    ]
+    best_mr, _ = grid_search_best_params(prices, mean_reversion, mr_grid)
     best["mr"] = best_mr
 
     # Momentum
-    best_sharpe = -999
-    best_mom = {"lookback": 60, "hold": 20, "threshold": 0.02}
-    for lb, h in [(20, 10), (40, 20), (60, 20), (80, 30), (120, 30)]:
-        sig = momentum(prices, lookback=lb, hold=h, threshold=0.01)
-        bt = backtest(prices, sig)
-        if bt["sharpe"] > best_sharpe:
-            best_sharpe = bt["sharpe"]
-            best_mom = {"lookback": lb, "hold": h, "threshold": 0.01}
+    mom_grid = [
+        {"lookback": lb, "hold": h, "threshold": 0.01}
+        for lb, h in [(20, 10), (40, 20), (60, 20), (80, 30), (120, 30)]
+    ]
+    best_mom, _ = grid_search_best_params(prices, momentum, mom_grid)
     best["mom"] = best_mom
 
     return best

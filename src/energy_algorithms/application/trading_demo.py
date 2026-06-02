@@ -8,75 +8,30 @@ import os
 
 import matplotlib
 import numpy as np
-import pandas as pd
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
 
-from energy_algorithms.adapters.sqlite_store import (
-    get_connection,
-    get_ticker_data,
-    init_db,
-    insert_ohlcv,
+from energy_algorithms.application.data_loader import (
+    grid_search_best_params,
+    load_price_data,
 )
-from energy_algorithms.domain.trading import backtest, compute_all, sma_crossover, synthetic_prices
+from energy_algorithms.domain.trading import backtest, compute_all, sma_crossover
 
-try:
-    from energy_algorithms.adapters.yfinance_fetcher import fetch_ticker as _fetch_ticker
-except Exception:
-    _fetch_ticker = None
-
-
-def _load_prices(ticker: str) -> tuple[np.ndarray, pd.DatetimeIndex]:
-    """Try SQLite → yfinance → synthetic fallback."""
-    db_path = os.path.join(os.path.dirname(__file__), "..", "market_data", "market_data.sqlite")
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-
-    # 1. Try SQLite
-    conn = get_connection(db_path)
-    init_db(conn)
-    try:
-        rows = get_ticker_data(conn, ticker)
-        if rows:
-            conn.close()
-            prices = np.array([r["close"] for r in rows], dtype=float)
-            dates = pd.to_datetime([r["date"] for r in rows])
-            return prices, dates
-    except Exception:
-        pass
-
-    # 2. Try yfinance
-    if _fetch_ticker is not None:
-        print(f"  Fetching {ticker} from Yahoo Finance...")
-        data = _fetch_ticker(ticker, period="2y")
-        if data:
-            insert_ohlcv(conn, data)
-            conn.close()
-            prices = np.array([r["close"] for r in data], dtype=float)
-            dates = pd.to_datetime([r["date"] for r in data])
-            return prices, dates
-    conn.close()
-
-    # 3. Fallback
-    print(f"  [WARN] Using synthetic data for {ticker}")
-    seed = hash(ticker) % (2**31)
-    return synthetic_prices(500, seed=seed)
+# Backward-compatible aliases for tests that import or monkeypatch these
+_load_prices = load_price_data
 
 
 def _best_sma_params(prices: np.ndarray) -> tuple[int, int]:
     """Grid search over SMA param range, return best by Sharpe."""
-    best_sharpe = -999
-    best = (20, 50)
-    param_sets = [(f, s) for f in [5, 10, 20, 30, 50, 80]
-                  for s in [20, 30, 50, 80, 120, 200]
-                  if f < s]
-    for fast, slow in param_sets:
-        signal = sma_crossover(prices, fast=fast, slow=slow)
-        bt = backtest(prices, signal)
-        if bt["sharpe"] > best_sharpe:
-            best_sharpe = bt["sharpe"]
-            best = (fast, slow)
-    return best
+    param_grid = [
+        {"fast": f, "slow": s}
+        for f in [5, 10, 20, 30, 50, 80]
+        for s in [20, 30, 50, 80, 120, 200]
+        if f < s
+    ]
+    best_params, _ = grid_search_best_params(prices, sma_crossover, param_grid)
+    return best_params["fast"], best_params["slow"]
 
 
 def main():

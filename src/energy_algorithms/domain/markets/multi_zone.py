@@ -10,6 +10,13 @@ from __future__ import annotations
 
 import pulp
 
+from energy_algorithms.domain.markets.coupling_utils import (
+    compute_social_welfare,
+    extract_flow_results,
+    extract_zone_results,
+    validate_atc,
+)
+
 
 def solve_multi_zone(
     zones: list[dict],
@@ -54,43 +61,17 @@ def solve_multi_zone(
         s_vars[zi] = {si: pulp.LpVariable(f"s_z{zi}_{si}", 0, 1) for si in range(Ns)}
         d_vars[zi] = {di: pulp.LpVariable(f"d_z{zi}_{di}", 0, 1) for di in range(Nd)}
 
-    # Flow variables (one signed variable per bidirectional ATC corridor).
-    # Positive value follows the tuple direction; negative value is reverse flow.
-    atc_pairs = {}
+    # ---- Flow variables and ATC validation ----
     zone_set = set(zone_names)
-    for (a, b), cap in atc.items():
-        if a not in zone_set or b not in zone_set:
-            raise ValueError(f"ATC pair ({a}, {b}) references an unknown zone")
-        if a == b:
-            raise ValueError("ATC pair endpoints must be different zones")
-        if cap < 0:
-            raise ValueError(f"ATC capacity must be non-negative, got {cap}")
-
-        corridor = tuple(sorted((a, b)))
-        if corridor in atc_pairs:
-            _, _, prev_cap = atc_pairs[corridor]
-            if cap != prev_cap:
-                raise ValueError(
-                    f"Duplicate ATC corridor {corridor} has conflicting "
-                    f"capacities: {prev_cap} and {cap}"
-                )
-            continue
-
+    validated = validate_atc(atc, zone_set=zone_set)
+    for _corridor, (a, b, cap) in validated.items():
         flows[(a, b)] = pulp.LpVariable(f"flow_{a}_to_{b}", lowBound=-cap, upBound=cap)
-        atc_pairs[corridor] = (a, b, cap)
 
     # ---- Objective: sum of social welfare across all zones ----
-    welfare = 0
-    for zi in range(Z):
-        z = zones[zi]
-        welfare += pulp.lpSum(
-            z["demand"][di]["price"] * z["demand"][di]["qty"] * d_vars[zi][di]
-            for di in range(len(z["demand"]))
-        )
-        welfare -= pulp.lpSum(
-            z["supply"][si]["price"] * z["supply"][si]["qty"] * s_vars[zi][si]
-            for si in range(len(z["supply"]))
-        )
+    welfare = pulp.lpSum(
+        compute_social_welfare(zones[zi], s_vars[zi], d_vars[zi])
+        for zi in range(Z)
+    )
     prob += welfare
 
     # ---- Energy balance per zone (including net exports) ----
@@ -122,39 +103,13 @@ def solve_multi_zone(
         return {"status": status}
 
     # ---- Extract results ----
-    flow_results = {}
-    for (a, b), var in flows.items():
-        val = pulp.value(var)
-        if val is None:
-            continue
-        if val > 0.01:
-            flow_results[f"{a}→{b}"] = round(val, 1)
-        elif val < -0.01:
-            flow_results[f"{b}→{a}"] = round(abs(val), 1)
+    flow_results = extract_flow_results(flows)
 
     zone_results = {}
     for zi in range(Z):
-        z = zones[zi]
-        zname = zone_names[zi]
-        supply_cleared = sum(
-            z["supply"][si]["qty"] * float(pulp.value(s_vars[zi][si]) or 0)
-            for si in range(len(z["supply"]))
+        zone_results.update(
+            extract_zone_results(zones[zi], s_vars[zi], d_vars[zi], zone_names[zi])
         )
-        demand_cleared = sum(
-            z["demand"][di]["qty"] * float(pulp.value(d_vars[zi][di]) or 0)
-            for di in range(len(z["demand"]))
-        )
-        marginal_prices = []
-        for si in range(len(z["supply"])):
-            if pulp.value(s_vars[zi][si]) > 0.001:
-                marginal_prices.append(z["supply"][si]["price"])
-        mcp = max(marginal_prices) if marginal_prices else 0.0
-
-        zone_results[zname] = {
-            "supply_cleared_mw": round(supply_cleared, 1),
-            "demand_cleared_mw": round(demand_cleared, 1),
-            "mcp": mcp,
-        }
 
     return {
         "status": status,

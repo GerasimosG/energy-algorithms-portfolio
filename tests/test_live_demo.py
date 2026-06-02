@@ -6,8 +6,6 @@ handles edge cases gracefully.
 """
 from __future__ import annotations
 
-import importlib
-
 
 def test_demo_live_pipeline_returns_valid_dict():
     """The pipeline returns a well-structured dict with all required keys."""
@@ -150,11 +148,14 @@ def test_entsoe_api_key_defaults_to_environment_only(monkeypatch):
     """Tracked config must not contain a baked-in personal ENTSO-E token."""
     monkeypatch.delenv("ENTSOE_API_KEY", raising=False)
 
-    import energy_algorithms.adapters.config as config
+    # Remove from cache so a fresh import re-runs module-level code
+    import sys
 
-    reloaded = importlib.reload(config)
+    sys.modules.pop("energy_algorithms.adapters.config", None)
 
-    assert reloaded.ENTSOE_API_KEY == ""
+    import energy_algorithms.adapters.config as config  # noqa: F811
+
+    assert config.ENTSOE_API_KEY == ""
 
 
 # ── Edge-case tests (always use demo data) ──────────────────────────

@@ -242,16 +242,17 @@ def test_trading_demo_load_prices_fallback(monkeypatch):
     import io
     import sys
 
+    from energy_algorithms.application import data_loader
     from energy_algorithms.application import trading_demo
 
     class FakeConn:
         def close(self) -> None:
             pass
 
-    monkeypatch.setattr(trading_demo, "get_connection", lambda db_path: FakeConn())
-    monkeypatch.setattr(trading_demo, "init_db", lambda conn: None)
-    monkeypatch.setattr(trading_demo, "get_ticker_data", lambda conn, ticker: [])
-    monkeypatch.setattr(trading_demo, "_fetch_ticker", None)
+    monkeypatch.setattr(data_loader, "get_connection", lambda db_path: FakeConn())
+    monkeypatch.setattr(data_loader, "init_db", lambda conn: None)
+    monkeypatch.setattr(data_loader, "get_ticker_data", lambda conn, ticker: [])
+    monkeypatch.setattr(data_loader, "_fetch_ticker", None)
 
     old_stdout = sys.stdout
     sys.stdout = io.StringIO()
@@ -314,16 +315,17 @@ def test_trading_demo_main_prints_metrics(monkeypatch, capsys, tmp_path):
 
 def test_strategies_demo_load_prices_fallback(monkeypatch):
     """strategies_demo._load_prices falls back to synthetic data."""
+    from energy_algorithms.application import data_loader
     from energy_algorithms.application import strategies_demo
 
     class FakeConn:
         def close(self) -> None:
             pass
 
-    monkeypatch.setattr(strategies_demo, "get_connection", lambda db_path: FakeConn())
-    monkeypatch.setattr(strategies_demo, "init_db", lambda conn: None)
-    monkeypatch.setattr(strategies_demo, "get_ticker_data", lambda conn, ticker: [])
-    monkeypatch.setattr(strategies_demo, "_fetch_ticker", None)
+    monkeypatch.setattr(data_loader, "get_connection", lambda db_path: FakeConn())
+    monkeypatch.setattr(data_loader, "init_db", lambda conn: None)
+    monkeypatch.setattr(data_loader, "get_ticker_data", lambda conn, ticker: [])
+    monkeypatch.setattr(data_loader, "_fetch_ticker", None)
 
     prices, dates = strategies_demo._load_prices("UNKNOWN_TEST_TICKER123")
     assert len(prices) > 0

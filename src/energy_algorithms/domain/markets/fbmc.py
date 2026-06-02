@@ -22,6 +22,11 @@ from typing import Any
 import numpy as np
 import pulp
 
+from energy_algorithms.domain.markets.coupling_utils import (
+    compute_social_welfare,
+    extract_zone_results,
+)
+
 
 def solve_fbmc(
     zones: list[dict],
@@ -129,20 +134,10 @@ def solve_fbmc(
         )
 
     # ── Objective: social welfare ───────────────────────────────
-    welfare = 0
-    for zi in range(Z):
-        welfare += pulp.lpSum(
-            zones[zi]["demand"][di]["price"]
-            * zones[zi]["demand"][di]["qty"]
-            * d_vars[zi][di]
-            for di in range(len(zones[zi]["demand"]))
-        )
-        welfare -= pulp.lpSum(
-            zones[zi]["supply"][si]["price"]
-            * zones[zi]["supply"][si]["qty"]
-            * s_vars[zi][si]
-            for si in range(len(zones[zi]["supply"]))
-        )
+    welfare = pulp.lpSum(
+        compute_social_welfare(zones[zi], s_vars[zi], d_vars[zi])
+        for zi in range(Z)
+    )
     prob += welfare
 
     # ── Constraints ─────────────────────────────────────────────
@@ -188,31 +183,11 @@ def solve_fbmc(
     zone_results: dict[str, dict[str, Any]] = {}
     for zi in range(Z):
         zname = zone_names[zi]
-        z = zones[zi]
-        supply_cleared = sum(
-            float(pulp.value(s_vars[zi][si]) or 0) * z["supply"][si]["qty"]
-            for si in range(len(z["supply"]))
+        base = extract_zone_results(zones[zi], s_vars[zi], d_vars[zi], zname)
+        base[zname]["net_position_mw"] = round(
+            float(pulp.value(net_position[zi]) or 0), 1
         )
-        demand_cleared = sum(
-            float(pulp.value(d_vars[zi][di]) or 0) * z["demand"][di]["qty"]
-            for di in range(len(z["demand"]))
-        )
-        # MCP = highest accepted supply price (simplified)
-        marginal_prices = [
-            z["supply"][si]["price"]
-            for si in range(len(z["supply"]))
-            if float(pulp.value(s_vars[zi][si]) or 0) > 0.001
-        ]
-        mcp = max(marginal_prices) if marginal_prices else 0.0
-
-        zone_results[zname] = {
-            "supply_cleared_mw": round(supply_cleared, 1),
-            "demand_cleared_mw": round(demand_cleared, 1),
-            "net_position_mw": round(
-                float(pulp.value(net_position[zi]) or 0), 1
-            ),
-            "mcp": mcp,
-        }
+        zone_results.update(base)
 
     # ── Extract branch flow results ──────────────────────────────
     branch_flows: list[dict[str, Any]] = []

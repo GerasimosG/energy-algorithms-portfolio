@@ -1,5 +1,37 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-06-02 12:00 CEST — Full audit fix + ML experiment tracking + microservices analysis
+
+**Status:** 578 tests, 3 skipped, 0 failed, 93% coverage (above 90% gate).
+
+**What changed:**
+
+### Phase 1 — Issues Fixed
+- **Fixed 1 failing test** (`test_entsoe_api_key_defaults_to_environment_only`) — `importlib.reload` issue resolved by removing module from sys.modules cache before fresh import
+- **Re-implemented `coupling_utils.py`** — Shared social welfare formula, zone/flow results extraction, and ATC validation extracted from 4 market coupling files (pcr_model, fbmc, multi_zone, multi_day). All 71 related tests pass.
+- **Re-implemented `data_loader.py`** — Shared price loading (SQLite→yfinance→synthetic fallback), grid search, and ENTSO-E client factory extracted from 3 demo files. All 578 tests pass.
+- **Trimmed AGENTS.md** from 433 lines / 24KB → ~100 lines / 5.6KB. Removed Hermes/OpenCode skill references, stale audit status, coding standards (models infer them), interview checklists (in README/knowledge), competitor scorecard (in README).
+- **Added `data/` to `.gitignore`** — removed `data/entsoe_month_report.md` from tracking
+- **`coupling_utils.py`** — shared welfare, zone results, ATC validation, flow extraction
+- **`data_loader.py`** — shared price loading, grid search, ENTSO-E factory
+
+### Phase 2 — ML Experiment Tracking Added
+- **New module:** `src/energy_algorithms/infrastructure/experiment_tracker.py` — SQLite-backed, zero-dependency ML experiment tracker
+  - Context manager API: `with tracker.run(name="exp") as run: run.log_param("x", 1); run.log_metric("y", 2.0)`
+  - Tracks params, metrics, artifacts per run
+  - `list_runs()`, `get_run()`, `compare_runs()`, `export_json()` query methods
+  - Manual `set_status()` respected by context manager
+  - 10 tests covering all features
+- **`tracked_backtest()` wrapper** — `backtest_engine.py` now has a `tracked_backtest()` function wrapping experiment tracking around any backtest
+- **CLI entry point** — `ea-experiments` command: `list`, `show <id>`, `compare <ids>`, `export`
+- **Export to infrastructure `__init__.py`** — `ExperimentTracker`, `ExperimentRun`, `get_tracker` re-exported
+
+### Phase 3 — Microservices Analysis
+*(See full analysis in this session's report)*
+
+**File changes:** 15 files modified/created
+**Tests:** 578 passed, 3 skipped, 0 failed, 92.73% coverage
+
 ## 2026-05-22 13:45 CEST — Industry interview prep updated for Algorithmic Trader (Uccle) role
 
 **Status:** Updated README + interview-qa.md for the specific INDUSTRY Belgium job posting.

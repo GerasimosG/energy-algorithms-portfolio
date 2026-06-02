@@ -25,6 +25,11 @@ from energy_algorithms.infrastructure.metadata import (
     VariableRegistry,
     get_model_summary,
 )
+from energy_algorithms.infrastructure.experiment_tracker import (
+    ExperimentTracker,
+    ExperimentRun,
+    get_tracker,
+)
 from energy_algorithms.infrastructure.solver_config import (
     get_solver,
     list_available_solvers,
@@ -49,6 +54,10 @@ __all__ = [
     "VariableRegistry",
     "ModelMetadata",
     "get_model_summary",
+    # Experiment tracker
+    "ExperimentTracker",
+    "ExperimentRun",
+    "get_tracker",
     # Solver config
     "get_solver",
     "list_available_solvers",

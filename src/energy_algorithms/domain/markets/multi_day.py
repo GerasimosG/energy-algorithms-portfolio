@@ -22,12 +22,18 @@ References
   - Conejo et al., "Decision Making Under Uncertainty in Electricity Markets"
   - ENTSO-E Flow-Based Market Coupling documentation
 """
-
 from __future__ import annotations
 
 from typing import Any
 
 import pulp
+
+from energy_algorithms.domain.markets.coupling_utils import (
+    compute_social_welfare,
+    extract_flow_results,
+    extract_zone_results,
+    validate_atc,
+)
 
 # ──────────────────────────────────────────────────────────────────────
 # Public API
@@ -154,7 +160,6 @@ def solve_multi_day(
 
     # ── Per-day market variables and constraints ────────────────────
     day_zone_names = []
-    day_atc_pairs = []
     day_flows = []
     day_s_frac = []
     day_d_frac = []
@@ -168,31 +173,13 @@ def solve_multi_day(
         # Flow variables (one signed variable per bidirectional ATC corridor).
         atc_dict = atc_per_day[d]
         flows = {}
-        pairs = {}
-        for (i, j), cap in atc_dict.items():
-            if i < 0 or j < 0 or i >= Z or j >= Z:
-                raise ValueError(f"ATC pair ({i}, {j}) references an unknown zone")
-            if i == j:
-                raise ValueError("ATC pair endpoints must be different zones")
-            if cap < 0:
-                raise ValueError(f"ATC capacity must be non-negative, got {cap}")
-
-            corridor = tuple(sorted((i, j)))
-            if corridor in pairs:
-                _, _, prev_cap = pairs[corridor]
-                if cap != prev_cap:
-                    raise ValueError(
-                        f"Duplicate ATC corridor {corridor} has conflicting "
-                        f"capacities: {prev_cap} and {cap}"
-                    )
-                continue
-
+        validated = validate_atc(atc_dict, zone_count=Z)
+        for _corridor, (i, j, cap) in validated.items():
             flows[(i, j)] = pulp.LpVariable(
                 f"flow_d{d}_{znames[i]}_to_{znames[j]}",
                 lowBound=-cap,
                 upBound=cap,
             )
-            pairs[corridor] = (i, j, cap)
 
         # Acceptance fraction variables
         s_frac = {}
@@ -210,20 +197,10 @@ def solve_multi_day(
             }
 
         # Welfare expression for this day
-        welfare_expr = 0
-        for zi in range(Z):
-            welfare_expr += pulp.lpSum(
-                zones[zi]["demand"][di]["price"]
-                * zones[zi]["demand"][di]["qty"]
-                * d_frac[zi][di]
-                for di in range(len(zones[zi]["demand"]))
-            )
-            welfare_expr -= pulp.lpSum(
-                zones[zi]["supply"][si]["price"]
-                * zones[zi]["supply"][si]["qty"]
-                * s_frac[zi][si]
-                for si in range(len(zones[zi]["supply"]))
-            )
+        welfare_expr = pulp.lpSum(
+            compute_social_welfare(zones[zi], s_frac[zi], d_frac[zi])
+            for zi in range(Z)
+        )
 
         # Per-zone energy balance
         if has_storage and storage_zone >= Z:
@@ -275,7 +252,6 @@ def solve_multi_day(
 
         day_welfare_terms.append(welfare_expr)
         day_zone_names.append(znames)
-        day_atc_pairs.append(pairs)
         day_flows.append(flows)
         day_s_frac.append(s_frac)
         day_d_frac.append(d_frac)
@@ -300,39 +276,13 @@ def solve_multi_day(
         d_frac = day_d_frac[d]
         flows = day_flows[d]
 
-        flow_results = {}
-        for (i, j), var in flows.items():
-            val = pulp.value(var)
-            if val is None:
-                continue
-            if val > 0.01:
-                flow_results[f"{znames[i]}→{znames[j]}"] = round(val, 1)
-            elif val < -0.01:
-                flow_results[f"{znames[j]}→{znames[i]}"] = round(abs(val), 1)
+        flow_results = extract_flow_results(flows, znames)
 
         zone_results = {}
         for zi in range(len(zones)):
-            z = zones[zi]
-            supply_cleared = sum(
-                z["supply"][si]["qty"] * float(pulp.value(s_frac[zi][si]) or 0)
-                for si in range(len(z["supply"]))
+            zone_results.update(
+                extract_zone_results(zones[zi], s_frac[zi], d_frac[zi], znames[zi])
             )
-            demand_cleared = sum(
-                z["demand"][di]["qty"] * float(pulp.value(d_frac[zi][di]) or 0)
-                for di in range(len(z["demand"]))
-            )
-            marginal_prices = [
-                z["supply"][si]["price"]
-                for si in range(len(z["supply"]))
-                if float(pulp.value(s_frac[zi][si]) or 0) > 0.001
-            ]
-            mcp = max(marginal_prices) if marginal_prices else 0.0
-
-            zone_results[znames[zi]] = {
-                "supply_cleared_mw": round(supply_cleared, 1),
-                "demand_cleared_mw": round(demand_cleared, 1),
-                "mcp": mcp,
-            }
 
         per_day_results.append({
             "day": d,

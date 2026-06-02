@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import pulp
 
+from energy_algorithms.domain.markets.coupling_utils import compute_social_welfare
+
 # ---------------------------------------------------------------------------
 # Tolerance: minimum fill fraction for an order to be considered "accepted"
 # ---------------------------------------------------------------------------
@@ -62,14 +64,19 @@ class PCRModel:
         b_vars = {i: pulp.LpVariable(f"b_{i}", cat="Binary") for i in range(Nb)}
 
         # Objective: social welfare
-        welfare = (
-            pulp.lpSum(self.demand_orders[i]["price"] * self.demand_orders[i]["quantity"] * d_vars[i]
-                       for i in range(Nd))
-            - pulp.lpSum(self.supply_orders[i]["price"] * self.supply_orders[i]["quantity"] * s_vars[i]
-                         for i in range(Ns))
-            - pulp.lpSum(self.block_orders[i]["price"] * self.block_orders[i]["quantity"] * b_vars[i]
-                         for i in range(Nb))
-        )
+        zone_for_utils = {
+            "supply": [
+                {"price": o["price"], "qty": o["quantity"]}
+                for o in self.supply_orders
+            ],
+            "demand": [
+                {"price": o["price"], "qty": o["quantity"]}
+                for o in self.demand_orders
+            ],
+        }
+        welfare = compute_social_welfare(zone_for_utils, s_vars, d_vars)
+        welfare -= pulp.lpSum(self.block_orders[i]["price"] * self.block_orders[i]["quantity"] * b_vars[i]
+                              for i in range(Nb))
         prob += welfare
 
         # Energy balance: supply + block == demand

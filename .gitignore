@@ -26,8 +26,7 @@ Thumbs.db
 *.sqlite
 market-data/*.sqlite
 market-data/*.db
-data/*.csv
-data/*.json
+data/
 
 # Notebooks
 .ipynb_checkpoints/
