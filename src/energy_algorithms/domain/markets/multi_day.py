@@ -34,9 +34,9 @@ from energy_algorithms.domain.markets.coupling_utils import (
     extract_zone_results,
     validate_atc,
 )
+from energy_algorithms.infrastructure.solver_config import solve_model
 
 # ──────────────────────────────────────────────────────────────────────
-# Public API
 # ──────────────────────────────────────────────────────────────────────
 
 def solve_multi_day(
@@ -261,8 +261,8 @@ def solve_multi_day(
     prob += total_welfare
 
     # ── Solve ───────────────────────────────────────────────────────
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-    status = pulp.LpStatus[prob.status]
+    result = solve_model(prob, msg=verbose)
+    status = result["status"]
 
     if status != "Optimal":
         return {"status": status}

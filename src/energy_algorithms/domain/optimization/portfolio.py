@@ -13,6 +13,8 @@ import numpy as np
 import pulp
 from scipy.optimize import minimize
 
+from energy_algorithms.infrastructure.solver_config import solve_model
+
 
 def optimize_portfolio_scipy(
     expected_returns: list[float],
@@ -209,17 +211,17 @@ def optimize_portfolio(
     # proper Markowitz mean-variance optimization with scipy SLSQP.
     # ─────────────────────────────────────────────────────────────────
 
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+    result = solve_model(prob, msg=verbose)
 
-    if pulp.LpStatus[prob.status] != "Optimal":
-        return {"status": pulp.LpStatus[prob.status], "weights": None}
+    if result["status"] != "Optimal":
+        return {"status": result["status"], "weights": None}
 
     weights = np.array([pulp.value(w[i]) for i in range(n)])
     port_return = float(np.dot(weights, expected_returns))
     port_risk = float(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
 
     return {
-        "status": pulp.LpStatus[prob.status],
+        "status": result["status"],
         "weights": weights,
         "return": round(port_return, 4),
         "risk": round(port_risk, 4),

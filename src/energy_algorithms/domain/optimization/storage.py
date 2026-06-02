@@ -24,6 +24,8 @@ storage models and is acceptable for the vast majority of price profiles.
 
 import pulp
 
+from energy_algorithms.infrastructure.solver_config import solve_model
+
 
 def solve_storage(
     prices: list[float],
@@ -93,10 +95,10 @@ def solve_storage(
         )
 
     # ---- Solve ----
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+    result = solve_model(prob, msg=verbose)
 
-    if pulp.LpStatus[prob.status] != "Optimal":
-        return {"status": pulp.LpStatus[prob.status]}
+    if result["status"] != "Optimal":
+        return {"status": result["status"]}
 
     # ---- Extract schedule ----
     schedule = []
@@ -111,7 +113,7 @@ def solve_storage(
     total_cycles = total_discharge / capacity if capacity > 0 else 0.0
 
     return {
-        "status": pulp.LpStatus[prob.status],
+        "status": result["status"],
         "revenue": round(float(pulp.value(prob.objective)), 2),
         "schedule": schedule,
         "total_cycles": round(total_cycles, 4),

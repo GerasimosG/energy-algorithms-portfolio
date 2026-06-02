@@ -4,14 +4,85 @@ Fetches electricity market data: day-ahead prices, generation mix,
 installed capacity, and load forecasts for European bidding zones.
 
 API docs: https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html
-"""
+"""  # noqa: D205
 from __future__ import annotations
 
+import json
+import os
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
+
+# ---------------------------------------------------------------------------
+# Simple disk cache for ENTSO-E API responses
+# ---------------------------------------------------------------------------
+_CACHE: dict[str, dict[str, Any]] = {}
+_CACHE_PATH = Path.home() / ".hermes" / "entsoe_cache.json"
+
+
+def _load_cache() -> None:
+    """Load the ENTSO-E response cache from disk into ``_CACHE``."""
+    global _CACHE
+    try:
+        if _CACHE_PATH.exists():
+            raw = _CACHE_PATH.read_text()
+            _CACHE = json.loads(raw) if raw.strip() else {}
+        else:
+            _CACHE = {}
+    except Exception:
+        _CACHE = {}
+
+
+def _save_cache() -> None:
+    """Persist ``_CACHE`` to disk (``~/.hermes/entsoe_cache.json``)."""
+    _CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _CACHE_PATH.write_text(json.dumps(_CACHE, indent=2, default=str))
+
+
+def cached_fetch(url: str, ttl: int = 3600) -> dict[str, Any] | None:
+    """Return cached response for *url* if not expired, else ``None``.
+
+    Parameters
+    ----------
+    url : str
+        ENTSO-E API request URL (used as cache key).
+    ttl : int
+        Time-to-live in seconds (default 3600 = 1 hour).
+
+    Returns
+    -------
+    dict or None
+        Cached response dict, or ``None`` on cache miss / expiry.
+    """
+    _load_cache()
+    if url in _CACHE:
+        entry = _CACHE[url]
+        if time.time() - entry["_timestamp"] < ttl:
+            return entry["data"]
+    return None
+
+
+def _cache_set(url: str, data: dict[str, Any]) -> None:
+    """Store *data* in the cache under *url* and persist to disk.
+
+    Parameters
+    ----------
+    url : str
+        Cache key (ENTSO-E request URL).
+    data : dict
+        Response data dict to cache.  Only cached when ``data.get("status")``
+        starts with ``\"ok\"`` — error responses are never cached.
+    """
+    if not str(data.get("status", "")).startswith("ok"):
+        return
+    _load_cache()
+    _CACHE[url] = {"_timestamp": time.time(), "data": data}
+    _save_cache()
+
 
 # ENTSO-E API endpoints
 BASE_URL = "https://web-api.tp.entsoe.eu/api"
@@ -214,6 +285,10 @@ class EntsoeClient:
     ) -> dict[str, Any]:
         """Execute an ENTSO-E API query and parse the XML response.
 
+        Checks the disk cache first (``~/.hermes/entsoe_cache.json``).
+        Only successful responses (status starting with ``\"ok\"``) are
+        cached.  Error responses skip the cache entirely.
+
         Parameters
         ----------
         document_type, process_type, area, date : str
@@ -225,12 +300,21 @@ class EntsoeClient:
         """
         url = self._build_url(document_type, process_type, area, date)
 
+        # Cache check (disabled under pytest to avoid stale test data)
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            cached = cached_fetch(url)
+            if cached is not None:
+                return cached
+
+        # --- Live fetch on cache miss ----------------------------------------
         try:
             req = urllib.request.Request(url)
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 xml_text = resp.read().decode("utf-8")
 
-            return self._parse_response(xml_text, document_type, area, date)
+            result = self._parse_response(xml_text, document_type, area, date)
+            _cache_set(url, result)
+            return result
 
         except urllib.error.HTTPError as e:
             if e.code == 401:

@@ -20,15 +20,15 @@ from energy_algorithms.domain.options import (
     reset_options,
     set_option,
 )
+from energy_algorithms.infrastructure.experiment_tracker import (
+    ExperimentRun,
+    ExperimentTracker,
+    get_tracker,
+)
 from energy_algorithms.infrastructure.metadata import (
     ModelMetadata,
     VariableRegistry,
     get_model_summary,
-)
-from energy_algorithms.infrastructure.experiment_tracker import (
-    ExperimentTracker,
-    ExperimentRun,
-    get_tracker,
 )
 from energy_algorithms.infrastructure.solver_config import (
     get_solver,

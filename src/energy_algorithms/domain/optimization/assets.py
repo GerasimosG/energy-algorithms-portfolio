@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import pulp
 
+from energy_algorithms.infrastructure.solver_config import solve_model
+
 # ── Asset base class ─────────────────────────────────────────────────────────
 
 class Asset:
@@ -397,7 +399,7 @@ def build_site(
         )
 
     # 4. Solve
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+    solve_model(prob, msg=verbose)
 
     # 5. Each asset extracts its results
     for asset in assets:

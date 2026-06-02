@@ -15,6 +15,8 @@ from typing import Any
 import numpy as np
 import pulp
 
+from energy_algorithms.infrastructure.solver_config import solve_model
+
 # ---------------------------------------------------------------------------
 # Scenario generation
 # ---------------------------------------------------------------------------
@@ -171,8 +173,8 @@ def solve_scenario_uc(
             f"balance_{t}",
         )
 
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-    status = pulp.LpStatus[prob.status]
+    result = solve_model(prob, msg=verbose)
+    status = result["status"]
 
     if status != "Optimal":
         return {"status": status}

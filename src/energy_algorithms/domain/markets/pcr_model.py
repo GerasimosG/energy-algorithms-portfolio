@@ -11,6 +11,7 @@ from __future__ import annotations
 import pulp
 
 from energy_algorithms.domain.markets.coupling_utils import compute_social_welfare
+from energy_algorithms.infrastructure.solver_config import solve_model
 
 # ---------------------------------------------------------------------------
 # Tolerance: minimum fill fraction for an order to be considered "accepted"
@@ -104,9 +105,9 @@ class PCRModel:
                 for i in indices[1:]:
                     prob += b_vars[i] == b_vars[anchor]
 
-        prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+        result = solve_model(prob, msg=verbose)
 
-        status = pulp.LpStatus[prob.status]
+        status = result["status"]
         if status != "Optimal":
             return {"status": status}
 

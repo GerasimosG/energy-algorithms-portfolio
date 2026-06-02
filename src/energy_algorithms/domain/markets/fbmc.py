@@ -26,6 +26,7 @@ from energy_algorithms.domain.markets.coupling_utils import (
     compute_social_welfare,
     extract_zone_results,
 )
+from energy_algorithms.infrastructure.solver_config import solve_model
 
 
 def solve_fbmc(
@@ -173,8 +174,8 @@ def solve_fbmc(
         prob += flow_expr >= -ram["ram_reverse"], f"flow_rev_{ram['name']}"
 
     # ── Solve ────────────────────────────────────────────────────
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-    status = pulp.LpStatus[prob.status]
+    result = solve_model(prob, msg=verbose)
+    status = result["status"]
 
     if status != "Optimal":
         return {"status": status}

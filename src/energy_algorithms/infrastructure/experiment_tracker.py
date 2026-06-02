@@ -15,12 +15,12 @@ from __future__ import annotations
 
 import json
 import sqlite3
-import time
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 
 class ExperimentTracker:
@@ -60,7 +60,7 @@ class ExperimentTracker:
         exception propagates.
         """
         run_id = uuid.uuid4().hex[:12]
-        created = datetime.now(timezone.utc).isoformat()
+        created = datetime.now(UTC).isoformat()
         self._conn.execute(
             "INSERT INTO runs (run_id, name, description, tags, status, created) "
             "VALUES (?, ?, ?, ?, 'running', ?)",
@@ -78,12 +78,12 @@ class ExperimentTracker:
                 # set_status() was called manually — respect it
                 self._conn.execute(
                     "UPDATE runs SET finished=? WHERE run_id=?",
-                    (datetime.now(timezone.utc).isoformat(), run_id),
+                    (datetime.now(UTC).isoformat(), run_id),
                 )
             else:
                 self._conn.execute(
                     "UPDATE runs SET status='completed', finished=? WHERE run_id=?",
-                    (datetime.now(timezone.utc).isoformat(), run_id),
+                    (datetime.now(UTC).isoformat(), run_id),
                 )
             self._conn.commit()
 
@@ -266,7 +266,7 @@ class ExperimentRun:
         self._status_override = True
         self._conn.execute(
             "UPDATE runs SET status=?, finished=? WHERE run_id=?",
-            (status, datetime.now(timezone.utc).isoformat(), self._run_id),
+            (status, datetime.now(UTC).isoformat(), self._run_id),
         )
         self._conn.commit()
 

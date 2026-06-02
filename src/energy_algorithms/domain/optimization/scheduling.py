@@ -17,6 +17,7 @@ import pulp
 
 from energy_algorithms.domain.hooks import POST_EXTRACT, POST_SOLVE, PRE_SOLVE, run_hooks
 from energy_algorithms.domain.options import get_option
+from energy_algorithms.infrastructure.solver_config import solve_model
 from energy_algorithms.ports.solver import SolverPort
 
 
@@ -219,13 +220,9 @@ def solve_unit_commitment(
     if get_option("run_hooks"):
         run_hooks(PRE_SOLVE, prob=prob, solver="cbc")
 
-    # Use SolverPort if provided, otherwise default to CBC adapter
-    if solver is not None:
-        result = solver.solve(prob, msg=verbose)
-        status_str = result.status
-    else:
-        prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-        status_str = pulp.LpStatus[prob.status]
+    # Use SolverPort if provided, otherwise default to CBC via solve_model
+    result = solve_model(prob, solver=solver, msg=verbose)
+    status_str = result["status"]
 
     # --- Post-solve hook ---
     if get_option("run_hooks"):

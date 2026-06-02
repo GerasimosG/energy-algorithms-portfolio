@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import pulp
 
+from energy_algorithms.infrastructure.solver_config import solve_model
+
 
 def solve_transportation(
     supply: dict[str, float],
@@ -50,7 +52,7 @@ def solve_transportation(
         prob += pulp.lpSum(flow[w, r] for w in warehouses) >= demand[r], f"demand_{r}"
 
     # Solve
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
+    result = solve_model(prob, msg=verbose)
 
     allocations = {}
     total_cost = 0.0
@@ -61,7 +63,7 @@ def solve_transportation(
             total_cost += val * cost[w, r]
 
     return {
-        "status": pulp.LpStatus[prob.status],
+        "status": result["status"],
         "total_cost": round(total_cost, 2),
         "allocations": allocations,
     }

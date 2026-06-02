@@ -3,8 +3,6 @@
 Extends the single-zone PCR model to demonstrate multi-zone coupling
 with Available Transfer Capacity (ATC) constraints between zones.
 
-This is directly relevant to Euphemia: the algorithm couples 25+ European
-power exchanges, where inter-zonal flows are limited by ATC values.
 """
 from __future__ import annotations
 
@@ -16,6 +14,7 @@ from energy_algorithms.domain.markets.coupling_utils import (
     extract_zone_results,
     validate_atc,
 )
+from energy_algorithms.infrastructure.solver_config import solve_model
 
 
 def solve_multi_zone(
@@ -96,8 +95,8 @@ def solve_multi_zone(
         prob += supply_qty == demand_qty + net_exports, f"balance_{zone_names[zi]}"
 
     # ---- Solve ----
-    prob.solve(pulp.PULP_CBC_CMD(msg=verbose))
-    status = pulp.LpStatus[prob.status]
+    result = solve_model(prob, msg=verbose)
+    status = result["status"]
 
     if status != "Optimal":
         return {"status": status}
