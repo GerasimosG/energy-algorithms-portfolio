@@ -1,5 +1,23 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-06-02 13:00 CEST — Grep loop review + solver service full routing + ENTSO-E caching + README updates
+
+**Status:** 578 tests, 3 skipped, 0 failed, 92.55% coverage (above 90% gate).
+
+**What changed:**
+- **Solver service (P1):** `solve_model()` added to `infrastructure/solver_config.py`. All 10 domain files now route through SolverPort instead of calling `pulp.PULP_CBC_CMD` directly. Hexagonal architecture is fully wired.
+- **ENTSO-E caching (P2):** JSON disk cache at `~/.hermes/entsoe_cache.json` with 1h TTL. Auto-disabled under pytest. Only "ok" responses cached.
+- **Fixed:** `validate_atc` missing from coupling_utils imports in `multi_zone.py` and `multi_day.py` (35 failing tests → 0).
+- **Fixed:** `solve_model()` double `msg` kwarg (137 failing tests → 0).
+- **Fixed:** ENTSO-E cache stale responses under pytest (9 failing tests → 0).
+- **Removed dead code:** Unused `verbose` parameter from `solve_model()`.
+- **Updated README:** All 8 "571" references → "578". Added microservices section + CLI demos section.
+- **Updated AGENTS.md:** Test count and status, removed "remaining gap" (solver now fully routed).
+- **Saved skill:** `energy-algorithms-microservices` — entire workflow for next time.
+
+**File changes:** 7 files modified
+**Tests:** 578 passed, 3 skipped, 0 failed, 92.55% coverage
+
 ## 2026-06-02 12:00 CEST — Full audit fix + ML experiment tracking + microservices analysis
 
 **Status:** 578 tests, 3 skipped, 0 failed, 93% coverage (above 90% gate).

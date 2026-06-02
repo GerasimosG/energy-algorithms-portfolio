@@ -23,7 +23,7 @@ This portfolio is laser-targeted at two specific roles. Below is a detailed brea
 | **LP/MIP formulation** | Can you translate a business problem into mathematical constraints? | `pcr_model.py` — social welfare LP with binary block orders. `scheduling.py` — unit commitment MIP with min up/down, ramp rates, reserve. `storage.py` — BESS revenue-maximizing LP |
 | **Energy market domain** | Do you understand PCR, Euphemia, market coupling, block orders, merit order? | `EUPHEMIA_INTERVIEW.md` — full question bank. `multi_zone.py` — ATC-constrained coupling. `fbmc.py` — FBMC with PTDF/RAM (the real Euphemia algorithm). `block_orders.py` — linked + exclusive group mechanisms |
 | **Solver experience** | Have you used optimization solvers? Understand their limitations? | PuLP/CBC used throughout. README documents PuLP's quadratic limitation (why scipy handles portfolio risk). Honest about CBC vs commercial solvers |
-| **Python + software engineering** | Can you write production code, not just notebooks? | 571 collected pytest tests with a 90% coverage gate (94% measured), CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
+| **Python + software engineering** | Can you write production code, not just notebooks? | 578 collected pytest tests with a 90% coverage gate (94% measured), CI/CD (GitHub Actions, 3 Python versions), `pyproject.toml`, `__all__` exports, NumPy docstrings, clean git history |
 | **Non-convexity awareness** | Do you know that block orders make the problem non-convex? | Explicitly documented: MCP vs IP pricing gap, make-whole payments, PUN pricing. The README's "Implementation → Real Euphemia Mapping" table shows exactly where we simplify |
 
 #### Edge Cases — What Separates Good from Exceptional
@@ -74,7 +74,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 | Requirement | What They Look For | This Repo's Answer |
 |---|---|---|
-| **Production Python** | Can you deploy reliable code that runs unattended? | Full package, CI/CD (3 Python versions), 571 tests, **94% measured coverage** (90% gate), structured error handling, `pyproject.toml` |
+| **Production Python** | Can you deploy reliable code that runs unattended? | Full package, CI/CD (3 Python versions), 578 tests, **94% measured coverage** (90% gate), structured error handling, `pyproject.toml` |
 | **BESS modeling** | Do you understand round-trip efficiency, SoC dynamics, arbitrage? | `storage.py` — BESS revenue-maximizing LP with η=90%, 30-day arbitrage demo, +€143/MWh hour-of-day spread |
 | **Backtesting** | Look-ahead, survivorship, transaction costs, walk-forward? | 7 risk metrics (Sharpe, Sortino, VaR95/99, Kelly, Calmar, Max DD, CVaR), signal-shift anti-look-ahead, commission + slippage |
 | **ENTSO-E data pipelines** | Can you build reliable market data infrastructure? | REST client with structured error matrix (401, 503, XML parse, timeout), SQLite persistence, live-data-graceful-degradation pattern |
@@ -111,7 +111,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 **🔴 "Walk me through how you'd build a signal from wind forecast errors."**
 - **Exceptional answer:** "I'd start with ECMWF ensemble forecasts for Belgian wind zones and compare against actual SCADA wind output (ENTSO-E Actual Generation). The forecast error `e(t) = forecast(t) - actual(t)` is mean-reverting — if the forecast says 2 GW but actual is 1.5 GW, prices should rise as the market re-prices the shortage. The signal: `e(t) - MA(e, 6h)` — large positive errors (over-forecasting) mean wind is below prediction, buy. Large negative errors, sell. Key refinement: separate offshore vs onshore — offshore errors are larger but faster-reverting. My pipeline's `energy_data/` structure is designed to ingest this; adding ECMWF feed is a new adapter."
 
-**🔴 "Your repo has 571 tests at 94% coverage. An algo trading system goes live and loses €10K on day one. What failed that your tests didn't catch?"**
+**🔴 "Your repo has 578 tests at 94% coverage. An algo trading system goes live and loses €10K on day one. What failed that your tests didn't catch?"**
 - **Exceptional answer:** "Three things tests miss: (1) **Data quality** — a bad tick from ENTSO-E (negative price that's actually a missing value encoded as -1) passes all type checks but corrupts the P&L. My tests use clean golden data. (2) **Latency** — tests assume instantaneous execution; real markets have slippage, queue position, partial fills. My slippage model is a flat 0.1% — unrealistic. (3) **Regime change** — the strategy was fit on April data but May had a different wind/solar pattern. Tests validate correctness, not profitability. For a trading system, I'd add: historical replay testing (walk-forward), synthetic data stress tests, and a shadow-mode period where the algo runs alongside the trader without executing."
 
 **🔴 "How would you design the monitoring dashboard for your live algo?"**
@@ -122,7 +122,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 ### Cross-Cutting Interview Preparation
 
 **The Portfolio Walkthrough** — When an interviewer says "walk me through this repo":
-1. Open with: "This is my optimization portfolio — built for energy algorithmic trading roles. The standout is `domain/markets/` (PCR/Euphemia) and `domain/optimization/storage.py` (BESS). 571 tests, 94% coverage, hexagonal architecture with ports/adapters."
+1. Open with: "This is my optimization portfolio — built for energy algorithmic trading roles. The standout is `domain/markets/` (PCR/Euphemia) and `domain/optimization/storage.py` (BESS). 578 tests, 94% coverage, hexagonal architecture with ports/adapters."
 2. Show the **Industry demo results** — the hour-of-day spread (+€143), cross-border spreads, BESS arbitrage. "These run on real Belgian ENTSO-E data."
 3. Mention the **honest coverage gaps** table above — "I know what I haven't built yet, and I can discuss exactly how I'd extend."
 4. If they ask about production: "The solver_config.py supports Gurobi/CPLEX/HiGHS with one config change. Switching from CBC to commercial for large-scale is trivial."
@@ -135,7 +135,7 @@ These are the curveball questions Euphemia   interviewers use. Prepare for every
 
 **Behavioral Questions — Be Ready For:**
 - "Tell me about a bug you found and fixed." → The linked blocks constraint bug. Block orders that should have been linked weren't — the equality constraint was missing. It's a great story about constraint debugging methodology.
-- "Describe a time you had to prioritize between features." → "I chose to push coverage to 90% before adding new features. 571 tests mean I can refactor without fear."
+- "Describe a time you had to prioritize between features." → "I chose to push coverage to 90% before adding new features. 578 tests mean I can refactor without fear."
 - "What's something in this repo you're not proud of?" → The hardcoded 0.001 tolerance, and that ancillary services aren't modeled. Shows awareness and honesty.
 
 ---
@@ -200,7 +200,7 @@ Energy_Algorithms/
 ├── strategies/             3 signal-based strategies
 ├── market_data/            Yahoo Finance → SQLite pipeline
 ├── knowledge/              12-file theory + Q&A curriculum ★
-├── tests/                  571 collected pytest tests (90% gate, 94% measured cov) ★
+├── tests/                  578 collected pytest tests (90% gate, 94% measured cov) ★
 ├── notebooks/              Walkthrough notebook for Euphemia   demo
 └── .github/workflows/      CI: Python 3.11–3.13
 ```
@@ -376,7 +376,7 @@ This table goes deeper than the mapping above. It's the honest technical assessm
 | **Data pipeline** | Demo data + ENTSO-E API client | Real-time feeds from multiple PXs + SCADA + weather | Live integration | ENTSO-E structure correct; needs caching, alerting, failover |
 
 **Interview-ready response when asked about gaps:**
-> *"I've implemented the core concepts — social welfare LP, block orders, FBMC with PTDF/LODF, multi-zone coupling — in clean hexagonal architecture with 571 collected tests, a 90% coverage gate, and 5 solvers available including HiGHS. I understand where my implementation simplifies reality: IP pricing, production scalability, and commercial solvers. I'd rather be honest about the gaps than pretend otherwise. The fundamentals are solid; the production experience is what I'm applying to gain."*
+> *"I've implemented the core concepts — social welfare LP, block orders, FBMC with PTDF/LODF, multi-zone coupling — in clean hexagonal architecture with 578 collected tests, a 90% coverage gate, and 5 solvers available including HiGHS. I understand where my implementation simplifies reality: IP pricing, production scalability, and commercial solvers. I'd rather be honest about the gaps than pretend otherwise. The fundamentals are solid; the production experience is what I'm applying to gain."*
 
 ### Known Limitations (Documented for Interview Transparency)
 
@@ -393,7 +393,7 @@ This table goes deeper than the mapping above. It's the honest technical assessm
 | Python modules | 18 |
 | Total source files | 35+ |
 | Test files | 10 |
-| Test cases | 571 collected (RAM-bounded fast coverage gate: 94%, fail-under 90) |
+| Test cases | 578 collected (RAM-bounded fast coverage gate: 94%, fail-under 90) |
 | Knowledge base | 12 files, 3,610 lines |
 | Risk metrics | 7 (Sharpe, Sortino, maxDD, Calmar, VaR95, VaR99, Kelly) |
 | Optimization solvers | 2+ (PuLP/CBC, scipy SLSQP, HiGHS/Gurobi/CPLEX configs) |
@@ -403,6 +403,41 @@ This table goes deeper than the mapping above. It's the honest technical assessm
 
 ```bash
 pytest tests/ -v --cov=energy_algorithms --cov-report=term-missing
+```
+
+## 🎮 CLI Demos
+
+```bash
+ea-markets    ea-optimization    ea-trading    ea-live    ea-experiments
+```
+
+---
+
+## 🏗️ Microservices
+
+Three orthogonal microservices ship with this repo:
+
+### Solver Service (`infrastructure/solver_config.py`)
+All 10 domain optimization files route through `solve_model()` — a single function that bridges domain code with the `SolverPort` adapter. Swap from CBC to HiGHS, Gurobi, or CPLEX by changing one parameter.
+
+```python
+from energy_algorithms.infrastructure.solver_config import solve_model
+
+result = solve_model(prob, msg=True)   # pass msg via **kwargs
+status, obj_time = result["status"], result["solve_time"]
+```
+
+### ENTSO-E Data Caching (`adapters/entsoe_client.py`)
+JSON disk cache at `~/.hermes/entsoe_cache.json` with configurable TTL (default 1h). Only "ok" responses are cached. Automatically disabled under pytest.
+
+### ML Experiment Tracker (`infrastructure/experiment_tracker.py`)
+SQLite-backed experiment tracking with zero dependencies. Log params, metrics, and artifacts per run. Query via Python API or CLI:
+
+```bash
+ea-experiments list
+ea-experiments show <run_id>
+ea-experiments compare <id1> <id2>
+ea-experiments export
 ```
 
 ## 📚 References

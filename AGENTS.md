@@ -124,7 +124,8 @@ git push -u origin <branch>
 
 ## Status
 
-**Tests:** 568 passing, 3 skipped, 0 failing, **94% coverage** (90% gate).
+**Tests:** 578 passing, 3 skipped, 0 failing, **93% coverage** (90% gate).
+**Microservices:** Solver service (`solve_model()` routes 10/10 domain files through SolverPort ✅), ENTSO-E data caching (JSON cache with TTL), ML experiment tracker (SQLite + CLI).
 **Shared utilities:** `coupling_utils.py` (4 market coupling modules), `data_loader.py` (3 demo files).
-**Lint:** Ruff clean, mypy clean.
-**Key remaining gap:** 10 domain files still call `pulp.PULP_CBC_CMD()` directly instead of going through `SolverPort`.
+**Lint:** Ruff clean.
+**CLI:** `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.

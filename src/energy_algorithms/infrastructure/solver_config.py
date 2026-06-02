@@ -181,7 +181,7 @@ def get_solver(name: str = "cbc", **kwargs: Any) -> Any:
     return pulp.COIN_CMD(path=_cbc_bin, **fallback_kwargs)
 
 
-def solve_model(prob, *, verbose: bool = False, solver=None, solver_id: str | None = None, **kwargs: Any) -> dict[str, Any]:
+def solve_model(prob, *, solver=None, solver_id: str | None = None, **kwargs: Any) -> dict[str, Any]:
     """Solve an LP/MIP problem through the SolverPort.
 
     Accepts a ``pulp.LpProblem``, returns a dict with status, objective,
@@ -191,17 +191,15 @@ def solve_model(prob, *, verbose: bool = False, solver=None, solver_id: str | No
     ----------
     prob : pulp.LpProblem
         The optimisation problem to solve.
-    verbose : bool
-        Whether to print solver log output (default: ``False``).
     solver : SolverPort or None
         A ``SolverPort`` instance to use directly.  If ``None``, a default
         ``PuLPSolverAdapter`` is created from *solver_id*.
     solver_id : str or None
-        Solver identifier (``\"cbc\"``, ``\"highs\"``, …).  Ignored when
-        *solver* is given.  Falls back to ``\"cbc\"`` when ``None``.
+        Solver identifier (``\\\"cbc\\\"``, ``\\\"highs\\\"``, …).  Ignored when
+        *solver* is given.  Falls back to ``\\\"cbc\\\"`` when ``None``.
     **kwargs
-        Additional keyword arguments forwarded to the solver
-        (e.g. ``timeLimit=60``, ``threads=4``).
+        Additional keyword arguments forwarded to the solver's constructor
+        (e.g. ``msg=True``, ``timeLimit=60``, ``threads=4``).
 
     Returns
     -------
@@ -216,7 +214,6 @@ def solve_model(prob, *, verbose: bool = False, solver=None, solver_id: str | No
         solver = PuLPSolverAdapter(solver_id or "cbc")
 
     # Use **kwargs so the caller can pass msg, timeLimit, threads, etc.
-    # verbose is passed through into kwargs for backwards compat.
     result = solver.solve(prob, **kwargs)
 
     return {
