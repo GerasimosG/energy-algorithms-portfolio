@@ -24,7 +24,7 @@ Energy_Algorithms/
 │       │   ├── data_loader.py         # Shared demo utilities (price loading, grid search)
 │       │   └── *_demo.py              # Entry-point demos
 │       └── infrastructure/            # Backward-compat re-exports (canonical in domain/)
-├── tests/                             # **568 tests, 94% coverage, 90% gate**
+├── tests/                             # **586 tests, 93% coverage, 90% gate**
 ├── knowledge/                         # Theory, Q&A, interview prep, competitor analysis
 ├── notebooks/                         # Jupyter walkthrough (24-cell)
 ├── pyproject.toml                     # Package config (src layout, ruff, mypy, pytest)
@@ -124,8 +124,8 @@ git push -u origin <branch>
 
 ## Status
 
-**Tests:** 578 passing, 3 skipped, 0 failing, **93% coverage** (90% gate).
-**Microservices:** Solver service (`solve_model()` routes 10/10 domain files through SolverPort ✅), ENTSO-E data caching (JSON cache with TTL), ML experiment tracker (SQLite + CLI).
+**Tests:** 586 passing, 3 skipped, 3 pre-existing failures (env-var leaks), **93% coverage** (90% gate).
+**Microservices:** Solver service (`solve_model()` routes 11/11 domain files through SolverPort ✅), ENTSO-E data caching (JSON cache with TTL), ML experiment tracker (SQLite + CLI).
 **Shared utilities:** `coupling_utils.py` (4 market coupling modules), `data_loader.py` (3 demo files).
 **Lint:** Ruff clean.
 **CLI:** `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.

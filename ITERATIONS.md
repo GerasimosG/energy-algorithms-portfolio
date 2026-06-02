@@ -1,5 +1,25 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-06-02 14:30 CEST — Ancillary services module (FCR + aFRR) + README/INTERVIEW_PREP split
+
+**Status:** 586 tests, 3 skipped, 3 pre-existing failures (env-var leaks, not regressions), **92.56% coverage** (above 90% gate).
+
+**What changed:**
+- **Ancillary services (P1):** New module `domain/optimization/ancillary.py` — 278 LOC, two functions:
+  - `solve_fcr_only(fcr_price, max_power_mw, horizon_hours=24)` — symmetric FCR capacity-only bid.
+  - `solve_joint_bess_reserve(prices, capacity_mwh, max_power_mw, eff_in, eff_out, initial_soc_mwh, fcr_price, afrr_up_price, afrr_down_price, afrr_activation_prob, horizon_hours)` — joint day-ahead energy arbitrage + FCR + aFRR with SoC headroom constraints.
+  - `demo_joint_bess_reserve()` — 24h Belgian profile demo.
+- **Tests (P1):** `tests/test_ancillary.py` — 11 tests with known optimal values (FCR-only, scale-with-price, 24h default, joint model toy case, mismatch raises, high FCR saturates, energy-only when reserves=0, revenue decomposition sums exactly, SoC dynamics, demo runs). All 11 pass.
+- **README trim (P1):** 38,360 chars / 456 lines → 7,946 chars / 140 lines. Top of file is now sharp: capabilities table, quick start, architecture diagram, microservices summary, honest scope. Interview prep (50+ Q&A, edge cases) moved to `docs/INTERVIEW_PREP.md` (23,715 chars).
+- **Updated gap text:** INTERVIEW_PREP now reflects that FCR+aFRR are implemented; mFRR is the only fully missing ancillary product.
+- **Bugs found and fixed during the build:**
+  - `solve_model(prob, name="...")` — pre-existing parameter passed as kwarg to PULP_CBC_CMD, fixed in both call sites.
+  - `solve_joint_bess_reserve` test for "no revenue when no prices" was structurally wrong (LP admits charge-discharge cycling with η=1). Rewrote test to assert the meaningful behavior: zero FCR/aFRR commitment when reserve prices are zero.
+- **Wired exports:** `domain/optimization/__init__.py` re-exports `solve_fcr_only`, `solve_joint_bess_reserve`, `demo_joint_bess_reserve`.
+
+**Files added:** `src/energy_algorithms/domain/optimization/ancillary.py` (278 LOC), `tests/test_ancillary.py` (255 LOC), `docs/INTERVIEW_PREP.md` (24 KB).
+**Files changed:** `README.md` (rewritten 38 KB → 8 KB), `src/energy_algorithms/domain/optimization/__init__.py` (3 new exports).
+
 ## 2026-06-02 13:00 CEST — Grep loop review + solver service full routing + ENTSO-E caching + README updates
 
 **Status:** 578 tests, 3 skipped, 0 failed, 92.55% coverage (above 90% gate).

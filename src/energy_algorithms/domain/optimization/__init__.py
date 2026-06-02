@@ -33,6 +33,11 @@ from energy_algorithms.domain.optimization.stochastic import (
     generate_wind_scenarios,
     solve_scenario_uc,
 )
+from energy_algorithms.domain.optimization.ancillary import (
+    demo_joint_bess_reserve,
+    solve_fcr_only,
+    solve_joint_bess_reserve,
+)
 from energy_algorithms.domain.optimization.storage import demo_storage, solve_storage
 from energy_algorithms.domain.optimization.transportation import (
     demo_transportation,
@@ -71,4 +76,8 @@ __all__ = [
     "solve_scenario_uc",
     "compute_vss",
     "compute_evpi",
+    # Ancillary services
+    "solve_fcr_only",
+    "solve_joint_bess_reserve",
+    "demo_joint_bess_reserve",
 ]
