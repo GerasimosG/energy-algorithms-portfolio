@@ -1,5 +1,30 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-06-02 15:30 CEST — Portfolio experiments (exp1 revenue stack + exp2 strategy H2H)
+
+**Status:** 586 tests, 3 skipped, 3 pre-existing failures (unchanged), **92.56% coverage** (above 90% gate).
+
+**What changed:**
+- **New `experiments/` package** with 5 files:
+  - `_data.py` — shared CSV loader (quarter-hourly → 24 hourly buckets) + deterministic synthetic fallback.
+  - `joint_reserve_revenue_stack.py` — Experiment 1: 4 scenarios (A=arbitrage, B=+FCR, C=+aFRR, D=full stack) × ~28 days real Belgian ENTSO-E prices. Each scenario logged to the experiment tracker.
+  - `strategy_head_to_head.py` — Experiment 2: 3 strategies (hour-of-day, solar-duck, calendar-spread) × 4 regimes (all / spring / summer / other) with the 7-metric risk suite. Plus 1 aggregate head-to-head run.
+  - `runner.py` — single CLI: `python experiments/runner.py {exp1,exp2,all}`.
+  - `README.md` — laptop setup, run instructions, caveats.
+- **Two rounds of grep-loop code review applied:**
+  - Round 1 (11 fixes): extracted shared loader, removed `__import__("datetime")` hack, named magic tolerance, replaced fragile dataclass rebuild with `dataclasses.replace()`, standardized baseline extraction.
+  - Round 2 (6 fixes): extracted `_empty_result()` and `_build_tags()` helpers, named magic numbers (`INITIAL_CAPITAL_EUR`, `COMMISSION`, `SLIPPAGE`), cached `list(zip(dates, prices))`, simplified `defaultdict(lambda: defaultdict(list))` pattern, tightened `_equity_to_returns` with explicit type annotation + divide-by-zero guard.
+- **Headline results on real BE data (28 days, Apr 21 → May 20, 2026):**
+  - Experiment 1: Full stack delivers **+61.5%** revenue uplift over arbitrage-only (€620k → €1.00M). FCR alone contributes +€484k; aFRR adds another €198k at p=0.3.
+  - Experiment 2: hour-of-day shows 100% win rate + 1287% return — reveals the strategy is unconstrained (no position sizing), which is itself a valid interview insight.
+- **Validation:**
+  - Ruff clean.
+  - mypy: only pre-existing `missing library stubs or py.typed marker` errors on `energy_algorithms.*` modules (not introduced by this work).
+  - Full test suite: 586 passed, 3 skipped, 3 pre-existing failures (env-var leaks, unchanged from baseline).
+  - End-to-end: both experiments run in <60 s on this machine and populate the SQLite tracker + optional CSV/JSON outputs.
+
+**Files added (5):** `experiments/_data.py`, `experiments/joint_reserve_revenue_stack.py`, `experiments/strategy_head_to_head.py`, `experiments/runner.py`, `experiments/README.md`, `experiments/__init__.py`.
+
 ## 2026-06-02 14:30 CEST — Ancillary services module (FCR + aFRR) + README/INTERVIEW_PREP split
 
 **Status:** 586 tests, 3 skipped, 3 pre-existing failures (env-var leaks, not regressions), **92.56% coverage** (above 90% gate).
