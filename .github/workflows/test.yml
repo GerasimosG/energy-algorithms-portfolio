@@ -38,8 +38,8 @@ jobs:
 
       - name: Verify demos run
         run: |
-          python -c "import energy_markets.demo; energy_markets.demo.main()"
-          python -c "import lp_optimization.demo; lp_optimization.demo.main()"
+          python -m energy_algorithms.application.markets_demo
+          python -m energy_algorithms.application.optimization_demo
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
