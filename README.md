@@ -1,7 +1,5 @@
 # Energy Algorithms
 
-> **Note:** The original long-form README (with the full Euphemia   + Industry interview Q&A, Euphemia algorithm walkthrough, and known-limitations table) is preserved at [`docs/README_LEGACY.md`](docs/README_LEGACY.md) for reference. The interview Q&A is now in [`docs/INTERVIEW_PREP.md`](docs/INTERVIEW_PREP.md).
-
 [![Tests](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -90,12 +88,8 @@ The first three are the **production services** a trading desk or optimisation t
 
 ## Documentation
 
-- **[`docs/INTERVIEW_PREP.md`](docs/INTERVIEW_PREP.md)** — full Euphemia   + Industry interview Q&A, edge cases, "exceptional" answers (50+ questions)
 - **[`docs/BENCHMARK_REPORT.md`](docs/BENCHMARK_REPORT.md)** — comparison vs PyPSA / POMATO / energy-py-linear with 4 plots
-- **[`knowledge/`](knowledge/)** — 12-file curriculum: theory, Q&A, market coupling, UC, storage, backtesting, ENTSO-E
-- **[`ITERATIONS.md`](ITERATIONS.md)** — development history (latest first)
-- **[`FRAMEWORK.md`](FRAMEWORK.md)** — deep architecture + iteration metrics
-- **[`AGENTS.md`](AGENTS.md)** — repo conventions for AI agents
+- **[`knowledge/`](knowledge/)** — 10-file curriculum: theory, market coupling, UC, storage, backtesting, ENTSO-E
 
 ---
 
