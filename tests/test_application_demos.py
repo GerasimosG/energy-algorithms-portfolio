@@ -242,8 +242,7 @@ def test_trading_demo_load_prices_fallback(monkeypatch):
     import io
     import sys
 
-    from energy_algorithms.application import data_loader
-    from energy_algorithms.application import trading_demo
+    from energy_algorithms.application import data_loader, trading_demo
 
     class FakeConn:
         def close(self) -> None:
@@ -315,8 +314,7 @@ def test_trading_demo_main_prints_metrics(monkeypatch, capsys, tmp_path):
 
 def test_strategies_demo_load_prices_fallback(monkeypatch):
     """strategies_demo._load_prices falls back to synthetic data."""
-    from energy_algorithms.application import data_loader
-    from energy_algorithms.application import strategies_demo
+    from energy_algorithms.application import data_loader, strategies_demo
 
     class FakeConn:
         def close(self) -> None:

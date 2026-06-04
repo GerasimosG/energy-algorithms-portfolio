@@ -11,7 +11,6 @@ from energy_algorithms.domain.optimization.ancillary import (
     solve_joint_bess_reserve,
 )
 
-
 # ── FCR-only ──────────────────────────────────────────────────────────
 
 
@@ -98,7 +97,6 @@ def test_joint_reserve_high_fcr_uses_full_power():
     """
     With high FCR price and low energy spread, full capacity goes to FCR.
     """
-    T = 2
     r = solve_joint_bess_reserve(
         prices=[50.0, 51.0],  # tiny spread, no arbitrage
         capacity_mwh=10.0,
