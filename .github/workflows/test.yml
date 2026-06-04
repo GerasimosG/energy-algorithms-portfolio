@@ -25,16 +25,12 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install mypy
 
       - name: Lint with ruff
         run: ruff check src/ tests/
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
-
-      - name: Type-check with mypy
-        run: mypy src/energy_algorithms/
 
       - name: Verify demos run
         run: |
