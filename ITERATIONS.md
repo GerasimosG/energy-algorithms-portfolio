@@ -1,5 +1,15 @@
 # ITERATIONS — Energy Algorithms
 
+## 2026-06-04 16:30 CEST — Repo cleanup: removed stale branches
+
+**Status:** Same — 586 tests passing. No code changes.
+
+**What changed:**
+- Deleted local branch `coverage/90-pct` (was in a worktree)
+- Deleted remote branches: `coverage/80-pct`, `coverage/90-pct`, `feat/demo-resilience-and-plot-gitignore`
+- Pruned remote tracking refs
+- **Repo now has 1 branch:** `main`
+
 ## 2026-06-02 15:30 CEST — Portfolio experiments (exp1 revenue stack + exp2 strategy H2H)
 
 **Status:** 586 tests, 3 skipped, 3 pre-existing failures (unchanged), **92.56% coverage** (above 90% gate).
