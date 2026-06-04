@@ -1,12 +1,13 @@
 # Energy Algorithms
 
-[![Tests](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml)
+[![Tests](https://github.com/GerasimosG/energy-algorithms-portfolio/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/energy-algorithms-portfolio/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Energy domain optimisation portfolio** — social-welfare market clearing (PCR/Euphemia), BESS storage + ancillary services (FCR/aFRR), unit commitment, backtesting. Hexagonal architecture (ports/adapters). Built for **Euphemia  ** (Junior Optimization Engineer) and **Industry Belgium** (Algorithmic Trader, Short-Term Power, Uccle).
+**Energy domain optimisation portfolio** — social-welfare market clearing (PCR/Euphemia), BESS storage + ancillary services (FCR/aFRR), unit commitment, backtesting. Hexagonal architecture (ports/adapters).
 
-> **Why this repo exists:** I want to show, not tell. Each module corresponds to a JD bullet — `domain/markets/pcr_model.py` is "translates Euphemia into a working LP", `domain/optimization/ancillary.py` is "BESS joint FCR+aFRR bidding", `adapters/entsoe_client.py` is "reliable market data pipeline".
+> **Why this repo exists:** I want to show, not tell. Each module corresponds to real-world energy market problems — `domain/markets/pcr_model.py` translates Euphemia-style PCR into a working LP, `domain/optimization/ancillary.py` implements BESS joint FCR+aFRR bidding, `adapters/entsoe_client.py` provides a reliable market data pipeline.
 
 ---
 
@@ -14,35 +15,50 @@
 
 | Capability | Module | Why it matters |
 |---|---|---|
-| **Social welfare clearing** (PCR / Euphemia-style) | `domain/markets/pcr_model.py` | The algorithm Euphemia   maintains. LP with binary block orders, MCP, surpluses |
+| **Social welfare clearing** (PCR / Euphemia-style) | `domain/markets/pcr_model.py` | Pan-European market coupling. LP with binary block orders, MCP, surpluses |
 | **Flow-based market coupling** (FBMC) | `domain/markets/fbmc.py`, `lodf_utils.py` | Real European coupling: PTDF × net position ≤ RAM |
 | **Multi-zone ATC coupling** | `domain/markets/multi_zone.py` | Cross-border flows: BE↔FR↔DE↔NL |
-| **BESS + FCR + aFRR joint bidding** | `domain/optimization/ancillary.py` ⭐ new | INDUSTRY: ancillary services revenue stacking |
-| **BESS energy arbitrage** | `domain/optimization/storage.py` | INDUSTRY: hour-of-day, +€143/MWh spread documented |
-| **Unit commitment** (MIP) | `domain/optimization/scheduling.py` | Euphemia  : min up/down, ramps, reserve margin |
-| **Continuous intraday order book** | `domain/markets/intraday.py` | INDUSTRY: price-time priority, cross-border |
-| **7-metric backtesting engine** | `domain/trading/backtest_engine.py` | INDUSTRY: Sharpe, Sortino, VaR95/99, Calmar, Kelly, MaxDD, CVaR |
-| **3 signal strategies** | `domain/trading/` | INDUSTRY: hour-of-day, solar duck, calendar spread |
-| **ENTSO-E live data + cache** | `adapters/entsoe_client.py` | INDUSTRY: 26 days of real Belgian data |
-| **ML experiment tracking** | `infrastructure/experiment_tracker.py` | INDUSTRY: track signal research runs in SQLite |
+| **BESS + FCR + aFRR joint bidding** | `domain/optimization/ancillary.py` | Ancillary services revenue stacking |
+| **BESS energy arbitrage** | `domain/optimization/storage.py` | Hour-of-day optimisation, +€143/MWh spread documented |
+| **Unit commitment** (MIP) | `domain/optimization/scheduling.py` | Min up/down, ramps, reserve margin |
+| **Continuous intraday order book** | `domain/markets/intraday.py` | Price-time priority, cross-border |
+| **7-metric backtesting engine** | `domain/trading/backtest_engine.py` | Sharpe, Sortino, VaR95/99, Calmar, Kelly, MaxDD, CVaR |
+| **3 signal strategies** | `domain/trading/` | Hour-of-day, solar duck, calendar spread |
+| **ENTSO-E live data + cache** | `adapters/entsoe_client.py` | Real Belgian market data |
+| **ML experiment tracking** | `infrastructure/experiment_tracker.py` | Track signal research runs in SQLite |
 | **Solver-agnostic core** | `ports/solver.py`, `infrastructure/solver_config.py` | All 11 domain files route through `solve_model()` — swap CBC↔HiGHS↔Gurobi by config |
 
 **578 tests passing, 92.55% coverage, 90% gate enforced in CI.** 3 Python versions (3.11/3.12/3.13).
 
 ---
 
+## Benchmarks
+
+![Price profiles](docs/fig1_price_profiles.png)
+*Fig 1: Hourly price profiles across 26-day Belgian dataset*
+
+![Daily prices](docs/fig2_daily_prices.png)
+*Fig 2: Daily price trends with volatility bands*
+
+![Hour-of-day PnL](docs/fig3_hod_pnl.png)
+*Fig 3: Hour-of-day strategy profit & loss breakdown*
+
+![CO₂ impact](docs/fig4_co2_impact.png)
+*Fig 4: Carbon impact analysis across trading strategies*
+
+---
+
 ## Quick start
 
 ```bash
-git clone git@github.com:GerasimosG/Energy_Algorithms.git
-cd Energy_Algorithms
+git clone git@github.com:GerasimosG/energy-algorithms-portfolio.git
+cd energy-algorithms-portfolio
 pip install -e ".[dev]"
 
 # Showcase demos
 python -m energy_algorithms.application.markets_demo        # PCR, block orders, FBMC
 python -m energy_algorithms.application.optimization_demo   # BESS, UC, FCR+aFRR
 python -m energy_algorithms.application.trading_demo        # Backtesting, signals
-python -m energy_algorithms.application.industry_demo          # INDUSTRY: 26-day Belgian data
 python -m energy_algorithms.application.energy_data_demo    # ENTSO-E pipeline
 
 # Tests
@@ -51,6 +67,8 @@ pytest tests/ --cov=energy_algorithms --cov-fail-under=90   # coverage gate
 ```
 
 CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.
+
+> **Solver note:** PuLP bundles the CBC solver automatically on most platforms. If you hit a solver error, install HiGHS: `pip install highspy`. On Debian/Ubuntu: `sudo apt install coinor-cbc`.
 
 ---
 
@@ -64,11 +82,11 @@ src/energy_algorithms/
 │   └── trading/           backtesting, signals, risk metrics
 ├── ports/                 SolverPort — domain depends on this ABC, not on PuLP
 ├── adapters/              pulp_solver, entsoe_client, sqlite_store, bt_feeds
-├── application/           use-case demos (markets, optimization, trading, industry)
+├── application/           use-case demos (markets, optimization, trading)
 └── infrastructure/        solver_config, experiment_tracker, metadata
 ```
 
-**Why this matters:** every LP/MIP in the codebase is a PuLP problem that goes through `solve_model()`. Swapping solvers is a one-line config. **All 11 domain files route through the SolverPort.** That's the cleanest "production-grade" signal a portfolio can show.
+**Why this matters:** every LP/MIP in the codebase is a PuLP problem that goes through `solve_model()`. Swapping solvers is a one-line config. **All 11 domain files route through the SolverPort.**
 
 ---
 
@@ -82,7 +100,7 @@ src/energy_algorithms/
 | **Backtesting engine** | `domain/trading/backtest_engine.py` | ✅ 7 risk metrics, walk-forward, signal-shift anti-look-ahead |
 | **Coupling utilities** | `domain/markets/coupling_utils.py` | ✅ Shared by 4 market coupling modules |
 
-The first three are the **production services** a trading desk or optimisation team would actually stand up. They sit behind a `port` (hexagonal) so swapping the implementation (e.g. MLflow for the tracker) is a 1-file change.
+The first three are the production services a trading desk or optimisation team would actually stand up. They sit behind a `port` (hexagonal) so swapping the implementation (e.g. MLflow for the tracker) is a 1-file change.
 
 ---
 
@@ -105,8 +123,6 @@ PYTHONPATH="$(pwd)/src" python -m coverage report
 # Required test coverage of 90% reached. Total coverage: 92.55%
 ```
 
-RAM-bounded coverage loop is documented in `AGENTS.md` for Pi/laptop-safe runs.
-
 ---
 
 ## Honest scope
@@ -120,8 +136,6 @@ RAM-bounded coverage loop is documented in `AGENTS.md` for Pi/laptop-safe runs.
 | ENTSO-E data + cache | Production monitoring dashboards — would add Prometheus metrics (P&L, fills, API latency) + Grafana |
 | CBC + HiGHS solvers (config) | Gurobi/CPLEX at scale — config-stubs exist; presolve tuning is the gap |
 
-The list above is real. I'd rather be honest about it than pretend otherwise.
-
 ---
 
 ## References
@@ -133,4 +147,4 @@ The list above is real. I'd rather be honest about it than pretend otherwise.
 
 ## Author
 
-Gerasimos (Gerry) Giachos — built for **Euphemia  ** (Junior Optimization Engineer) and **Industry Belgium** (Algorithmic Trader, Short-Term Power, Uccle).
+Gerasimos (Gerry) Giachos
