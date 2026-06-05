@@ -44,22 +44,24 @@ plt.rcParams.update({
 def fig1_price_profiles():
     """Plot hourly price profiles: each day as a thin line, mean as thick."""
     df = pd.read_csv(os.path.join(DATA_DIR, "entsoe_30day_prices.csv"))
-    # Average multiple price points per hour if present
-    df_avg = df.groupby(["date", "hour"], as_index=False)["price_eur_mwh"].mean()
+    # Map 15-min slots (hours 1-96) to hourly periods 0-23
+    df["plot_hour"] = (df["hour"] - 1) // 4
+    # Average 4 x 15-min slots per hour
+    df_avg = df.groupby(["date", "plot_hour"], as_index=False)["price_eur_mwh"].mean()
 
     fig, ax = plt.subplots()
     # One line per day
     dates = sorted(df_avg["date"].unique())
     for d in dates:
         day = df_avg[df_avg["date"] == d]
-        ax.plot(day["hour"], day["price_eur_mwh"], color="steelblue", alpha=0.25, lw=0.7)
+        ax.plot(day["plot_hour"], day["price_eur_mwh"], color="steelblue", alpha=0.25, lw=0.7)
 
     # Mean profile
-    mean_profile = df_avg.groupby("hour")["price_eur_mwh"].mean()
+    mean_profile = df_avg.groupby("plot_hour")["price_eur_mwh"].mean()
     ax.plot(mean_profile.index, mean_profile.values, color="#d62728", lw=2.5, label="Mean")
 
     # ±1σ band
-    std_profile = df_avg.groupby("hour")["price_eur_mwh"].std()
+    std_profile = df_avg.groupby("plot_hour")["price_eur_mwh"].std()
     ax.fill_between(
         mean_profile.index,
         mean_profile - std_profile,
@@ -120,7 +122,7 @@ def fig2_daily_prices():
 # ── Fig 3: Hour-of-day strategy P&L breakdown ─────────────────────────
 
 def fig3_hod_pnl():
-    """Simulated hour-of-day P&L: buy night hours, sell peak hours."""
+    """Data-driven hour-of-day P&L: long cheapest hours, short most expensive hours."""
     df = pd.read_csv(os.path.join(DATA_DIR, "bt_hourly.csv"))
     df["datetime"] = pd.to_datetime(df["datetime"])
     df["hour"] = df["datetime"].dt.hour
@@ -129,30 +131,30 @@ def fig3_hod_pnl():
     # Average duplicate timestamps by (date, hour)
     df = df.groupby(["date", "hour"], as_index=False)["close"].mean()
 
-    # HOD strategy: long night hours (1-5), short peak hours (17-21)
-    hod_long_hours = list(range(1, 6))    # buy at hours 1-5
-    hod_short_hours = list(range(17, 22))  # sell at hours 17-21
+    # Find cheapest and most expensive hours from the full dataset
+    hourly_avg = df.groupby("hour")["close"].mean()
+    hod_long_hours = sorted(hourly_avg.nsmallest(6).index.tolist())
+    hod_short_hours = sorted(hourly_avg.nlargest(6).index.tolist())
 
+    # P&L: long at cheap hours → sell at expensive-hr avg; short at expensive hours → cover at cheap-hr avg
     hourly_pnl: dict[int, list[float]] = {h: [] for h in range(24)}
 
     for date_val, day_df in df.groupby("date"):
         day_prices = day_df.set_index("hour")["close"]
+        cheap_avg = np.mean([float(day_prices.get(h, np.nan)) for h in hod_long_hours])
+        dear_avg = np.mean([float(day_prices.get(h, np.nan)) for h in hod_short_hours])
 
         for hour in range(24):
             if hour not in day_prices.index:
                 continue
-
             price = float(day_prices[hour])
 
             if hour in hod_long_hours:
-                peak_price = float(day_prices.get(19, day_prices.get(18, price)))
-                pnl = peak_price - price
+                pnl = dear_avg - price       # bought cheap, valued at expensive avg
             elif hour in hod_short_hours:
-                trough_price = float(day_prices.get(3, day_prices.get(4, price)))
-                pnl = price - trough_price
+                pnl = price - cheap_avg       # sold expensive, would cover at cheap avg
             else:
                 continue
-
             hourly_pnl[hour].append(pnl)
 
     rows = []
@@ -167,9 +169,11 @@ def fig3_hod_pnl():
             })
     pnl_df = pd.DataFrame(rows).sort_values("hour")
 
+    long_label = f"Long H{hod_long_hours[0]}–{hod_long_hours[-1]}"
+    short_label = f"Short H{hod_short_hours[0]}–{hod_short_hours[-1]}"
+
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
-    # Top subplot: mean P&L per hour with ±1σ
     colors = ["#2ca02c" if v > 0 else "#d62728" for v in pnl_df["mean_pnl"]]
     ax1.bar(pnl_df["hour"], pnl_df["mean_pnl"], color=colors, alpha=0.75, width=0.7,
             edgecolor="white", linewidth=0.5)
@@ -177,11 +181,8 @@ def fig3_hod_pnl():
                  fmt="none", ecolor="gray", capsize=3, alpha=0.5)
     ax1.axhline(0, color="black", lw=0.5)
     ax1.set_ylabel("Mean daily P&L (€/MWh)")
-    ax1.set_title("Hour-of-Day Strategy: P&L by Hour")
-    ax1.legend(["Long hours (1–5) → sell peak | Short hours (17–21) → cover at trough"],
-               loc="lower left", framealpha=0.9, fontsize=9)
+    ax1.set_title(f"Hour-of-Day Strategy: P&L by Hour ({long_label}, {short_label})")
 
-    # Bottom subplot: win rate per hour
     colors_wr = ["#2ca02c" if v >= 50 else "#d62728" for v in pnl_df["win_rate"]]
     ax2.bar(pnl_df["hour"], pnl_df["win_rate"], color=colors_wr, alpha=0.75, width=0.7,
             edgecolor="white", linewidth=0.5)
@@ -191,10 +192,11 @@ def fig3_hod_pnl():
     ax2.set_xticks(range(0, 24))
     ax2.set_ylim(0, 105)
 
-    # Annotations
     total_pnl = pnl_df["total_pnl"].sum()
     avg_win_rate = pnl_df["win_rate"].mean()
-    ax1.text(0.02, 0.95, f"Total Σ P&L: €{total_pnl:+.1f}/MWh  |  Avg win rate: {avg_win_rate:.0f}%",
+    ax1.text(0.02, 0.95,
+             f"Total Σ P&L: €{total_pnl:+.1f}/MWh  |  Avg win rate: {avg_win_rate:.0f}%  |  "
+             f"Long H{hod_long_hours[0]}–{hod_long_hours[-1]}  Short H{hod_short_hours[0]}–{hod_short_hours[-1]}",
              transform=ax1.transAxes, fontsize=9, verticalalignment="top",
              bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5))
 
