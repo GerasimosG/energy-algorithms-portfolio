@@ -56,14 +56,14 @@ cd energy-algorithms-portfolio
 pip install -e ".[dev]"
 
 # Showcase demos
-python -m energy_algorithms.application.markets_demo        # PCR, block orders, FBMC
-python -m energy_algorithms.application.optimization_demo   # BESS, UC, FCR+aFRR
-python -m energy_algorithms.application.trading_demo        # Backtesting, signals
-python -m energy_algorithms.application.energy_data_demo    # ENTSO-E pipeline
+python -m energy_algorithms.application.markets_demo # PCR, block orders, FBMC
+python -m energy_algorithms.application.optimization_demo # BESS, UC, FCR+aFRR
+python -m energy_algorithms.application.trading_demo # Backtesting, signals
+python -m energy_algorithms.application.energy_data_demo # ENTSO-E pipeline
 
 # Tests
-pytest tests/ -v                                            # 578 tests
-pytest tests/ --cov=energy_algorithms --cov-fail-under=90   # coverage gate
+pytest tests/ -v # 578 tests
+pytest tests/ --cov=energy_algorithms --cov-fail-under=90 # coverage gate
 ```
 
 CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.
@@ -76,14 +76,14 @@ CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `e
 
 ```
 src/energy_algorithms/
-├── domain/                ★ pure business logic — no I/O, no solver hardcoding
-│   ├── markets/           PCR, FBMC, block orders, intraday, multi-zone
-│   ├── optimization/      UC, BESS, ancillary, portfolio, stochastic
-│   └── trading/           backtesting, signals, risk metrics
-├── ports/                 SolverPort — domain depends on this ABC, not on PuLP
-├── adapters/              pulp_solver, entsoe_client, sqlite_store, bt_feeds
-├── application/           use-case demos (markets, optimization, trading)
-└── infrastructure/        solver_config, experiment_tracker, metadata
+├── domain/ ★ pure business logic — no I/O, no solver hardcoding
+│ ├── markets/ PCR, FBMC, block orders, intraday, multi-zone
+│ ├── optimization/ UC, BESS, ancillary, portfolio, stochastic
+│ └── trading/ backtesting, signals, risk metrics
+├── ports/ SolverPort — domain depends on this ABC, not on PuLP
+├── adapters/ pulp_solver, entsoe_client, sqlite_store, bt_feeds
+├── application/ use-case demos (markets, optimization, trading)
+└── infrastructure/ solver_config, experiment_tracker, metadata
 ```
 
 **Why this matters:** every LP/MIP in the codebase is a PuLP problem that goes through `solve_model()`. Swapping solvers is a one-line config. **All 11 domain files route through the SolverPort.**

@@ -13,8 +13,8 @@ The mathematical foundation behind every optimization in this repo. When an inte
 ```
 min c^T x
 s.t.
-  Ax = b
-  x ≥ 0
+ Ax = b
+ x ≥ 0
 ```
 
 Where:
@@ -33,14 +33,14 @@ The workhorse algorithm. Key intuition:
 4. **Repeat** until no neighbor is better → optimal
 
 ```
-         x2
-         |
-     opt*|  Feasible Region (convex polytope)
-       /|\
-      / | \
-     /  |  \
-    /   |   \
-   /____|____\_____ x1
+ x2
+ |
+ opt*| Feasible Region (convex polytope)
+ /|\
+ / | \
+ / | \
+ / | \
+ /____|____\_____ x1
 ```
 
 **Why it works:** The optimal solution to an LP is always at a vertex (extreme point) of the feasible region. You never need to check interior points.
@@ -78,8 +78,8 @@ Alternative to simplex. Instead of jumping between vertices, walks through the *
 
 Add binary/integer variables:
 ```
-x_i ∈ {0, 1}  (binary: accept/reject a block order)
-x_i ∈ ℤ       (integer: number of generators to build)
+x_i ∈ {0, 1} (binary: accept/reject a block order)
+x_i ∈ ℤ (integer: number of generators to build)
 ```
 
 The feasible region is no longer convex — it's a disjoint set of points. No vertex-hopping algorithm works.
@@ -95,21 +95,21 @@ The core algorithm:
 2. If all integer variables are integral → DONE (lucky!)
 3. Otherwise: pick a fractional variable (x_3 = 0.7)
 4. BRANCH: create two subproblems
-   - x_3 ≤ 0 (force to 0)
-   - x_3 ≥ 1 (force to 1)
+ - x_3 ≤ 0 (force to 0)
+ - x_3 ≥ 1 (force to 1)
 5. Solve each subproblem (LP relaxation again)
 6. BOUND: if a subproblem's best possible value is worse
-   than the best known integer solution → prune it
+ than the best known integer solution → prune it
 7. Repeat on remaining subproblems
 ```
 
 **Visual:**
 ```
-              Root (LP relax)
-             /        \
-        x3≤0          x3≥1
-        /   \         /  \
-     x5=0  x5=1    x5=0  x5=1   ← Integer solutions!
+ Root (LP relax)
+ / \
+ x3≤0 x3≥1
+ / \ / \
+ x5=0 x5=1 x5=0 x5=1 ← Integer solutions!
 ```
 
 ### Cutting Planes
@@ -118,7 +118,7 @@ Add constraints that "cut off" fractional solutions without removing any integer
 
 ```
 Fractional LP solution: x = [0.7, 0.3, 0.5]
-Cut: x_1 + x_3 ≤ 1  (cuts off the fractional point but not the integer [1, 0, 0] or [0, 0, 1])
+Cut: x_1 + x_3 ≤ 1 (cuts off the fractional point but not the integer [1, 0, 0] or [0, 0, 1])
 ```
 
 Modern solvers (CBC, Gurobi) combine branch-and-bound with cutting planes → **Branch and Cut**.
@@ -160,7 +160,7 @@ gap = |best_bound - best_feasible| / |best_feasible|
 ❌ No native quadratic support (we use scipy for portfolio)
 ```
 
-In a real job at Euphemia   or Industry, you'd use Gurobi or CPLEX. But for a portfolio, CBC demonstrates understanding without the licensing hassle.
+In a real job at energy market or trading, you'd use Gurobi or CPLEX. But for a portfolio, CBC demonstrates understanding without the licensing hassle.
 
 ### What CBC's Presolve Does
 
@@ -187,22 +187,22 @@ What could go wrong?
 
 ```
 Constraint: x + y = 10
-Solution:   x = 4.999999, y = 5.000001
-Sum:        10.000000 ✓ (within tolerance)
-But:        x could also be 5.000001 → sum = 10.000002 → VIOLATION!
+Solution: x = 4.999999, y = 5.000001
+Sum: 10.000000 ✓ (within tolerance)
+But: x could also be 5.000001 → sum = 10.000002 → VIOLATION!
 ```
 
 This is why our code checks:
 ```python
-accepted = pulp.value(y_var) > 0.5  # NOT > 0.999999
+accepted = pulp.value(y_var) > 0.5 # NOT > 0.999999
 ```
 
 ### Floating Point in Energy Markets
 
 ```
-Price:  €50.00 / MWh
+Price: €50.00 / MWh
 Quantity: 100.000000 MW
-Block: 100.000001 MW  ← floating point noise!
+Block: 100.000001 MW ← floating point noise!
 ```
 
 In a market clearing billions in volume, a 1e-6 MW error is negligible. But block order decisions (0 or 1) are binary — there is no "slightly accepted."

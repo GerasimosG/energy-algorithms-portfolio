@@ -5,8 +5,8 @@
 A **block order** is a bid to buy or sell a fixed quantity of electricity across multiple consecutive hours at a single price. Unlike simple hourly orders, blocks are **all-or-nothing** — they're either fully accepted in all hours or fully rejected.
 
 ```
-Simple hourly order:  "I'll sell 50 MW at hour 12 for €80/MWh"
-Block order:          "I'll sell 200 MW for hours 8-20 inclusive at €55/MWh — take it all or nothing"
+Simple hourly order: "I'll sell 50 MW at hour 12 for €80/MWh"
+Block order: "I'll sell 200 MW for hours 8-20 inclusive at €55/MWh — take it all or nothing"
 ```
 
 ### Why Blocks Exist
@@ -37,8 +37,8 @@ A nuclear plant can't economically start up for just one peak hour. Block orders
 ```
 max Σ(consumer_bids) - Σ(producer_bids)
 s.t.
-  Energy balance (supply = demand)
-  0 ≤ x ≤ 1  (continuous acceptance)
+ Energy balance (supply = demand)
+ 0 ≤ x ≤ 1 (continuous acceptance)
 ```
 
 This is a **Linear Program** — polynomial time, globally optimal.
@@ -48,9 +48,9 @@ This is a **Linear Program** — polynomial time, globally optimal.
 ```
 max Σ(consumer_bids) - Σ(producer_bids) - Σ(block_bids · y)
 s.t.
-  Energy balance (supply + blocks = demand)
-  0 ≤ x ≤ 1  (continuous hourly acceptance)
-  y ∈ {0, 1}  (binary block acceptance)
+ Energy balance (supply + blocks = demand)
+ 0 ≤ x ≤ 1 (continuous hourly acceptance)
+ y ∈ {0, 1} (binary block acceptance)
 ```
 
 This is a **Mixed Integer Program** — NP-hard in general. Euphemia solves this for 25+ countries with 1M+ orders.
@@ -93,10 +93,10 @@ The feasible region of an LP is convex. With binary variables, it becomes a disj
 ### The Welfare Gap
 
 ```
-Simple hourly clearing:  MCP = €50/MWh, everyone happy
-With blocks accepted:     Block accepted at €45/MWh, but uniform MCP = €55/MWh
-                          → Block holder loses €10/MWh × 800 MW per hour
-                          → Paradoxically accepted block (accepted but loses money)
+Simple hourly clearing: MCP = €50/MWh, everyone happy
+With blocks accepted: Block accepted at €45/MWh, but uniform MCP = €55/MWh
+ → Block holder loses €10/MWh × 800 MW per hour
+ → Paradoxically accepted block (accepted but loses money)
 ```
 
 This is why Euphemia has a separate **IP pricing** pass.
@@ -120,9 +120,9 @@ After finding the welfare-maximizing dispatch (which blocks are accepted), solve
 ```
 min Σ(make-whole payments)
 s.t.
-  Same dispatch as MIP solution
-  Prices minimize deviations from uniform pricing
-  Block holders get non-negative surplus
+ Same dispatch as MIP solution
+ Prices minimize deviations from uniform pricing
+ Block holders get non-negative surplus
 ```
 
 This is what real Euphemia does. Our `pcr_model.py` documents this as a known limitation.
@@ -159,9 +159,9 @@ Euphemia repeats steps 3-5 multiple times with different block order iterations 
 
 ### 1. Block at Exactly the Marginal Price
 ```
-Supply:   [10 @ €50, 20 @ €60]
-Block:    15 @ €60
-Demand:   25 @ €100
+Supply: [10 @ €50, 20 @ €60]
+Block: 15 @ €60
+Demand: 25 @ €100
 ```
 The block's price equals the marginal unit. Should it be accepted? Floating-point tolerances can flip this decision. Euphemia has explicit tie-breaking rules.
 
@@ -171,7 +171,7 @@ A single block with a group ID but no partner — should this be a warning or an
 ### 3. Exclusive Group with All Rejected
 ```
 Exclusive group: Block_A (€100), Block_B (€95)
-MCP with neither:  €50
+MCP with neither: €50
 Wait — should both be rejected even though they'd make money?
 ```
 If both are above MCP, the solver must pick at most one. It picks the one that maximizes welfare (lower price wins). The other is rejected despite being "profitable" individually.
@@ -182,7 +182,7 @@ A 1000 MW block in a 200 MW market — accepted or rejected? It must displace al
 ### 5. Numerical Tolerance Issues
 ```python
 # Binary check in our code uses 0.5 threshold, not == 1.0
-accepted = pulp.value(y_var) > 0.5  # Safe for CBC's numerical noise
+accepted = pulp.value(y_var) > 0.5 # Safe for CBC's numerical noise
 ```
 
 ---

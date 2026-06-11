@@ -10,9 +10,9 @@
 
 ### Decision Variables
 ```
-charge[t] ≥ 0      : MW charged at time t
-discharge[t] ≥ 0   : MW discharged at time t
-SoC[t] ∈ [0, cap]  : State of charge at time t (MWh)
+charge[t] ≥ 0 : MW charged at time t
+discharge[t] ≥ 0 : MW discharged at time t
+SoC[t] ∈ [0, cap] : State of charge at time t (MWh)
 ```
 
 ### Objective (Revenue Maximization)
@@ -44,7 +44,7 @@ Where η_in, η_out ∈ (0, 1] are charging/discharging efficiencies. Storing 1 
 **4. Initial/Final SoC** (optional, not in our simple model)
 ```
 SoC[0] = initial_soc
-SoC[T] ≥ target_final_soc  (don't leave the battery empty)
+SoC[T] ≥ target_final_soc (don't leave the battery empty)
 ```
 
 ---
@@ -62,17 +62,17 @@ For every 1 MWh stored, you get back 0.9025 MWh. You lose ~10%.
 ### When Arbitrage Stops Making Sense
 
 ```
-Buy at:   €50/MWh
-Sell at:  €55/MWh
-Revenue:  €55 × 0.9025 - €50 × 1.0 = €49.64 - €50.00 = -€0.36 LOSS
+Buy at: €50/MWh
+Sell at: €55/MWh
+Revenue: €55 × 0.9025 - €50 × 1.0 = €49.64 - €50.00 = -€0.36 LOSS
 ```
 
 The price spread of €5 isn't enough to cover 10% losses. You need:
 ```
 spread_needed = buy_price × (1/η_rt - 1)
-             = 50 × (1/0.9025 - 1)
-             = 50 × 0.108
-             = €5.40/MWh
+ = 50 × (1/0.9025 - 1)
+ = 50 × 0.108
+ = €5.40/MWh
 ```
 
 Below €5.40 spread, the battery loses money.
@@ -98,17 +98,17 @@ Our `lp_optimization/assets.py` implements the energy-py-linear inspired pattern
 
 ```python
 class BatteryAsset(Asset):
-    def _constraints(self, prob, interval_data, T):
-        # Create charge, discharge, SoC variables
-        # Add energy balance per interval
-        # Set power limits
-    
-    def _objective(self, prob, interval_data, T):
-        # Return price[t] * (charge[t] - discharge[t])
-        return pulp.lpSum(price[t] * (charge[t] - discharge[t]))
-    
-    def _post_solve(self, prob, interval_data, T):
-        # Extract schedule: charge, discharge, SoC per interval
+ def _constraints(self, prob, interval_data, T):
+ # Create charge, discharge, SoC variables
+ # Add energy balance per interval
+ # Set power limits
+ 
+ def _objective(self, prob, interval_data, T):
+ # Return price[t] * (charge[t] - discharge[t])
+ return pulp.lpSum(price[t] * (charge[t] - discharge[t]))
+ 
+ def _post_solve(self, prob, interval_data, T):
+ # Extract schedule: charge, discharge, SoC per interval
 ```
 
 **Why this pattern?**

@@ -1,8 +1,8 @@
 # Energy Algorithms — Portfolio Benchmark & Performance Report
 
-**Generated:** 2026-05-21 12:00 CEST  
-**Repo:** [github.com/GerasimosG/Energy_Algorithms](https://github.com/GerasimosG/Energy_Algorithms)  
-**Target roles:** Euphemia   (Junior Optimization Engineer) + Industry (Energy Algorithmic Trader)  
+**Generated:** 2026-05-21 12:00 CEST 
+**Repo:** [github.com/GerasimosG/Energy_Algorithms](https://github.com/GerasimosG/Energy_Algorithms) 
+**Target roles:** Junior Optimization Engineer (energy markets) + Energy Algorithmic Trader 
 
 ---
 
@@ -148,19 +148,7 @@ Our portfolio is a **production-grade energy optimization and algorithmic tradin
 
 ---
 
-## 5. Interview Talking Points
-
-### For Euphemia   (Junior Optimization Engineer)
-
-> *"This repo demonstrates my understanding of Euphemia — social welfare LP, block orders with IP pricing, FBMC with PTDF/LODF, and multi-zone coupling. The 26-day ENTSO-E validation shows energy balance exact to 0.0000 MW on every single day — proving the clearing mechanism is correct. The CO₂ pass-through model demonstrates understanding of clean spark/dark spreads used by European energy trading desks. And the OpenSpace-inspired market simulation shows I understand how multiple market participants interact with the clearing mechanism."*
-
-### For Industry (Energy Algorithmic Trader)
-
-> *"This repo shows end-to-end energy algorithmic trading: a live ENTSO-E pipeline feeds real market data into multiple trading strategies. The hour-of-day spread achieved 68.75% win rate over 26 days of real data. The backtrader integration shows understanding of professional backtesting with commission models, slippage, walk-forward validation, and 7 risk metrics. The agent-based market simulation demonstrates understanding of how bidding strategies evolve with market conditions — directly applicable to algorithmic trading desk operations."*
-
----
-
-## 6. Known Limitations (Transparent Honesty)
+## 5. Known Limitations (Transparent Honesty)
 
 | Limitation | Impact | Planned |
 |-----------|--------|---------|

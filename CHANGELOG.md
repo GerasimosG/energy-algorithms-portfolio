@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Descriptive metadata (VariableRegistry, ModelMetadata)
 - Spill asset for LP feasibility guarantee
 - GitHub Actions CI workflow (Python 3.11/3.12/3.13 matrix)
-- Euphemia   interview prep guide
+- interview prep guide
 - Multi-zone ATC coupling (3-zone demo)
 - Enterprise-grade README with whitepaper, badges, architecture
 
@@ -96,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mean reversion strategy
 - SMA crossover strategy
 - Market data fetching (Yahoo Finance, CSV, SQLite)
-- AGENTS.md with issue tracker and Euphemia   readiness checklist
+- AGENTS.md with issue tracker and target roles readiness checklist
 - Comprehensive test suite (16+ tests covering PCR, blocks, backtester)
 - pyproject.toml for pip-installable package
 

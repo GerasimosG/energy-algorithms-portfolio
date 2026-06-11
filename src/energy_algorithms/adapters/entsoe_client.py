@@ -4,7 +4,7 @@ Fetches electricity market data: day-ahead prices, generation mix,
 installed capacity, and load forecasts for European bidding zones.
 
 API docs: https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html
-"""  # noqa: D205
+""" # noqa: D205
 from __future__ import annotations
 
 import json
@@ -25,74 +25,74 @@ _CACHE_PATH = Path.home() / ".hermes" / "entsoe_cache.json"
 
 
 def _load_cache() -> None:
-    """Load the ENTSO-E response cache from disk into ``_CACHE``."""
-    global _CACHE
-    try:
-        if _CACHE_PATH.exists():
-            raw = _CACHE_PATH.read_text()
-            _CACHE = json.loads(raw) if raw.strip() else {}
-        else:
-            _CACHE = {}
-    except Exception:
-        _CACHE = {}
+ """Load the ENTSO-E response cache from disk into ``_CACHE``."""
+ global _CACHE
+ try:
+ if _CACHE_PATH.exists():
+ raw = _CACHE_PATH.read_text()
+ _CACHE = json.loads(raw) if raw.strip() else {}
+ else:
+ _CACHE = {}
+ except Exception:
+ _CACHE = {}
 
 
 def _save_cache() -> None:
-    """Persist ``_CACHE`` to disk (``~/.hermes/entsoe_cache.json``)."""
-    _CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _CACHE_PATH.write_text(json.dumps(_CACHE, indent=2, default=str))
+ """Persist ``_CACHE`` to disk (``~/.hermes/entsoe_cache.json``)."""
+ _CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+ _CACHE_PATH.write_text(json.dumps(_CACHE, indent=2, default=str))
 
 
 def cached_fetch(url: str, ttl: int = 3600) -> dict[str, Any] | None:
-    """Return cached response for *url* if not expired, else ``None``.
+ """Return cached response for *url* if not expired, else ``None``.
 
-    Parameters
-    ----------
-    url : str
-        ENTSO-E API request URL (used as cache key).
-    ttl : int
-        Time-to-live in seconds (default 3600 = 1 hour).
+ Parameters
+ ----------
+ url : str
+ ENTSO-E API request URL (used as cache key).
+ ttl : int
+ Time-to-live in seconds (default 3600 = 1 hour).
 
-    Returns
-    -------
-    dict or None
-        Cached response dict, or ``None`` on cache miss / expiry.
-    """
-    _load_cache()
-    if url in _CACHE:
-        entry = _CACHE[url]
-        if time.time() - entry["_timestamp"] < ttl:
-            return entry["data"]
-    return None
+ Returns
+ -------
+ dict or None
+ Cached response dict, or ``None`` on cache miss / expiry.
+ """
+ _load_cache()
+ if url in _CACHE:
+ entry = _CACHE[url]
+ if time.time() - entry["_timestamp"] < ttl:
+ return entry["data"]
+ return None
 
 
 def _cache_set(url: str, data: dict[str, Any]) -> None:
-    """Store *data* in the cache under *url* and persist to disk.
+ """Store *data* in the cache under *url* and persist to disk.
 
-    Parameters
-    ----------
-    url : str
-        Cache key (ENTSO-E request URL).
-    data : dict
-        Response data dict to cache.  Only cached when ``data.get("status")``
-        starts with ``\"ok\"`` — error responses are never cached.
-    """
-    if not str(data.get("status", "")).startswith("ok"):
-        return
-    _load_cache()
-    _CACHE[url] = {"_timestamp": time.time(), "data": data}
-    _save_cache()
+ Parameters
+ ----------
+ url : str
+ Cache key (ENTSO-E request URL).
+ data : dict
+ Response data dict to cache. Only cached when ``data.get("status")``
+ starts with ``\"ok\"`` — error responses are never cached.
+ """
+ if not str(data.get("status", "")).startswith("ok"):
+ return
+ _load_cache()
+ _CACHE[url] = {"_timestamp": time.time(), "data": data}
+ _save_cache()
 
 
 # ENTSO-E API endpoints
 BASE_URL = "https://web-api.tp.entsoe.eu/api"
 
 # Standard document types (documentType)
-DOC_DAY_AHEAD_PRICES = "A44"            # Day-ahead prices [12.1.D]
-DOC_ACTUAL_GENERATION = "A75"           # Actual generation per type [16.1.B&C]
-DOC_LOAD_FORECAST = "A65"               # Day-ahead load forecast [8.1.A]
-DOC_INSTALLED_CAPACITY = "A68"          # Installed capacity per type [14.1.A]
-DOC_CROSSBORDER_FLOWS = "A11"           # Scheduled commercial exchanges [11.1.A]
+DOC_DAY_AHEAD_PRICES = "A44" # Day-ahead prices [12.1.D]
+DOC_ACTUAL_GENERATION = "A75" # Actual generation per type [16.1.B&C]
+DOC_LOAD_FORECAST = "A65" # Day-ahead load forecast [8.1.A]
+DOC_INSTALLED_CAPACITY = "A68" # Installed capacity per type [14.1.A]
+DOC_CROSSBORDER_FLOWS = "A11" # Scheduled commercial exchanges [11.1.A]
 
 # Process types
 PROCESS_DAY_AHEAD = "A01"
@@ -100,473 +100,473 @@ PROCESS_REALISED = "A16"
 
 # Common EIC codes (bidding zones)
 BIDDING_ZONES = {
-    "BE": "10YBE----------2",   # Belgium
-    "DE": "10Y1001A1001A82H",   # Germany
-    "FR": "10YFR-RTE------C",   # France
-    "NL": "10YNL----------L",   # Netherlands
-    "UK": "10YGB----------A",   # United Kingdom
-    "ES": "10YES-REE------0",   # Spain
-    "IT": "10YIT-GRTN-----B",   # Italy
-    "PL": "10YPL-AREA-----S",   # Poland
+ "BE": "10YBE----------2", # Belgium
+ "DE": "10Y1001A1001A82H", # Germany
+ "FR": "10YFR-RTE------C", # France
+ "NL": "10YNL----------L", # Netherlands
+ "UK": "10YGB----------A", # United Kingdom
+ "ES": "10YES-REE------0", # Spain
+ "IT": "10YIT-GRTN-----B", # Italy
+ "PL": "10YPL-AREA-----S", # Poland
 }
 
 # PsrType codes for generation types
 PSR_TYPES = {
-    "B01": "Biomass",
-    "B02": "Fossil Brown coal/Lignite",
-    "B03": "Fossil Coal-derived gas",
-    "B04": "Fossil Gas",
-    "B05": "Fossil Hard coal",
-    "B06": "Fossil Oil",
-    "B07": "Fossil Oil shale",
-    "B08": "Fossil Peat",
-    "B09": "Geothermal",
-    "B10": "Hydro Pumped Storage",
-    "B11": "Hydro Run-of-river and poundage",
-    "B12": "Hydro Water Reservoir",
-    "B13": "Marine",
-    "B14": "Nuclear",
-    "B15": "Other renewable",
-    "B16": "Solar",
-    "B17": "Waste",
-    "B18": "Wind Offshore",
-    "B19": "Wind Onshore",
-    "B20": "Other",
+ "B01": "Biomass",
+ "B02": "Fossil Brown coal/Lignite",
+ "B03": "Fossil Coal-derived gas",
+ "B04": "Fossil Gas",
+ "B05": "Fossil Hard coal",
+ "B06": "Fossil Oil",
+ "B07": "Fossil Oil shale",
+ "B08": "Fossil Peat",
+ "B09": "Geothermal",
+ "B10": "Hydro Pumped Storage",
+ "B11": "Hydro Run-of-river and poundage",
+ "B12": "Hydro Water Reservoir",
+ "B13": "Marine",
+ "B14": "Nuclear",
+ "B15": "Other renewable",
+ "B16": "Solar",
+ "B17": "Waste",
+ "B18": "Wind Offshore",
+ "B19": "Wind Onshore",
+ "B20": "Other",
 }
 
 
 class EntsoeClient:
-    """Client for the ENTSO-E Transparency Platform REST API.
+ """Client for the ENTSO-E Transparency Platform REST API.
 
-    Requires a security token (API key) from:
-    https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_authentication_and_authorisation
+ Requires a security token (API key) from:
+ https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_authentication_and_authorisation
 
-    Parameters
-    ----------
-    api_key : str
-        ENTSO-E security token (base64-encoded string).
-        Register at https://transparency.entsoe.eu → My Account → Web API.
-    timeout : int
-        Request timeout in seconds (default: 30).
-    """
+ Parameters
+ ----------
+ api_key : str
+ ENTSO-E security token (base64-encoded string).
+ Register at https://transparency.entsoe.eu → My Account → Web API.
+ timeout : int
+ Request timeout in seconds (default: 30).
+ """
 
-    def __init__(self, api_key: str, timeout: int = 30):
-        self.api_key = api_key
-        self.timeout = timeout
+ def __init__(self, api_key: str, timeout: int = 30):
+ self.api_key = api_key
+ self.timeout = timeout
 
-    # ---- Public API --------------------------------------------------
+ # ---- Public API --------------------------------------------------
 
-    def fetch_day_ahead_prices(
-        self,
-        area: str,
-        date: str,
-    ) -> dict[str, Any]:
-        """Fetch day-ahead electricity prices for a bidding zone.
+ def fetch_day_ahead_prices(
+ self,
+ area: str,
+ date: str,
+ ) -> dict[str, Any]:
+ """Fetch day-ahead electricity prices for a bidding zone.
 
-        Parameters
-        ----------
-        area : str
-            EIC code of the bidding zone (e.g., '10YBE----------2' for Belgium).
-            Use BIDDING_ZONES dict for common codes.
-        date : str
-            Date in 'YYYY-MM-DD' format.
+ Parameters
+ ----------
+ area : str
+ EIC code of the bidding zone (e.g., '10YBE----------2' for Belgium).
+ Use BIDDING_ZONES dict for common codes.
+ date : str
+ Date in 'YYYY-MM-DD' format.
 
-        Returns
-        -------
-        dict with keys: status, area, date, prices (list of {hour, price_eur_mwh}),
-        currency, unit
-        """
-        return self._query(
-            document_type=DOC_DAY_AHEAD_PRICES,
-            process_type=PROCESS_DAY_AHEAD,
-            area=area,
-            date=date,
-        )
+ Returns
+ -------
+ dict with keys: status, area, date, prices (list of {hour, price_eur_mwh}),
+ currency, unit
+ """
+ return self._query(
+ document_type=DOC_DAY_AHEAD_PRICES,
+ process_type=PROCESS_DAY_AHEAD,
+ area=area,
+ date=date,
+ )
 
-    def fetch_generation_mix(
-        self,
-        area: str,
-        date: str,
-    ) -> dict[str, Any]:
-        """Fetch actual generation output per production type.
+ def fetch_generation_mix(
+ self,
+ area: str,
+ date: str,
+ ) -> dict[str, Any]:
+ """Fetch actual generation output per production type.
 
-        Parameters
-        ----------
-        area : str
-            EIC code of the bidding zone.
-        date : str
-            Date in 'YYYY-MM-DD' format.
+ Parameters
+ ----------
+ area : str
+ EIC code of the bidding zone.
+ date : str
+ Date in 'YYYY-MM-DD' format.
 
-        Returns
-        -------
-        dict with keys: status, area, date, generation (list of {type, mw, psr_code}),
-        total_mw
-        """
-        return self._query(
-            document_type=DOC_ACTUAL_GENERATION,
-            process_type=PROCESS_REALISED,
-            area=area,
-            date=date,
-        )
+ Returns
+ -------
+ dict with keys: status, area, date, generation (list of {type, mw, psr_code}),
+ total_mw
+ """
+ return self._query(
+ document_type=DOC_ACTUAL_GENERATION,
+ process_type=PROCESS_REALISED,
+ area=area,
+ date=date,
+ )
 
-    def fetch_load_forecast(
-        self,
-        area: str,
-        date: str,
-    ) -> dict[str, Any]:
-        """Fetch day-ahead total load forecast.
+ def fetch_load_forecast(
+ self,
+ area: str,
+ date: str,
+ ) -> dict[str, Any]:
+ """Fetch day-ahead total load forecast.
 
-        Parameters
-        ----------
-        area : str
-            EIC code of the bidding zone.
-        date : str
-            Date in 'YYYY-MM-DD' format.
+ Parameters
+ ----------
+ area : str
+ EIC code of the bidding zone.
+ date : str
+ Date in 'YYYY-MM-DD' format.
 
-        Returns
-        -------
-        dict with keys: status, area, date, load (list of {hour, mw})
-        """
-        return self._query(
-            document_type=DOC_LOAD_FORECAST,
-            process_type=PROCESS_DAY_AHEAD,
-            area=area,
-            date=date,
-        )
+ Returns
+ -------
+ dict with keys: status, area, date, load (list of {hour, mw})
+ """
+ return self._query(
+ document_type=DOC_LOAD_FORECAST,
+ process_type=PROCESS_DAY_AHEAD,
+ area=area,
+ date=date,
+ )
 
-    # ---- Internal ----------------------------------------------------
+ # ---- Internal ----------------------------------------------------
 
-    def _build_url(
-        self,
-        document_type: str,
-        process_type: str,
-        area: str,
-        date: str,
-    ) -> str:
-        """Build the ENTSO-E API request URL.
+ def _build_url(
+ self,
+ document_type: str,
+ process_type: str,
+ area: str,
+ date: str,
+ ) -> str:
+ """Build the ENTSO-E API request URL.
 
-        Parameters
-        ----------
-        document_type : str
-            ENTSO-E document type code (e.g., 'A44' for day-ahead prices).
-        process_type : str
-            Process type ('A01' for day-ahead, 'A16' for realised).
-        area : str
-            EIC code of the bidding zone.
-        date : str
-            Date string in 'YYYY-MM-DD' format.
+ Parameters
+ ----------
+ document_type : str
+ ENTSO-E document type code (e.g., 'A44' for day-ahead prices).
+ process_type : str
+ Process type ('A01' for day-ahead, 'A16' for realised).
+ area : str
+ EIC code of the bidding zone.
+ date : str
+ Date string in 'YYYY-MM-DD' format.
 
-        Returns
-        -------
-        Full URL for the API request.
-        """
-        dt = datetime.strptime(date, "%Y-%m-%d")
-        dt_end = dt + timedelta(days=1)
-        period_start = dt.strftime("%Y%m%d0000")
-        period_end = dt_end.strftime("%Y%m%d0000")
+ Returns
+ -------
+ Full URL for the API request.
+ """
+ dt = datetime.strptime(date, "%Y-%m-%d")
+ dt_end = dt + timedelta(days=1)
+ period_start = dt.strftime("%Y%m%d0000")
+ period_end = dt_end.strftime("%Y%m%d0000")
 
-        params = {
-            "securityToken": self.api_key,
-            "documentType": document_type,
-            "processType": process_type,
-            "in_Domain": area,
-            "out_Domain": area,
-            "periodStart": period_start,
-            "periodEnd": period_end,
-        }
-        return f"{BASE_URL}?{urllib.parse.urlencode(params)}"
+ params = {
+ "securityToken": self.api_key,
+ "documentType": document_type,
+ "processType": process_type,
+ "in_Domain": area,
+ "out_Domain": area,
+ "periodStart": period_start,
+ "periodEnd": period_end,
+ }
+ return f"{BASE_URL}?{urllib.parse.urlencode(params)}"
 
-    def _query(
-        self,
-        document_type: str,
-        process_type: str,
-        area: str,
-        date: str,
-    ) -> dict[str, Any]:
-        """Execute an ENTSO-E API query and parse the XML response.
+ def _query(
+ self,
+ document_type: str,
+ process_type: str,
+ area: str,
+ date: str,
+ ) -> dict[str, Any]:
+ """Execute an ENTSO-E API query and parse the XML response.
 
-        Checks the disk cache first (``~/.hermes/entsoe_cache.json``).
-        Only successful responses (status starting with ``\"ok\"``) are
-        cached.  Error responses skip the cache entirely.
+ Checks the disk cache first (``~/.hermes/entsoe_cache.json``).
+ Only successful responses (status starting with ``\"ok\"``) are
+ cached. Error responses skip the cache entirely.
 
-        Parameters
-        ----------
-        document_type, process_type, area, date : str
-            See _build_url.
+ Parameters
+ ----------
+ document_type, process_type, area, date : str
+ See _build_url.
 
-        Returns
-        -------
-        dict with status, area, date, and parsed data.
-        """
-        url = self._build_url(document_type, process_type, area, date)
+ Returns
+ -------
+ dict with status, area, date, and parsed data.
+ """
+ url = self._build_url(document_type, process_type, area, date)
 
-        # Cache check (disabled under pytest to avoid stale test data)
-        if not os.environ.get("PYTEST_CURRENT_TEST"):
-            cached = cached_fetch(url)
-            if cached is not None:
-                return cached
+ # Cache check (disabled under pytest to avoid stale test data)
+ if not os.environ.get("PYTEST_CURRENT_TEST"):
+ cached = cached_fetch(url)
+ if cached is not None:
+ return cached
 
-        # --- Live fetch on cache miss ----------------------------------------
-        try:
-            req = urllib.request.Request(url)
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                xml_text = resp.read().decode("utf-8")
+ # --- Live fetch on cache miss ----------------------------------------
+ try:
+ req = urllib.request.Request(url)
+ with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+ xml_text = resp.read().decode("utf-8")
 
-            result = self._parse_response(xml_text, document_type, area, date)
-            _cache_set(url, result)
-            return result
+ result = self._parse_response(xml_text, document_type, area, date)
+ _cache_set(url, result)
+ return result
 
-        except urllib.error.HTTPError as e:
-            if e.code == 401:
-                return {
-                    "status": "error",
-                    "error": "Unauthorized — check your API key",
-                    "area": area,
-                    "date": date,
-                }
-            return {
-                "status": "error",
-                "error": f"HTTP {e.code}: {e.reason}",
-                "area": area,
-                "date": date,
-            }
-        except urllib.error.URLError as e:
-            return {
-                "status": "error",
-                "error": f"Network error: {e.reason}",
-                "area": area,
-                "date": date,
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "area": area,
-                "date": date,
-            }
+ except urllib.error.HTTPError as e:
+ if e.code == 401:
+ return {
+ "status": "error",
+ "error": "Unauthorized — check your API key",
+ "area": area,
+ "date": date,
+ }
+ return {
+ "status": "error",
+ "error": f"HTTP {e.code}: {e.reason}",
+ "area": area,
+ "date": date,
+ }
+ except urllib.error.URLError as e:
+ return {
+ "status": "error",
+ "error": f"Network error: {e.reason}",
+ "area": area,
+ "date": date,
+ }
+ except Exception as e:
+ return {
+ "status": "error",
+ "error": str(e),
+ "area": area,
+ "date": date,
+ }
 
-    def _parse_response(
-        self,
-        xml_text: str,
-        document_type: str,
-        area: str,
-        date: str,
-    ) -> dict[str, Any]:
-        """Parse ENTSO-E XML response into structured data.
+ def _parse_response(
+ self,
+ xml_text: str,
+ document_type: str,
+ area: str,
+ date: str,
+ ) -> dict[str, Any]:
+ """Parse ENTSO-E XML response into structured data.
 
-        Parameters
-        ----------
-        xml_text : str
-            Raw XML response from ENTSO-E API.
-        document_type : str
-            Document type code — determines parsing strategy.
-        area, date : str
-            Passed through to result.
+ Parameters
+ ----------
+ xml_text : str
+ Raw XML response from ENTSO-E API.
+ document_type : str
+ Document type code — determines parsing strategy.
+ area, date : str
+ Passed through to result.
 
-        Returns
-        -------
-        dict with status and parsed data.
-        """
-        ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3"}
+ Returns
+ -------
+ dict with status and parsed data.
+ """
+ ns = {"ns": "urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3"}
 
-        try:
-            root = ET.fromstring(xml_text)
-        except ET.ParseError as e:
-            return {
-                "status": "error",
-                "error": f"XML parse error: {e}",
-                "area": area,
-                "date": date,
-            }
+ try:
+ root = ET.fromstring(xml_text)
+ except ET.ParseError as e:
+ return {
+ "status": "error",
+ "error": f"XML parse error: {e}",
+ "area": area,
+ "date": date,
+ }
 
-        # Check for acknowledgment / error response
-        reason = root.find(".//ns:Reason/ns:text", ns)
-        if reason is not None and reason.text:
-            code_elem = reason.find("../ns:code", ns)
-            code = code_elem.text if code_elem is not None else "unknown"
-            return {
-                "status": "error",
-                "error": f"ENTSO-E API: [{code}] {reason.text}",
-                "area": area,
-                "date": date,
-            }
+ # Check for acknowledgment / error response
+ reason = root.find(".//ns:Reason/ns:text", ns)
+ if reason is not None and reason.text:
+ code_elem = reason.find("../ns:code", ns)
+ code = code_elem.text if code_elem is not None else "unknown"
+ return {
+ "status": "error",
+ "error": f"ENTSO-E API: [{code}] {reason.text}",
+ "area": area,
+ "date": date,
+ }
 
-        # ---- Day-ahead prices ----------------------------------------
-        if document_type == DOC_DAY_AHEAD_PRICES:
-            prices = []
-            currency = "EUR"
-            unit = "MWh"
+ # ---- Day-ahead prices ----------------------------------------
+ if document_type == DOC_DAY_AHEAD_PRICES:
+ prices = []
+ currency = "EUR"
+ unit = "MWh"
 
-            for ts in root.findall(".//ns:TimeSeries", ns):
-                currency_elem = ts.find(".//ns:currency_Unit.name", ns)
-                unit_elem = ts.find(".//ns:price_Measure_Unit.name", ns)
-                if currency_elem is not None:
-                    currency = currency_elem.text
-                if unit_elem is not None:
-                    unit = unit_elem.text
+ for ts in root.findall(".//ns:TimeSeries", ns):
+ currency_elem = ts.find(".//ns:currency_Unit.name", ns)
+ unit_elem = ts.find(".//ns:price_Measure_Unit.name", ns)
+ if currency_elem is not None:
+ currency = currency_elem.text
+ if unit_elem is not None:
+ unit = unit_elem.text
 
-                for point in ts.findall(".//ns:Point", ns):
-                    pos = int(point.find("ns:position", ns).text or "0")
-                    price_elem = point.find("ns:price.amount", ns)
-                    if price_elem is not None:
-                        prices.append({
-                            "hour": pos,
-                            "price_eur_mwh": float(price_elem.text),
-                        })
+ for point in ts.findall(".//ns:Point", ns):
+ pos = int(point.find("ns:position", ns).text or "0")
+ price_elem = point.find("ns:price.amount", ns)
+ if price_elem is not None:
+ prices.append({
+ "hour": pos,
+ "price_eur_mwh": float(price_elem.text),
+ })
 
-            prices.sort(key=lambda p: p["hour"])
-            return {
-                "status": "ok",
-                "area": area,
-                "date": date,
-                "prices": prices,
-                "currency": currency,
-                "unit": unit,
-                "avg_price": round(sum(p["price_eur_mwh"] for p in prices) / len(prices), 2) if prices else 0,
-                "min_price": min((p["price_eur_mwh"] for p in prices), default=0),
-                "max_price": max((p["price_eur_mwh"] for p in prices), default=0),
-            }
+ prices.sort(key=lambda p: p["hour"])
+ return {
+ "status": "ok",
+ "area": area,
+ "date": date,
+ "prices": prices,
+ "currency": currency,
+ "unit": unit,
+ "avg_price": round(sum(p["price_eur_mwh"] for p in prices) / len(prices), 2) if prices else 0,
+ "min_price": min((p["price_eur_mwh"] for p in prices), default=0),
+ "max_price": max((p["price_eur_mwh"] for p in prices), default=0),
+ }
 
-        # ---- Actual generation mix -----------------------------------
-        elif document_type == DOC_ACTUAL_GENERATION:
-            gen_ns = {"ns": "urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0"}
-            generation_by_type: dict[str, dict[str, Any]] = {}
+ # ---- Actual generation mix -----------------------------------
+ elif document_type == DOC_ACTUAL_GENERATION:
+ gen_ns = {"ns": "urn:iec62325.351:tc57wg16:451-6:generationloaddocument:3:0"}
+ generation_by_type: dict[str, dict[str, Any]] = {}
 
-            for ts in root.findall(".//ns:TimeSeries", gen_ns):
-                psr_elem = ts.find(".//ns:MktPSRType/ns:psrType", gen_ns)
-                psr_code = psr_elem.text if psr_elem is not None else "???"
-                gen_type = PSR_TYPES.get(psr_code, f"Unknown ({psr_code})")
+ for ts in root.findall(".//ns:TimeSeries", gen_ns):
+ psr_elem = ts.find(".//ns:MktPSRType/ns:psrType", gen_ns)
+ psr_code = psr_elem.text if psr_elem is not None else "???"
+ gen_type = PSR_TYPES.get(psr_code, f"Unknown ({psr_code})")
 
-                # Points are inside a Period element
-                values = []
-                for point in ts.findall(".//ns:Period/ns:Point", gen_ns):
-                    qty_elem = point.find("ns:quantity", gen_ns)
-                    if qty_elem is not None:
-                        values.append(float(qty_elem.text))
+ # Points are inside a Period element
+ values = []
+ for point in ts.findall(".//ns:Period/ns:Point", gen_ns):
+ qty_elem = point.find("ns:quantity", gen_ns)
+ if qty_elem is not None:
+ values.append(float(qty_elem.text))
 
-                avg_mw = round(sum(values) / len(values), 1) if values else 0.0
-                if avg_mw > 0:
-                    if gen_type not in generation_by_type:
-                        generation_by_type[gen_type] = {
-                            "type": gen_type,
-                            "mw": 0.0,
-                            "psr_code": psr_code,
-                        }
-                    generation_by_type[gen_type]["mw"] += avg_mw
+ avg_mw = round(sum(values) / len(values), 1) if values else 0.0
+ if avg_mw > 0:
+ if gen_type not in generation_by_type:
+ generation_by_type[gen_type] = {
+ "type": gen_type,
+ "mw": 0.0,
+ "psr_code": psr_code,
+ }
+ generation_by_type[gen_type]["mw"] += avg_mw
 
-            generation = [
-                {**source, "mw": round(float(source["mw"]), 1)}
-                for source in generation_by_type.values()
-            ]
-            generation.sort(key=lambda g: g["mw"], reverse=True)
-            total_mw = round(sum(g["mw"] for g in generation), 1)
-            return {
-                "status": "ok",
-                "area": area,
-                "date": date,
-                "generation": generation,
-                "total_mw": total_mw,
-            }
+ generation = [
+ {**source, "mw": round(float(source["mw"]), 1)}
+ for source in generation_by_type.values()
+ ]
+ generation.sort(key=lambda g: g["mw"], reverse=True)
+ total_mw = round(sum(g["mw"] for g in generation), 1)
+ return {
+ "status": "ok",
+ "area": area,
+ "date": date,
+ "generation": generation,
+ "total_mw": total_mw,
+ }
 
-        # ---- Load forecast --------------------------------------------
-        elif document_type == DOC_LOAD_FORECAST:
-            load = []
+ # ---- Load forecast --------------------------------------------
+ elif document_type == DOC_LOAD_FORECAST:
+ load = []
 
-            for ts in root.findall(".//ns:TimeSeries", ns):
-                for point in ts.findall(".//ns:Point", ns):
-                    pos = int(point.find("ns:position", ns).text or "0")
-                    qty_elem = point.find("ns:quantity", ns)
-                    if qty_elem is not None:
-                        load.append({
-                            "hour": pos,
-                            "mw": float(qty_elem.text),
-                        })
+ for ts in root.findall(".//ns:TimeSeries", ns):
+ for point in ts.findall(".//ns:Point", ns):
+ pos = int(point.find("ns:position", ns).text or "0")
+ qty_elem = point.find("ns:quantity", ns)
+ if qty_elem is not None:
+ load.append({
+ "hour": pos,
+ "mw": float(qty_elem.text),
+ })
 
-            load.sort(key=lambda p: p["hour"])
-            return {
-                "status": "ok",
-                "area": area,
-                "date": date,
-                "load": load,
-                "peak_mw": max((p["mw"] for p in load), default=0),
-                "avg_mw": round(sum(p["mw"] for p in load) / len(load), 2) if load else 0,
-            }
+ load.sort(key=lambda p: p["hour"])
+ return {
+ "status": "ok",
+ "area": area,
+ "date": date,
+ "load": load,
+ "peak_mw": max((p["mw"] for p in load), default=0),
+ "avg_mw": round(sum(p["mw"] for p in load) / len(load), 2) if load else 0,
+ }
 
-        # Fallback: return raw structure
-        return {
-            "status": "ok",
-            "area": area,
-            "date": date,
-            "note": "Unsupported document type — returning raw data",
-            "raw_series_count": len(root.findall(".//ns:TimeSeries", ns)),
-        }
+ # Fallback: return raw structure
+ return {
+ "status": "ok",
+ "area": area,
+ "date": date,
+ "note": "Unsupported document type — returning raw data",
+ "raw_series_count": len(root.findall(".//ns:TimeSeries", ns)),
+ }
 
 
 # ---- Demo data (no API key needed) ------------------------------------
 
 
 def fetch_demo_day_ahead() -> dict[str, Any]:
-    """Return realistic demo day-ahead prices for Belgium (March 2024).
+ """Return realistic demo day-ahead prices for Belgium (March 2024).
 
-    These are representative Belgian day-ahead market prices — not live data.
-    For live data, use EntsoeClient with a valid API key.
+ These are representative Belgian day-ahead market prices — not live data.
+ For live data, use EntsoeClient with a valid API key.
 
-    Returns
-    -------
-    dict with prices, area, date, and summary stats.
-    """
-    # Realistic Belgian day-ahead price profile (€/MWh)
-    # Night trough, morning ramp, evening peak, night drop
-    demo_prices = [
-        65.2, 58.1, 52.3, 47.8, 45.6, 48.9,   # 00-05
-        62.4, 78.5, 95.3, 102.7, 98.6, 88.2,  # 06-11
-        82.1, 79.4, 76.8, 80.5, 94.2, 115.7,  # 12-17
-        132.4, 125.8, 110.3, 95.6, 82.1, 70.4, # 18-23
-    ]
-    prices = [
-        {"hour": h + 1, "price_eur_mwh": p}
-        for h, p in enumerate(demo_prices)
-    ]
-    return {
-        "status": "ok (demo)",
-        "area": "10YBE----------2",
-        "date": "2024-03-15",
-        "prices": prices,
-        "currency": "EUR",
-        "unit": "MWh",
-        "avg_price": round(sum(demo_prices) / len(demo_prices), 2),
-        "min_price": min(demo_prices),
-        "max_price": max(demo_prices),
-        "note": "Demo data — use EntsoeClient with API key for live data",
-    }
+ Returns
+ -------
+ dict with prices, area, date, and summary stats.
+ """
+ # Realistic Belgian day-ahead price profile (€/MWh)
+ # Night trough, morning ramp, evening peak, night drop
+ demo_prices = [
+ 65.2, 58.1, 52.3, 47.8, 45.6, 48.9, # 00-05
+ 62.4, 78.5, 95.3, 102.7, 98.6, 88.2, # 06-11
+ 82.1, 79.4, 76.8, 80.5, 94.2, 115.7, # 12-17
+ 132.4, 125.8, 110.3, 95.6, 82.1, 70.4, # 18-23
+ ]
+ prices = [
+ {"hour": h + 1, "price_eur_mwh": p}
+ for h, p in enumerate(demo_prices)
+ ]
+ return {
+ "status": "ok (demo)",
+ "area": "10YBE----------2",
+ "date": "2024-03-15",
+ "prices": prices,
+ "currency": "EUR",
+ "unit": "MWh",
+ "avg_price": round(sum(demo_prices) / len(demo_prices), 2),
+ "min_price": min(demo_prices),
+ "max_price": max(demo_prices),
+ "note": "Demo data — use EntsoeClient with API key for live data",
+ }
 
 
 def fetch_demo_generation_mix() -> dict[str, Any]:
-    """Return realistic demo generation mix for Belgium.
+ """Return realistic demo generation mix for Belgium.
 
-    Based on typical Belgian generation mix proportions (~12 GW peak demand).
-    Nuclear dominates baseload, gas and wind provide the rest.
+ Based on typical Belgian generation mix proportions (~12 GW peak demand).
+ Nuclear dominates baseload, gas and wind provide the rest.
 
-    Returns
-    -------
-    dict with generation breakdown by type.
-    """
-    generation = [
-        {"type": "Nuclear", "mw": 4800, "psr_code": "B14"},
-        {"type": "Fossil Gas", "mw": 2100, "psr_code": "B04"},
-        {"type": "Wind Onshore", "mw": 1500, "psr_code": "B19"},
-        {"type": "Wind Offshore", "mw": 900, "psr_code": "B18"},
-        {"type": "Solar", "mw": 600, "psr_code": "B16"},
-        {"type": "Hydro Run-of-river", "mw": 200, "psr_code": "B11"},
-        {"type": "Biomass", "mw": 350, "psr_code": "B01"},
-        {"type": "Hydro Pumped Storage", "mw": 150, "psr_code": "B10"},
-        {"type": "Fossil Hard coal", "mw": 0, "psr_code": "B05"},  # Belgium phased out coal
-    ]
-    return {
-        "status": "ok (demo)",
-        "area": "10YBE----------2",
-        "date": "2024-03-15",
-        "generation": generation,
-        "total_mw": sum(g["mw"] for g in generation),
-        "note": "Demo data — use EntsoeClient with API key for live data",
-    }
+ Returns
+ -------
+ dict with generation breakdown by type.
+ """
+ generation = [
+ {"type": "Nuclear", "mw": 4800, "psr_code": "B14"},
+ {"type": "Fossil Gas", "mw": 2100, "psr_code": "B04"},
+ {"type": "Wind Onshore", "mw": 1500, "psr_code": "B19"},
+ {"type": "Wind Offshore", "mw": 900, "psr_code": "B18"},
+ {"type": "Solar", "mw": 600, "psr_code": "B16"},
+ {"type": "Hydro Run-of-river", "mw": 200, "psr_code": "B11"},
+ {"type": "Biomass", "mw": 350, "psr_code": "B01"},
+ {"type": "Hydro Pumped Storage", "mw": 150, "psr_code": "B10"},
+ {"type": "Fossil Hard coal", "mw": 0, "psr_code": "B05"}, # Belgium phased out coal
+ ]
+ return {
+ "status": "ok (demo)",
+ "area": "10YBE----------2",
+ "date": "2024-03-15",
+ "generation": generation,
+ "total_mw": sum(g["mw"] for g in generation),
+ "note": "Demo data — use EntsoeClient with API key for live data",
+ }

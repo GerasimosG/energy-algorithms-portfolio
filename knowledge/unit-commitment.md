@@ -25,10 +25,10 @@ It's the fundamental problem in power system operations — solved daily by ever
 ### Decision Variables
 
 ```
-u[g,t] ∈ {0,1}   : ON/OFF status of generator g at time t
-p[g,t] ∈ ℝ       : Power output of generator g at time t (MW)
-su[g,t] ∈ {0,1}  : Startup indicator (= 1 if g starts at time t)
-sd[g,t] ∈ {0,1}  : Shutdown indicator (= 1 if g shuts down at time t)
+u[g,t] ∈ {0,1} : ON/OFF status of generator g at time t
+p[g,t] ∈ ℝ : Power output of generator g at time t (MW)
+su[g,t] ∈ {0,1} : Startup indicator (= 1 if g starts at time t)
+sd[g,t] ∈ {0,1} : Shutdown indicator (= 1 if g shuts down at time t)
 ```
 
 ### Objective
@@ -43,7 +43,7 @@ Minimize: fuel costs + startup costs.
 
 **1. Energy Balance (exact!)**
 ```
-Σ(p[g,t]) = demand[t]  for all t
+Σ(p[g,t]) = demand[t] for all t
 ```
 Supply must exactly equal demand in every period. No ">= " — that would allow over-generation without storage.
 
@@ -100,11 +100,11 @@ If the generator was already ON at hour 0, the min uptime clock has already been
 
 # RIGHT: pass init_status, init_uptime, init_downtime
 solve_unit_commitment(
-    demands=[100, 120, 110],
-    generators=[...],
-    init_status=[1, 0, 1],  # gen 0 ON, gen 1 OFF, gen 2 ON
-    init_uptime=[5, 0, 3],  # gen 0 has been ON for 5h already
-    init_downtime=[0, 8, 0], # gen 1 has been OFF for 8h
+ demands=[100, 120, 110],
+ generators=[...],
+ init_status=[1, 0, 1], # gen 0 ON, gen 1 OFF, gen 2 ON
+ init_uptime=[5, 0, 3], # gen 0 has been ON for 5h already
+ init_downtime=[0, 8, 0], # gen 1 has been OFF for 8h
 )
 ```
 
@@ -117,28 +117,28 @@ What happens at t=23 (last hour)?
 ### 3. Must-Run Generators
 Some generators must always run (nuclear, combined heat and power):
 ```python
-min_output[g] = max_output[g]  # Fixed output
-u[g,t] = 1                      # Always ON
+min_output[g] = max_output[g] # Fixed output
+u[g,t] = 1 # Always ON
 ```
 
 ### 4. The 0-1-0 Problem
 ```
 min_output: 50 MW
 max_output: 200 MW
-min_up:     3 hours
-min_down:   2 hours
+min_up: 3 hours
+min_down: 2 hours
 
-Time:  0   1   2   3   4   5
-u:     1   0   1   0   1   0
+Time: 0 1 2 3 4 5
+u: 1 0 1 0 1 0
 ```
 The generator cycles ON for 1 hour, OFF for 1 hour — violating both min up and min down. The MIP must prevent this.
 
 ### 5. Ramp vs Capacity Coupling
 ```
 ramp_rate = 0.2 (20% of capacity per hour)
-p[g,0] = 0  (generator OFF)
+p[g,0] = 0 (generator OFF)
 p[g,1] ≤ 200 (can go from 0 to 200 in one period? NO!)
-p[g,1] ≤ 0 + 0.2·200 = 40  (ramp limited to 40 MW)
+p[g,1] ≤ 0 + 0.2·200 = 40 (ramp limited to 40 MW)
 ```
 But the generator must also satisfy min_output when ON. If min_output=50 and max ramp = 40, the generator can't even turn on in one period!
 

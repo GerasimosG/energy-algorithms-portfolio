@@ -10,7 +10,7 @@ This folder is a structured curriculum covering all theory, edge cases, intervie
 
 1. **Read in order** — Each file builds on the previous
 2. **Take the quiz** after each section — immediate feedback
-3. **Use the interview Q&A** to prepare for actual Euphemia   / Industry questions
+3. **Use the interview Q&A** to prepare for actual energy market / trading questions
 4. **Edge Case sections** are what separates good from exceptional
 
 ---
@@ -28,7 +28,7 @@ This folder is a structured curriculum covering all theory, edge cases, intervie
 | 7 | [Backtesting & Metrics](backtesting.md) | Look-ahead bias, Sharpe, Sortino, VaR, Kelly |
 | 8 | [ENTSO-E & Energy Data](entsoe.md) | Transparency Platform, bidding zones, PSR types |
 | 9 | [Competitor Analysis](competitor-analysis.md) | pomato, PyPSA, energy-py-linear — what they do better |
-| 10 | [Interview Q&A](interview-qa.md) | 30+ questions (28 core + 8 INDUSTRY-specific) with exceptional answers across Euphemia   + INDUSTRY roles |
+| 10 | [Interview Q&A](interview-qa.md) | 30+ questions (28 core + 8 trading-specific) with exceptional answers across energy market + trading roles |
 | 11 | [Self-Assessment Quiz](quiz.md) | 50 questions across all domains with answer key |
 
 ---
@@ -51,12 +51,12 @@ If you can explain these to an interviewer without notes, you're ready.
 **Euphemia Pipeline:**
 ```
 Orders → Welfare Maximization (MIP) → IP Pricing → Market Results
-   ↑_______________ Block iterations _______________|
+ ↑_______________ Block iterations _______________|
 ```
 
 **FBMC Constraint:**
 ```
--RAM_l ≤ Σ(PTDF[l,n] · net_position[n]) ≤ RAM_l  ∀ critical branches l
+-RAM_l ≤ Σ(PTDF[l,n] · net_position[n]) ≤ RAM_l ∀ critical branches l
 ```
 
 **Key Numbers to Know:**

@@ -1,7 +1,7 @@
-# ✨ Euphemia   Interview Readiness — Euphemia Connection
+# ✨ Interview Readiness — Euphemia Connection
 
 This document explains how this repo's energy markets module maps to
-concepts you'll be asked about in a **Euphemia   Junior Optimization Engineer** interview.
+concepts you'll be asked about in a **Junior Optimization Engineer — energy markets** interview.
 
 ## Concepts You Must Know
 
@@ -24,12 +24,12 @@ with continuous acceptance variables and binary block orders.
 
 **What Euphemia does additionally:**
 - **IP (Integer Programming) pricing**: When block orders create non-convexities,
-  the simple `max(accepted_prices)` MCP is not the economically efficient price.
-  Euphemia uses IP pricing rules that minimize make-whole payments.
+ the simple `max(accepted_prices)` MCP is not the economically efficient price.
+ Euphemia uses IP pricing rules that minimize make-whole payments.
 - **PUN (Prezzo Unico Nazionale)**: Italy's single national price — a weighted
-  average of zonal prices when zones have different MCPs.
+ average of zonal prices when zones have different MCPs.
 - **Flexible block orders**: Blocks where quantity can vary within a range,
-  not just all-or-nothing.
+ not just all-or-nothing.
 
 **Know this for interviews:** "The simple LP formulation uses marginal pricing,
 but real Euphemia uses IP pricing to handle non-convexities from block orders.
@@ -61,7 +61,7 @@ startup costs, initial conditions, reserve margin.
 
 | Question | Answer Points |
 |----------|--------------|
-| "Explain PCR/Euphemia" | Pan-European Coupling. Algorithm by Euphemia  . Couples 25+ exchanges. Maximizes social welfare via MIP. Supports complex orders. |
+| "Explain PCR/Euphemia" | Pan-European Coupling. Algorithm for Pan-European Coupling. Couples 25+ exchanges. Maximizes social welfare via MIP. Supports complex orders. |
 | "What is social welfare?" | Sum of consumer surplus + producer surplus. Maximized when marginal cost = marginal benefit. |
 | "How do block orders work?" | All-or-nothing binary variables. Can be linked (accept all or none) or exclusive (at most one). Create non-convexities requiring IP pricing. |
 | "What is FBMC vs ATC?" | ATC = fixed capacity per border. FBMC = dynamic capacity based on network flows, more efficient. |

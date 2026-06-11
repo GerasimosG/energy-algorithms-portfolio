@@ -2,7 +2,7 @@
 
 ## Why Study Competitors?
 
-Understanding what other frameworks do better (and worse) shows you've done your homework. In an interview at Euphemia  , mentioning that you studied pomato's FBMC implementation demonstrates genuine domain engagement.
+Understanding what other frameworks do better (and worse) shows you've done your homework. In an interview in energy market roles, mentioning that you studied pomato's FBMC implementation demonstrates genuine domain engagement.
 
 ---
 
@@ -37,7 +37,7 @@ Understanding what other frameworks do better (and worse) shows you've done your
 
 ### What we do better
 
-**Block orders:** pomato has no block order support (nodal market, not zonal with Euphemia-style blocks). Our linked/exclusive block mechanisms are directly relevant to Euphemia  .
+**Block orders:** pomato has no block order support (nodal market, not zonal with Euphemia-style blocks). Our linked/exclusive block mechanisms are directly relevant to energy market roles.
 
 **ENTSO-E integration:** pomato has no real data pipeline. Our `energy_data/` module connects to live ENTSO-E data.
 
@@ -84,7 +84,7 @@ Understanding what other frameworks do better (and worse) shows you've done your
 
 **Market focus:** PyPSA is a planning tool, not a market tool. No block orders, no PCR/Euphemia, no intraday trading.
 
-**Energy market domain:** Our `energy_markets/` module is directly relevant to Euphemia   roles. PyPSA is better for system planning roles.
+**Energy market domain:** Our `energy_markets/` module is directly relevant to energy market roles. PyPSA is better for system planning roles.
 
 **Portfolio scope:** We cover optimization (LP/MIP), backtesting, and data pipelines. PyPSA is only optimization.
 

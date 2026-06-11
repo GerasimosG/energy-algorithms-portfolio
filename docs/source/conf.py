@@ -8,9 +8,9 @@ import sys
 sys.path.insert(0, os.path.join(os.path.abspath('.'), '..', '..', 'src'))
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
+ 'sphinx.ext.autodoc',
+ 'sphinx.ext.napoleon',
+ 'sphinx.ext.viewcode',
 ]
 
 project = 'Energy Algorithms'
@@ -25,9 +25,9 @@ exclude_patterns: list[str] = []
 
 # -- Options for autodoc ----------------------------------------------------
 autodoc_default_options = {
-    'members': True,
-    'undoc-members': True,
-    'show-inheritance': True,
+ 'members': True,
+ 'undoc-members': True,
+ 'show-inheritance': True,
 }
 
 # -- Options for napoleon (NumPy-style docstrings) -------------------------

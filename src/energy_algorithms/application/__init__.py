@@ -14,10 +14,10 @@ from energy_algorithms.application.optimization_demo import main as optimization
 from energy_algorithms.application.trading_demo import main as trading_main
 
 __all__ = [
-    "demo_live_pipeline",
-    "european_main",
-    "markets_main",
-    "optimization_main",
-    "trading_main",
-    "demo_live_backtest",
+ "demo_live_pipeline",
+ "european_main",
+ "markets_main",
+ "optimization_main",
+ "trading_main",
+ "demo_live_backtest",
 ]

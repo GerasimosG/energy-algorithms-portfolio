@@ -14,23 +14,23 @@ You have a trading strategy. You want to know: **would it have made money?** The
 
 ```python
 # WRONG: signal uses today's price, trade at today's price
-signal[t] = compute_signal(prices[t])  # You don't know price[t] yet
-position[t] = signal[t]               # Can't trade at price you haven't seen
+signal[t] = compute_signal(prices[t]) # You don't know price[t] yet
+position[t] = signal[t] # Can't trade at price you haven't seen
 ```
 
 ### The Correct Approach
 
 ```python
 # RIGHT: signal from price[t-1], trade at price[t]
-signal[t] = compute_signal(prices[t-1])       # Past info only
-position[t] = signal[t]                        # Enter position
+signal[t] = compute_signal(prices[t-1]) # Past info only
+position[t] = signal[t] # Enter position
 return[t] = position[t] * (prices[t+1]/prices[t] - 1)
 ```
 
 Our `backtester/engine.py`:
 ```python
-signals_shifted = np.roll(signals, 1)  # Shift by 1 bar
-signals_shifted[0] = 0                  # No position before first signal
+signals_shifted = np.roll(signals, 1) # Shift by 1 bar
+signals_shifted[0] = 0 # No position before first signal
 ```
 
 ### How Bad Is It?
@@ -107,8 +107,8 @@ Optimal bet size for maximum long-term growth. Full Kelly is very aggressive —
 ```python
 # Traditional: loop-based (slow Python)
 for t in range(len(prices)):
-    signal = compute_signal(prices[:t])
-    pnl = position * (prices[t+1] - prices[t])
+ signal = compute_signal(prices[:t])
+ pnl = position * (prices[t+1] - prices[t])
 
 # Vectorized: numpy (fast C-level)
 returns = np.diff(prices) / prices[:-1]
@@ -125,7 +125,7 @@ equity_curve = np.cumprod(1 + strategy_returns)
 ### Flat Prices
 ```python
 prices = [100, 100, 100, 100]
-Sharpe = 0, VaR = 0, MaxDD = 0  # verified in test_backtest_all_flat
+Sharpe = 0, VaR = 0, MaxDD = 0 # verified in test_backtest_all_flat
 ```
 
 ### Insufficient Data for VaR
