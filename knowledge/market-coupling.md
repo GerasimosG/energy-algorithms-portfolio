@@ -709,7 +709,7 @@ is accepted if it enables enough consumer surplus to compensate.
 - **ENTSO‑E Flow-Based Market Coupling**:
  [https://www.entsoe.eu/network_codes/cacm/](https://www.entsoe.eu/network_codes/cacm/)
 - **pomato framework** (FRESNA): [https://github.com/FRESNA/pomato](https://github.com/FRESNA/pomato)
-- **the industry**: [https://www.n-side.com/](https://www.n-side.com/)
+- **EUPHEMIA Public Description**: [https://www.epexspot.com/en/euphemia](https://www.epexspot.com/en/euphemia)
 - **Repo files referenced:**
  - `energy_markets/pcr_model.py` — single-zone PCR model with block orders and IP pricing
  - `energy_markets/multi_zone.py` — multi-zone ATC coupling
