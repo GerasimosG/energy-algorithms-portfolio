@@ -5,6 +5,17 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-06-11
+
+### Fixed
+- pyproject.toml version bumped to 0.4.0 (was 0.3.0 — mismatch with CHANGELOG)
+- Dockerfile: replaced obsolete module paths (`energy_markets/`, etc.) with `src/` layout
+- Dockerfile: added `pip install -e .` step so imports resolve at runtime
+- CI: lint check now includes `scripts/` directory
+- scripts/: fixed 6 ruff lint errors (duplicate variable, unsorted imports, unused import/F-string)
+- docs/BENCHMARK_REPORT.md: corrected mypy status from ✅ to 🟡 (60 pre-existing errors)
+- Added CODE_OF_CONDUCT.md and SECURITY.md for public repo professionalism
+
 ## [0.4.0] - 2026-06-05
 
 ### Added

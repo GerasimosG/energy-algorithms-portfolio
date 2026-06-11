@@ -115,7 +115,7 @@ Our portfolio is a **production-grade energy optimization and algorithmic tradin
 | DI / Inversion of Control | ✅ | ❌ | ❌ | 🟡 | ✅ | ✅ |
 | 80%+ Test Coverage | ✅ | ✅ | 🟡 | 🟡 | ✅ | ✅ |
 | CI/CD (3 Python versions) | ✅ | ✅ | 🟡 | ❌ | ✅ | ✅ |
-| Type Hints (mypy clean) | ✅ | 🟡 | ❌ | ❌ | ✅ | ✅ |
+| Type Hints (mypy clean) | 🟡 60 pre-existing | 🟡 | ❌ | ❌ | ✅ | ✅ |
 | Ruff/Lint Clean | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
 | Comprehensive Docstrings | ✅ (NumPy) | ✅ (NumPy) | 🟡 | 🟡 | ✅ (XML) | ✅ (Sphinx) |
 

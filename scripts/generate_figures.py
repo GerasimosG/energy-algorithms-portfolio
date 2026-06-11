@@ -13,12 +13,12 @@ Saves PNGs to docs/ relative to the project root.
 from __future__ import annotations
 
 import os
-import sys
 
 import matplotlib
+
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

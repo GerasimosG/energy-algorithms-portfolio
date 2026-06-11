@@ -35,7 +35,7 @@ def report(results: list[BenchmarkResult]):
     width = 60
 
     print(f"\n{'='*width}")
-    print(f"  Energy Algorithms -- Benchmark Report")
+    print("  Energy Algorithms -- Benchmark Report")
     print(f"{'='*width}")
     print(f"  Solvers: {', '.join(available)}")
     print(f"{'='*width}")

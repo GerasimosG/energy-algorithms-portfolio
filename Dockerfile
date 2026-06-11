@@ -47,8 +47,11 @@ COPY --from=builder /install /usr/local/lib/python3.13/site-packages/
 WORKDIR /app
 COPY . .
 
+# Install the package itself
+RUN pip install --no-cache-dir -e .
+
 # Pre-compile Python bytecode for faster startup
-RUN python -m compileall -q energy_markets/ energy_data/ lp_optimization/ backtester/ strategies/ market_data/ 2>/dev/null || true
+RUN python -m compileall -q src/ 2>/dev/null || true
 
 # Default command: run tests
 CMD ["pytest", "tests/", "-v", "--tb=short"]

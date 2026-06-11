@@ -177,10 +177,6 @@ def validate_energy_balance(model_result: dict, gen_data: dict) -> dict:
         o["qty"] for o in model_result.get("orders", {}).get("blocks", {}).values()
         if o["accepted"]
     )
-    total_block_qty = sum(
-        o["qty"] for o in model_result.get("orders", {}).get("blocks", {}).values()
-        if o["accepted"]
-    )
 
     balance_ok = abs(total_supply_filled + total_block_filled - total_demand_filled) < 1.0
     checks["energy_balance_diff_mw"] = round(total_supply_filled + total_block_filled - total_demand_filled, 2)
@@ -354,7 +350,7 @@ def main() -> None:
     lines.append("# ENTSO-E 30-Day PCR Model Comparison Report")
     lines.append("")
     lines.append(f"**Period:** {dates[0]} to {dates[-1]} (30 days)")
-    lines.append(f"**Bidding Zone:** Belgium (`10YBE----------2`)")
+    lines.append("**Bidding Zone:** Belgium (`10YBE----------2`)")
     lines.append(f"**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
     lines.append(f"**Days processed:** {len(results)} / {len(dates)} requested")
     if errors:
