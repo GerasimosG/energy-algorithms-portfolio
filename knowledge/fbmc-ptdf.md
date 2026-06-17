@@ -36,19 +36,19 @@ Transfer Capacity) approach because ATC cannot capture **loop flows** — a fund
 physical reality of AC power grids.
 
 ```
- ┌──────────────────────────────────────────────┐
- │ FBMC IN CONTEXT │
- ├──────────────────────────────────────────────┤
- │ │
- │ Orders ──► Welfare Maximization LP ──► MCP │
- │ │ │
- │ ▼ │
- │ PTDF × Net Positions ≤ RAM │
- │ │ │
- │ ▼ │
- │ Branch flow validation │
- │ │
- └──────────────────────────────────────────────┘
+           ┌──────────────────────────────────────────────┐
+           │                 FBMC IN CONTEXT               │
+           ├──────────────────────────────────────────────┤
+           │                                              │
+           │  Orders ──► Welfare Maximization LP ──► MCP  │
+           │                  │                           │
+           │                  ▼                           │
+           │         PTDF × Net Positions ≤ RAM           │
+           │                  │                           │
+           │                  ▼                           │
+           │           Branch flow validation             │
+           │                                              │
+           └──────────────────────────────────────────────┘
 ```
 
 ### ATC vs FBMC at a Glance
@@ -89,15 +89,15 @@ Where the injection is balanced by an equal withdrawal at the **reference node**
 
 ### 2.3 Manual PTDF Computation — 3-Bus System
 
-Consider a 3-bus system with equal line reactances (X = 1 p.u. on each line):
+Cor a 3-bus system with equal line reactances (X = 1 p.u. on each line):
 
 ```
- Bus 1 ●───────────● Bus 2
- │ │
- │ X=1 │
- │ │
- Bus 3 ●───────────┘
- (X=1 each leg)
+        Bus 1 ●───────────● Bus 2
+               │           │
+               │    X=1    │
+               │           │
+        Bus 3 ●───────────┘
+                (X=1 each leg)
 ```
 
 **Step 1: Build the susceptance matrix B**
@@ -105,13 +105,13 @@ Consider a 3-bus system with equal line reactances (X = 1 p.u. on each line):
 For a lossless DC approximation, the susceptance between buses i and j is b_ij = 1/X_ij = 1.
 
 ```
- ┌ ┐
- │ b_12+b_13 -b_12 -b_13 │ ┌ ┐
- │ │ │ 2 -1 -1 │
- B = │ -b_12 b_12+b_23 -b_23 │ = │ -1 2 -1 │
- │ │ │ │
- │ -b_13 -b_23 b_13+b_23│ │ -1 -1 2 │
- └ ┘ └ ┘
+         ┌                       ┐
+         │  b_12+b_13   -b_12    -b_13  │   ┌            ┐
+         │                               │   │  2  -1  -1 │
+    B =  │    -b_12   b_12+b_23  -b_23  │ = │ -1   2  -1 │
+         │                               │   │            │
+         │    -b_13     -b_23   b_13+b_23│   │ -1  -1   2 │
+         └                       ┘       └            ┘
 ```
 
 **Step 2: Choose the reference bus (Bus 3 as slack)**
@@ -119,20 +119,20 @@ For a lossless DC approximation, the susceptance between buses i and j is b_ij =
 Remove row and column 3 from B to get the reduced susceptance matrix B_red:
 
 ```
- ┌ ┐
- B_red = │ 2 -1 │
- │ -1 2 │
- └ ┘
+              ┌        ┐
+    B_red =   │ 2  -1  │
+              │ -1   2 │
+              └        ┘
 ```
 
 **Step 3: Invert B_red to get the reactance matrix X_red**
 
 ```
- ┌ ┐
- │ 2/3 1/3 │
- X_red = │ │
- │ 1/3 2/3 │
- └ ┘
+              ┌            ┐
+              │ 2/3   1/3  │
+    X_red =   │            │
+              │ 1/3   2/3  │
+              └            ┘
 ```
 
 **Step 4: Compute PTDF for line l = (i→j)**
@@ -168,10 +168,10 @@ PTDF[1→3, Bus3] = 0
 **Complete 3-bus PTDF matrix (reference = Bus 3):**
 
 ```
- Bus1 Bus2 Bus3 Row Sum
- Line 1→2: +0.33 -0.33 0.00 0.00 ✓
- Line 2→3: +0.33 +0.67 0.00 1.00 ✗
- Line 1→3: +0.67 +0.33 0.00 1.00 ✗
+                Bus1   Bus2   Bus3   Row Sum
+    Line 1→2:  +0.33  -0.33   0.00     0.00  ✓
+    Line 2→3:  +0.33  +0.67   0.00     1.00  ✗
+    Line 1→3:  +0.67  +0.33   0.00     1.00  ✗
 ```
 
 > **Wait — why do rows 2 and 3 not sum to zero?** Because PTDF is defined with the
@@ -182,10 +182,10 @@ PTDF[1→3, Bus3] = 0
 **Corrected PTDF with reference included:**
 
 ```
- Bus1 Bus2 Bus3 Row Sum
- Line 1→2: +0.33 -0.33 0.00 0.00 ✓
- Line 2→3: +0.33 +0.67 -1.00 0.00 ✓
- Line 1→3: +0.67 +0.33 -1.00 0.00 ✓
+                Bus1   Bus2   Bus3   Row Sum
+    Line 1→2:  +0.33  -0.33   0.00     0.00  ✓
+    Line 2→3:  +0.33  +0.67  -1.00     0.00  ✓
+    Line 1→3:  +0.67  +0.33  -1.00     0.00  ✓
 ```
 
 ### 2.4 PTDF in Code
@@ -194,10 +194,10 @@ In `energy_markets/fbmc.py`, the PTDF is validated at lines 84–88:
 
 ```python
 if not np.allclose(ptdf_matrix.sum(axis=1), 0, atol=1e-10):
- raise ValueError(
- "Each PTDF row must sum to zero "
- "(Kirchhoff current conservation)"
- )
+    raise ValueError(
+        "Each PTDF row must sum to zero "
+        "(Kirchhoff current conservation)"
+    )
 ```
 
 This check enforces the fundamental physical law: what goes in must come out.
@@ -211,7 +211,7 @@ This check enforces the fundamental physical law: what goes in must come out.
 A power system has N buses but only N-1 independent net injection variables because:
 
 ```
-Σ(injections) = Σ(withdrawals) ⟹ Σ_n NP[n] = 0
+Σ(injections) = Σ(withdrawals)  ⟹  Σ_n NP[n] = 0
 ```
 
 The PTDF is defined for a 1 MW injection at node n *with 1 MW withdrawal at the reference*.
@@ -220,10 +220,10 @@ This is the **incremental** sensitivity. The reference node absorbs any imbalanc
 ### 3.2 What Happens at the Reference
 
 - **PTDF[:, ref] = 0** (by definition — injecting at reference and withdrawing at
- reference is a zero-sum change)
+  reference is a zero-sum change)
 - The reference row of the X matrix is all zeros
 - Any injection pattern is equivalent to: injection at node n, withdrawal at reference,
- plus a rigid-body translation that doesn't affect flows
+  plus a rigid-body translation that doesn't affect flows
 
 ### 3.3 Reference Independence
 
@@ -231,7 +231,7 @@ While individual PTDF values depend on the reference choice, the resulting flows
 **reference-independent**. This is because:
 
 ```
-flow_l = Σ PTDF[l,n] · NP[n] where Σ NP[n] = 0
+flow_l = Σ PTDF[l,n] · NP[n]   where Σ NP[n] = 0
 ```
 
 If we change the reference from r to r', the new PTDF' is:
@@ -244,9 +244,9 @@ And:
 
 ```
 Σ PTDF'[l,n] · NP[n] = Σ (PTDF[l,n] - PTDF[l,r']) · NP[n]
- = Σ PTDF[l,n] · NP[n] - PTDF[l,r'] · Σ NP[n]
- = Σ PTDF[l,n] · NP[n] - PTDF[l,r'] · 0
- = flow_l ✓
+                     = Σ PTDF[l,n] · NP[n] - PTDF[l,r'] · Σ NP[n]
+                     = Σ PTDF[l,n] · NP[n] - PTDF[l,r'] · 0
+                     = flow_l  ✓
 ```
 
 Flow invariance is preserved because Σ NP[n] = 0.
@@ -287,19 +287,19 @@ See `energy_markets/gsk.py` for GSK implementations.
 
 ```
 Nodal PTDF (5 buses, 3 lines):
- Bus0 Bus1 Bus2 Bus3 Bus4
-Line_0: 0.50 -0.30 -0.20 0.00 0.00
-Line_1: 0.25 0.25 -0.50 0.00 0.00
-Line_2: 0.10 -0.10 0.00 0.00 0.00
+         Bus0   Bus1   Bus2   Bus3   Bus4
+Line_0:  0.50  -0.30  -0.20   0.00   0.00
+Line_1:  0.25   0.25  -0.50   0.00   0.00
+Line_2:  0.10  -0.10   0.00   0.00   0.00
 
 Zone map: Bus0,Bus1 ∈ ZoneA; Bus2,Bus3,Bus4 ∈ ZoneB
 Flat GSK: ZoneA = [0.5, 0.5, 0, 0, 0], ZoneB = [0, 0, 1/3, 1/3, 1/3]
 
 Zonal PTDF = Nodal PTDF @ GSK:
- ZoneA ZoneB
-Line_0: 0.10 -0.07 (approx)
-Line_1: 0.25 -0.17 (approx)
-Line_2: 0.00 0.00
+         ZoneA   ZoneB
+Line_0:  0.10   -0.07   (approx)
+Line_1:  0.25   -0.17   (approx)
+Line_2:  0.00    0.00
 ```
 
 ---
@@ -323,24 +323,24 @@ Using the PTDF from the test file (`tests/test_fbmc.py`):
 
 ```python
 ptdf = np.array([
- [ 0.6, -0.4, -0.2], # Line AB
- [ 0.3, 0.3, -0.6], # Line BC
- [ 0.1, -0.1, 0.0], # Line AC
+    [ 0.6, -0.4, -0.2],   # Line AB
+    [ 0.3,  0.3, -0.6],   # Line BC
+    [ 0.1, -0.1,  0.0],   # Line AC
 ])
 ```
 
 Let's say the optimization determines net positions:
 
 ```
-NP = [100, -40, -60] # A exports 100 MW, B and C import
+NP = [100, -40, -60]   # A exports 100 MW, B and C import
 ```
 
 Then flows are:
 
 ```
 flow_AB = 0.6(100) + (-0.4)(-40) + (-0.2)(-60) = 60 + 16 + 12 = 88 MW
-flow_BC = 0.3(100) + 0.3(-40) + (-0.6)(-60) = 30 - 12 + 36 = 54 MW
-flow_AC = 0.1(100) + (-0.1)(-40) + 0.0(-60) = 10 + 4 + 0 = 14 MW
+flow_BC = 0.3(100) + 0.3(-40)  + (-0.6)(-60) = 30 - 12 + 36 = 54 MW
+flow_AC = 0.1(100) + (-0.1)(-40) + 0.0(-60)  = 10 + 4 + 0  = 14 MW
 ```
 
 **Check: Σ NP = 100 - 40 - 60 = 0 ✓ (system balance)**
@@ -349,9 +349,9 @@ In `fbmc.py`, this is computed at line 218:
 
 ```python
 flow_val = sum(
- float(ptdf_matrix[bi, zi])
- * float(pulp.value(net_position[zi]) or 0)
- for zi in range(Z)
+    float(ptdf_matrix[bi, zi])
+    * float(pulp.value(net_position[zi]) or 0)
+    for zi in range(Z)
 )
 ```
 
@@ -389,12 +389,12 @@ In `fbmc.py` lines 89–95:
 
 ```python
 for rl in ram_limits:
- if rl["ram_forward"] < 0 or rl["ram_reverse"] < 0:
- raise ValueError(
- f"RAM limits must be non-negative (got "
- f"forward={rl['ram_forward']}, "
- f"reverse={rl['ram_reverse']})"
- )
+    if rl["ram_forward"] < 0 or rl["ram_reverse"] < 0:
+        raise ValueError(
+            f"RAM limits must be non-negative (got "
+            f"forward={rl['ram_forward']}, "
+            f"reverse={rl['ram_reverse']})"
+        )
 ```
 
 RAM = 0 means the line cannot accept any market-driven flow — the zone must balance
@@ -403,7 +403,7 @@ internally. This is tested in `test_fbmc_zero_ram_constrains_flow`:
 ```python
 # With RAM=0: no flow → welfare = 0
 result = solve_fbmc(zones, ptdf,
- [{"name": "AB", "ram_forward": 0, "ram_reverse": 0}], zone_names)
+    [{"name": "AB", "ram_forward": 0, "ram_reverse": 0}], zone_names)
 assert result["welfare"] == 0.0
 ```
 
@@ -420,26 +420,26 @@ path of least *impedance*, not the contractual path.
 ### 7.2 Numerical Example — 3-Zone Triangle
 
 ```
- ┌──────────────────────────────┐
- │ 3-ZONE TRIANGLE NETWORK │
- ├──────────────────────────────┤
- │ │
- │ A ────────────── B │
- │ │\ /│ │
- │ │ \ 50 MW / │ │
- │ │ \ / │ │
- │ │ \ / │ │
- │ │ \ / │ │
- │ │ \ / │ │
- │ │ \ / │ │
- │ │ \/ │ │
- │ │ /\ │ │
- │ │ 30MW / \ 20MW │ │
- │ │ / \ │ │
- │ └────/──────\────┘ │
- │ C │
- │ │
- └──────────────────────────────┘
+           ┌──────────────────────────────┐
+           │    3-ZONE TRIANGLE NETWORK    │
+           ├──────────────────────────────┤
+           │                              │
+           │      A ────────────── B      │
+           │      │\              /│      │
+           │      │ \  50 MW     / │      │
+           │      │  \          /  │      │
+           │      │   \        /   │      │
+           │      │    \      /    │      │
+           │      │     \    /     │      │
+           │      │      \  /      │      │
+           │      │       \/       │      │
+           │      │       /\       │      │
+           │      │ 30MW /  \ 20MW │      │
+           │      │     /    \     │      │
+           │      └────/──────\────┘      │
+           │          C                  │
+           │                              │
+           └──────────────────────────────┘
 ```
 
 **Scenario:**
@@ -454,9 +454,9 @@ Using the PTDF from the tests:
 
 ```python
 ptdf = np.array([
- [ 0.6, -0.4, -0.2], # Line AB
- [ 0.3, 0.3, -0.6], # Line BC
- [ 0.1, -0.1, 0.0], # Line AC
+    [ 0.6, -0.4, -0.2],   # Line AB
+    [ 0.3,  0.3, -0.6],   # Line BC
+    [ 0.1, -0.1,  0.0],   # Line AC
 ])
 ```
 
@@ -464,8 +464,8 @@ When A exports 100 MW to B (NP = [100, -100, 0]):
 
 ```
 flow_AB = 0.6(100) + (-0.4)(-100) + (-0.2)(0) = 60 + 40 + 0 = 100 MW
-flow_BC = 0.3(100) + 0.3(-100) + (-0.6)(0) = 30 - 30 + 0 = 0 MW
-flow_AC = 0.1(100) + (-0.1)(-100) + 0.0(0) = 10 + 10 + 0 = 20 MW ← LOOP!
+flow_BC = 0.3(100) + 0.3(-100)  + (-0.6)(0)  = 30 - 30 + 0 = 0 MW
+flow_AC = 0.1(100) + (-0.1)(-100) + 0.0(0)   = 10 + 10 + 0 = 20 MW  ← LOOP!
 ```
 
 **The line AC shows 20 MW even though C's net position is zero!** This is the loop flow
@@ -479,9 +479,9 @@ plenty of capacity:
 
 ```python
 ram_limits = [
- {"name": "AB", "ram_forward": 300, "ram_reverse": 300}, # Plenty
- {"name": "BC", "ram_forward": 200, "ram_reverse": 200}, # Enough
- {"name": "AC", "ram_forward": 20, "ram_reverse": 20}, # TIGHT!
+    {"name": "AB", "ram_forward": 300, "ram_reverse": 300},  # Plenty
+    {"name": "BC", "ram_forward": 200, "ram_reverse": 200},  # Enough
+    {"name": "AC", "ram_forward": 20, "ram_reverse": 20},    # TIGHT!
 ]
 ```
 
@@ -497,7 +497,7 @@ instead of importing all cheap power from A.
 ATC models the grid as independent corridors:
 
 ```
- A ←─── 200 MW ───→ B ←─── 100 MW ───→ C
+    A ←─── 200 MW ───→ B ←─── 100 MW ───→ C
 ```
 
 Each corridor has a bidirectional capacity limit. Flows on A→B and B→C are independent.
@@ -505,13 +505,13 @@ Each corridor has a bidirectional capacity limit. Flows on A→B and B→C are i
 ### 8.2 The Killer Example
 
 ```
-Network: A ────┬──── B
- │
- C
+Network:       A ────┬──── B
+                     │
+                     C
 
-Supply: A = cheap (€10), 500 MW available
-Demand: B = 300 MW, C = 0 MW
-Line limits: A→B = 100 MW, A→C = 50 MW, B→C = 200 MW
+Supply:         A = cheap (€10), 500 MW available
+Demand:         B = 300 MW, C = 0 MW
+Line limits:    A→B = 100 MW, A→C = 50 MW, B→C = 200 MW
 ```
 
 **What ATC would do:**
@@ -541,15 +541,15 @@ the split between direct and loop flows because it doesn't have the PTDF matrix.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ ATC's Fatal Flaw: │
-│ │
-│ ATC treats each interconnection as an independent pipe. │
-│ In reality, AC power flows follow Kirchhoff's laws — │
-│ the flow on line A-C depends on trades between │
-│ zones A and B, not just trades involving C. │
-│ │
-│ ATC can NEVER capture this because it has no concept │
-│ of network topology. │
+│  ATC's Fatal Flaw:                                       │
+│                                                          │
+│  ATC treats each interconnection as an independent pipe. │
+│  In reality, AC power flows follow Kirchhoff's laws —    │
+│  the flow on line A-C depends on trades between          │
+│  zones A and B, not just trades involving C.             │
+│                                                          │
+│  ATC can NEVER capture this because it has no concept    │
+│  of network topology.                                    │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -574,9 +574,9 @@ For zonal PTDF, the LODF is approximated from PTDF sensitivity differences
 (see `energy_markets/lodf_utils.py` lines 62–71):
 
 ```
- PTDF[l, from_zone_k] - PTDF[l, to_zone_k]
+              PTDF[l, from_zone_k] - PTDF[l, to_zone_k]
 LODF[l, k] = ───────────────────────────────────────────
- 1 - (PTDF[k, from_zone_k] - PTDF[k, to_zone_k])
+             1 - (PTDF[k, from_zone_k] - PTDF[k, to_zone_k])
 ```
 
 **For self-outage (l == k):**
@@ -594,10 +594,10 @@ Using the 3-branch, 3-zone system from the tests:
 
 ```
 PTDF:
- A B C
-AB: 0.60 -0.40 -0.20
-BC: 0.30 0.30 -0.60
-CA: -0.90 0.10 0.80
+        A      B      C
+AB:   0.60  -0.40  -0.20
+BC:   0.30   0.30  -0.60
+CA:  -0.90   0.10   0.80
 
 Branch zone map: AB = (0,1), BC = (1,2), CA = (2,0)
 ```
@@ -606,9 +606,9 @@ Branch zone map: AB = (0,1), BC = (1,2), CA = (2,0)
 
 ```
 Denominator = 1 - (PTDF[0, A] - PTDF[0, B])
- = 1 - (0.60 - (-0.40))
- = 1 - 1.00
- = 0.00 ← Zero! Topology-trivial outage.
+            = 1 - (0.60 - (-0.40))
+            = 1 - 1.00
+            = 0.00  ← Zero! Topology-trivial outage.
 ```
 
 When the denominator is zero, the branch outage has no flow redistribution impact —
@@ -616,22 +616,22 @@ the sensitivity cancel out. In `lodf_utils.py` line 112–115:
 
 ```python
 if abs(denom) < 1e-12:
- # Topology-trivial outage
- lodf[l, k] = 0.0
+    # Topology-trivial outage
+    lodf[l, k] = 0.0
 ```
 
 **Outage of branch BC (k=1):**
 
 ```
 Denom = 1 - (PTDF[1, B] - PTDF[1, C])
- = 1 - (0.30 - (-0.60))
- = 1 - 0.90
- = 0.10
+      = 1 - (0.30 - (-0.60))
+      = 1 - 0.90
+      = 0.10
 
 LODF[AB, BC] = (PTDF[0, B] - PTDF[0, C]) / 0.10
- = (-0.40 - (-0.20)) / 0.10
- = -0.20 / 0.10
- = -2.0
+             = (-0.40 - (-0.20)) / 0.10
+             = -0.20 / 0.10
+             = -2.0
 
 Interpretation: When BC trips, the flow on AB changes by -2.0 × BC_base_flow.
 If BC was carrying +50 MW, AB's flow decreases by 100 MW (flow is redistributed
@@ -647,7 +647,7 @@ post_contingency_flow[l] = base_flow[l] + Σ_k LODF[l, k] · base_flow[k]
 For security-constrained FBMC, we must ensure:
 
 ```
--RAM[l] ≤ post_contingency_flow[l] ≤ RAM[l] ∀ l, ∀ outages
+-RAM[l] ≤ post_contingency_flow[l] ≤ RAM[l]    ∀ l, ∀ outages
 ```
 
 This means for *every* possible single-line outage, every remaining line must still be
@@ -728,7 +728,7 @@ Every node in a zone gets an equal share:
 
 ```python
 def flat_gsk(n_zones, nodes_per_zone):
- # Node i in zone z: GSK[i, z] = 1 / nodes_per_zone[z]
+    # Node i in zone z: GSK[i, z] = 1 / nodes_per_zone[z]
 ```
 
 ```
@@ -741,7 +741,7 @@ Weighted by installed generation capacity:
 
 ```python
 def gmax_gsk(capacity_vector, zone_map):
- # Node i in zone z: GSK[i, z] = capacity[i] / sum(capacity in zone z)
+    # Node i in zone z: GSK[i, z] = capacity[i] / sum(capacity in zone z)
 ```
 
 ```
@@ -754,8 +754,8 @@ Weighted by actual dispatch (generation output):
 
 ```python
 def dynamic_gsk(capacity_vector, dispatch_vector, zone_map):
- # Node i in zone z: GSK[i, z] = dispatch[i] / sum(dispatch in zone z)
- # Falls back to Gmax if total dispatch == 0
+    # Node i in zone z: GSK[i, z] = dispatch[i] / sum(dispatch in zone z)
+    # Falls back to Gmax if total dispatch == 0
 ```
 
 ```
@@ -765,7 +765,7 @@ Example: Zone A has 2 nodes with dispatch (800 MW, 200 MW) → allocations: 80%,
 ### 11.3 Applying GSK
 
 ```python
-nodal_injections = gsk_matrix @ net_positions # (n_nodes,) = (n_nodes, n_zones) @ (n_zones,)
+nodal_injections = gsk_matrix @ net_positions  # (n_nodes,) = (n_nodes, n_zones) @ (n_zones,)
 ```
 
 Conservation: `sum(nodal_injections) == sum(net_positions)` because each GSK column sums
@@ -776,11 +776,11 @@ to 1.0.
 From `gsk.py` `demo_gsk()`:
 
 ```
-Net positions: [120, -70, -50] (A exports 120, B imports 70, C imports 50)
+Net positions:  [120, -70, -50]  (A exports 120, B imports 70, C imports 50)
 
-Flat GSK nodal injections: [60, 60, -35, -35, -50]
-Gmax GSK nodal injections: [90, 30, -47, -23, -50]
-Dynamic GSK nodal injections: [100, 20, -41, -29, -50]
+Flat GSK nodal injections:       [60, 60, -35, -35, -50]
+Gmax GSK nodal injections:       [90, 30, -47, -23, -50]
+Dynamic GSK nodal injections:    [100, 20, -41, -29, -50]
 ```
 
 Notice how the dynamic GSK allocates more to the node with higher actual dispatch (250 MW
@@ -805,7 +805,7 @@ Given:
 **Objective:** Maximize social welfare
 
 ```
-MAX Σ_z [ Σ_j p_d[z][j]·q_d[z][j]·d[z][j] - Σ_i p_s[z][i]·q_s[z][i]·s[z][i] ]
+MAX  Σ_z [ Σ_j p_d[z][j]·q_d[z][j]·d[z][j] - Σ_i p_s[z][i]·q_s[z][i]·s[z][i] ]
 ```
 
 **Constraints:**
@@ -813,7 +813,7 @@ MAX Σ_z [ Σ_j p_d[z][j]·q_d[z][j]·d[z][j] - Σ_i p_s[z][i]·q_s[z][i]·s[z][
 **1. Zone energy balance:**
 
 ```
-Σ_i q_s[z][i]·s[z][i] - Σ_j q_d[z][j]·d[z][j] = NP[z] ∀ z
+Σ_i q_s[z][i]·s[z][i] - Σ_j q_d[z][j]·d[z][j] = NP[z]    ∀ z
 ```
 
 **2. System energy balance:**
@@ -825,7 +825,7 @@ MAX Σ_z [ Σ_j p_d[z][j]·q_d[z][j]·d[z][j] - Σ_i p_s[z][i]·q_s[z][i]·s[z][
 **3. FBMC branch flow constraints (the heart of FBMC):**
 
 ```
--RAM_rev[l] ≤ Σ_z PTDF[l, z] · NP[z] ≤ RAM_fwd[l] ∀ l ∈ {1..B}
+-RAM_rev[l] ≤ Σ_z PTDF[l, z] · NP[z] ≤ RAM_fwd[l]    ∀ l ∈ {1..B}
 ```
 
 **4. Variable bounds:**
@@ -857,24 +857,24 @@ exclusive group constraints (see `block-orders.md`).
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│ FBMC LP STRUCTURE │
+│                 FBMC LP STRUCTURE                      │
 ├────────────────────────────────────────────────────────┤
-│ │
-│ Variables: O(Z × (N_supply + N_demand)) continuous │
-│ + Z net position variables │
-│ [+ block binary variables in full PCR] │
-│ │
-│ Constraints: Z zone balance (equality) │
-│ 1 system balance (equality) │
-│ 2B FBMC constraints (inequality) │
-│ [+ 2·|CBCO| security constraints] │
-│ │
-│ Matrix: Highly sparse — PTDF is dense within │
-│ zones but blocks are separable │
-│ │
-│ Solver: CBC (open source, this repo) │
-│ Gurobi/CPLEX (production, Euphemia) │
-│ │
+│                                                        │
+│  Variables:   O(Z × (N_supply + N_demand)) continuous  │
+│               + Z net position variables               │
+│               [+ block binary variables in full PCR]   │
+│                                                        │
+│  Constraints: Z zone balance (equality)                │
+│              1 system balance (equality)               │
+│              2B FBMC constraints (inequality)           │
+│              [+ 2·|CBCO| security constraints]         │
+│                                                        │
+│  Matrix:      Highly sparse — PTDF is dense within     │
+│               zones but blocks are separable           │
+│                                                        │
+│  Solver:      CBC (open source, this repo)             │
+│               Gurobi/CPLEX (production, Euphemia)      │
+│                                                        │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -894,9 +894,9 @@ Test: `test_compute_lodf_zero_ptdf_row` in `tests/test_lodf.py`
 
 ```python
 ptdf = np.array([
- [0.0, 0.0, 0.0], # ← zero sensitivity
- [0.6, -0.4, -0.2],
- [-0.6, 0.4, 0.2],
+    [0.0, 0.0, 0.0],    # ← zero sensitivity
+    [0.6, -0.4, -0.2],
+    [-0.6, 0.4, 0.2],
 ])
 ```
 
@@ -910,7 +910,7 @@ the branch carries exactly the power transfer between its terminal zones.
 
 ```python
 if abs(denom) < 1e-12:
- lodf[l, k] = 0.0
+    lodf[l, k] = 0.0
 ```
 
 ### 13.3 All-Zero Flows
@@ -920,7 +920,7 @@ When all base flows are zero, the CBCO screening returns an empty list:
 ```python
 base_flows = np.zeros(3)
 critical = screen_cbcos(ptdf, base_flows, ram_limits, branch_zone_map=bzm)
-assert critical == [] # No constraint needed
+assert critical == []  # No constraint needed
 ```
 
 ### 13.4 Zero RAM
@@ -1038,7 +1038,7 @@ reduction?
 
 **A:** 
 - Before screening: 300 × 300 = **90,000** constraints (each branch outage creates
- a constraint on every other branch)
+  a constraint on every other branch)
 - After 95% screening: 90,000 × 0.05 = **4,500** constraints
 
 This 20× reduction is what makes FBMC computationally feasible in practice. The

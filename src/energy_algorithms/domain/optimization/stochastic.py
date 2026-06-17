@@ -4,8 +4,8 @@ Generates Monte Carlo scenarios for wind and solar forecast errors,
 solves scenario-based unit commitment, and computes decision-theoretic
 metrics (VSS, EVPI) that quantify the value of stochastic modeling.
 
-These concepts are directly relevant to stochastic market
-coupling research and renewable portfolio risk management.
+These concepts are directly relevant to 's stochastic market
+coupling research and Energy's renewable portfolio risk management.
 """
 
 from __future__ import annotations

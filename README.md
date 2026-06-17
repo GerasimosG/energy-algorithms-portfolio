@@ -1,6 +1,6 @@
 # Energy Algorithms
 
-[![Tests](https://github.com/GerasimosG/energy-algorithms-portfolio/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/energy-algorithms-portfolio/actions/workflows/test.yml)
+[![Tests](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/GerasimosG/Energy_Algorithms/actions/workflows/test.yml)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -19,7 +19,7 @@
 | **Flow-based market coupling** (FBMC) | `domain/markets/fbmc.py`, `lodf_utils.py` | Real European coupling: PTDF × net position ≤ RAM |
 | **Multi-zone ATC coupling** | `domain/markets/multi_zone.py` | Cross-border flows: BE↔FR↔DE↔NL |
 | **BESS + FCR + aFRR joint bidding** | `domain/optimization/ancillary.py` | Ancillary services revenue stacking |
-| **BESS energy arbitrage** | `domain/optimization/storage.py` | Hour-of-day optimisation, +€143/MWh spread documented |
+| **BESS energy arbitrage** | `domain/optimization/storage.py` | Hour-of-day optimisation; +€58/MWh out-of-sample spread |
 | **Unit commitment** (MIP) | `domain/optimization/scheduling.py` | Min up/down, ramps, reserve margin |
 | **Continuous intraday order book** | `domain/markets/intraday.py` | Price-time priority, cross-border |
 | **7-metric backtesting engine** | `domain/trading/backtest_engine.py` | Sharpe, Sortino, VaR95/99, Calmar, Kelly, MaxDD, CVaR |
@@ -56,14 +56,14 @@ cd energy-algorithms-portfolio
 pip install -e ".[dev]"
 
 # Showcase demos
-python -m energy_algorithms.application.markets_demo # PCR, block orders, FBMC
-python -m energy_algorithms.application.optimization_demo # BESS, UC, FCR+aFRR
-python -m energy_algorithms.application.trading_demo # Backtesting, signals
-python -m energy_algorithms.application.energy_data_demo # ENTSO-E pipeline
+python -m energy_algorithms.application.markets_demo        # PCR, block orders, FBMC
+python -m energy_algorithms.application.optimization_demo   # BESS, UC, FCR+aFRR
+python -m energy_algorithms.application.trading_demo        # Backtesting, signals
+python -m energy_algorithms.application.energy_data_demo    # ENTSO-E pipeline
 
 # Tests
-pytest tests/ -v # 578 tests
-pytest tests/ --cov=energy_algorithms --cov-fail-under=90 # coverage gate
+pytest tests/ -v                                            # 578 tests
+pytest tests/ --cov=energy_algorithms --cov-fail-under=90   # coverage gate
 ```
 
 CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.
@@ -76,14 +76,14 @@ CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `e
 
 ```
 src/energy_algorithms/
-├── domain/ ★ pure business logic — no I/O, no solver hardcoding
-│ ├── markets/ PCR, FBMC, block orders, intraday, multi-zone
-│ ├── optimization/ UC, BESS, ancillary, portfolio, stochastic
-│ └── trading/ backtesting, signals, risk metrics
-├── ports/ SolverPort — domain depends on this ABC, not on PuLP
-├── adapters/ pulp_solver, entsoe_client, sqlite_store, bt_feeds
-├── application/ use-case demos (markets, optimization, trading)
-└── infrastructure/ solver_config, experiment_tracker, metadata
+├── domain/                ★ pure business logic — no I/O, no solver hardcoding
+│   ├── markets/           PCR, FBMC, block orders, intraday, multi-zone
+│   ├── optimization/      UC, BESS, ancillary, portfolio, stochastic
+│   └── trading/           backtesting, signals, risk metrics
+├── ports/                 SolverPort — domain depends on this ABC, not on PuLP
+├── adapters/              pulp_solver, entsoe_client, sqlite_store, bt_feeds
+├── application/           use-case demos (markets, optimization, trading)
+└── infrastructure/        solver_config, experiment_tracker, metadata
 ```
 
 **Why this matters:** every LP/MIP in the codebase is a PuLP problem that goes through `solve_model()`. Swapping solvers is a one-line config. **All 11 domain files route through the SolverPort.**

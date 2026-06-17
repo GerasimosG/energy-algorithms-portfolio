@@ -1,8 +1,8 @@
 # Energy Markets Module — Code Review Findings
 
-**Reviewed by:** code review agent 
-**Date:** 2026-04-29 
-**Files reviewed:** pcr_model.py, block_orders.py, market_clearing.py, demo.py, README.md 
+**Reviewed by:** code review agent  
+**Date:** 2026-04-29  
+**Files reviewed:** pcr_model.py, block_orders.py, market_clearing.py, demo.py, README.md  
 **Scope:** LP correctness, block order logic, market clearing, bugs, code quality, documentation
 
 ---
@@ -19,7 +19,7 @@ The module demonstrates solid understanding of European power market coupling co
 
 ### C1. Linked blocks are NOT enforced as linked [block_orders.py:32-49]
 
-**Location:** `scenario_linked_block()` in `block_orders.py` 
+**Location:** `scenario_linked_block()` in `block_orders.py`  
 **File:** `block_orders.py`, lines 46-47
 
 **Problem:** The "linked block" scenario calls `model.add_block("Hydro_Upper", 25, 50)` and `model.add_block("Hydro_Lower", 25, 60)`. Each call creates an **independent binary variable** in the PCR model (`b_vars[i]`). The blocks can be independently accepted or rejected, which violates the linked block contract (all must be accepted or all rejected).
@@ -77,11 +77,11 @@ clearing_price = float(np.interp(q_max, sup_cum_qty, sup_prices, left=0, right=s
 **Problem:** The MCP is computed as:
 ```python
 accepted_supply = [self.supply_orders[i]
- for i in range(Ns) if pulp.value(s_vars[i]) > 0.001]
+                   for i in range(Ns) if pulp.value(s_vars[i]) > 0.001]
 mcp = max(o["price"] for o in accepted_supply) if accepted_supply else 0.0
 ```
 
-This only considers continuous supply orders, **not block orders**. If the marginal unit is a block order (e.g., all flexible supply is exhausted and a block provides the remaining MW), the MCP would be computed from the last accepted flexible supply rather than the block's cost.
+This only cors continuous supply orders, **not block orders**. If the marginal unit is a block order (e.g., all flexible supply is exhausted and a block provides the remaining MW), the MCP would be computed from the last accepted flexible supply rather than the block's cost.
 
 **Example:** Supply(Solar=10€,50MW), Block(Nuclear=80€,100MW), Demand(150€,120MW). Block accepted, MCP computed as max(10) = 10€, but the true marginal cost is 80€. This is also the well-known non-convexity pricing problem in Euphemia (handled via IP/PD pricing rules), which is worth discussing in an interview — but as presented, it's an undetected approximation.
 
@@ -98,7 +98,7 @@ This only considers continuous supply orders, **not block orders**. If the margi
 | Scenario | Supply | Block |
 |----------|--------|-------|
 | A (Coal) | Gas(70,200) + Solar(10,100) | CoalPlant_A(35,80) |
-| B (Gas) | Solar(10,100) *only* | GasPlant_B(45,80) |
+| B (Gas)  | Solar(10,100) *only* | GasPlant_B(45,80) |
 
 Scenario B is **missing** the Gas(70,200) flexible supply. This means Scenario B's supply capacity is only 180 MW (vs Demand of 250 MW), making it impossible to fully serve demand. The welfare comparison is confounded — it's not about Coal vs Gas plant choice, but about Gas(70) supply availability.
 
@@ -112,8 +112,8 @@ Scenario B is **missing** the Gas(70,200) flexible supply. This means Scenario B
 
 **Problem:** The shading for producer and consumer surplus uses filled rectangles:
 ```python
-ax.fill_betweenx([0, cp], 0, cv, ...) # Producer surplus (WRONG)
-ax.fill_betweenx([cp, max(demand_prices)*1.1], 0, cv, ...) # Consumer surplus (WRONG)
+ax.fill_betweenx([0, cp], 0, cv, ...)           # Producer surplus (WRONG)
+ax.fill_betweenx([cp, max(demand_prices)*1.1], 0, cv, ...)  # Consumer surplus (WRONG)
 ```
 
 Correct surplus shading should fill:
@@ -204,7 +204,7 @@ For an interview module, documenting **known limitations** demonstrates self-awa
 
 ### L5. No requirements.txt or setup.py packaging
 
-The module has no `pyproject.toml`, `setup.py`, or `setup.cfg`. While the parent repo has `requirements.txt` with `pulp`, the energy_markets module itself isn't installable as a package. Consider adding a minimal `pyproject.toml`.
+The module has no `pyproject.toml`, `setup.py`, or `setup.cfg`. While the parent repo has `requirements.txt` with `pulp`, the energy_markets module itself isn't installable as a package. Cor adding a minimal `pyproject.toml`.
 
 ---
 

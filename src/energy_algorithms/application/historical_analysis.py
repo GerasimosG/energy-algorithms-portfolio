@@ -3,7 +3,7 @@
 Fetches N days of European market data, runs all optimization
 algorithms against each day, and produces a comprehensive report.
 
-This is how market-coupling and energy-trading teams backtest algorithms against
+This is how  and Energy backtest their algorithms against
 historical data — validate performance across market regimes.
 """
 from __future__ import annotations
@@ -323,7 +323,7 @@ def print_monthly_report(results: list[dict[str, Any]]) -> None:
     # ── Key insight ──
     print(f"\n{'=' * 70}")
     print("  💡 KEY INSIGHT FOR INTERVIEWS:")
-    print("  This is how market operators backtest Euphemia changes — run the full")
+    print("  This is how  backtests Euphemia changes — run the full")
     print("  market coupling against N months of historical data, measure")
     print("  welfare improvement, check for regression bugs, validate")
     print("  convergence properties across different market regimes.")

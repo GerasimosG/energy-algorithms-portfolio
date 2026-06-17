@@ -1,7 +1,7 @@
 """
 Ancillary Services Bid Optimisation — FCR + aFRR joint with BESS.
 
-Simplified but realistic model of a BESS offering ancillary services
+Simplified but realistic model of an ENERGY-style BESS offering
 symmetric FCR and asymmetric aFRR capacity products in parallel
 with day-ahead energy arbitrage.
 

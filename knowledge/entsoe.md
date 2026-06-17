@@ -34,14 +34,14 @@ The ENTSO-E Transparency Platform is a REST API providing near-real-time electri
 
 ```python
 class EntsoeClient:
- def fetch_day_ahead_prices(self, area: str, date: str) -> dict:
- """Fetch day-ahead electricity prices for a bidding zone."""
- 
- def fetch_generation_mix(self, area: str, date: str) -> dict:
- """Fetch actual generation per production type."""
- 
- def fetch_load_forecast(self, area: str, date: str) -> dict:
- """Fetch day-ahead total load forecast."""
+    def fetch_day_ahead_prices(self, area: str, date: str) -> dict:
+        """Fetch day-ahead electricity prices for a bidding zone."""
+    
+    def fetch_generation_mix(self, area: str, date: str) -> dict:
+        """Fetch actual generation per production type."""
+    
+    def fetch_load_forecast(self, area: str, date: str) -> dict:
+        """Fetch day-ahead total load forecast."""
 ```
 
 **Error handling matrix:**
@@ -109,7 +109,7 @@ Yahoo Finance → yfinance → SQLite (market_data/store.py)
 ENTSO-E API → urllib + XML parser → Python dicts
 ```
 
-### Production Pipeline (What You'd Build in energy trading)
+### Production Pipeline (What You'd Build at Energy)
 ```
 ENTSO-E ──┐
 Nord Pool ┤

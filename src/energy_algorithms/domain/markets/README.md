@@ -1,8 +1,8 @@
 # Energy Markets Module
 
-## ★ Hero Module — Euphemia & Market Coupling Focus
+## ★ Hero Module —  & Euphemia Focus
 
-This is the standout module that differentiates this portfolio from generic algorithmic trading repos. It demonstrates **domain knowledge of European power market coupling** — directly relevant to work on the Euphemia algorithm.
+This is the standout module that differentiates this portfolio from generic algorithmic trading repos. It demonstrates **domain knowledge of European power market coupling** — directly relevant to 's work on the Euphemia algorithm.
 
 ## What This Module Contains
 
@@ -28,7 +28,7 @@ Real-world examples of complex order types handled by Euphemia:
 ### 4. Market Clearing (`market_clearing.py`)
 Single-zonal clearing: given supply and demand curves, find the equilibrium price and volume. Visualizes the supply/demand stack with proper consumer/producer surplus shading.
 
-### 5. Interview Prep (`INTERVIEW_README.md`)
+### 5.  Interview Prep (`_INTERVIEW.md`)
 Comprehensive guide mapping this codebase to Euphemia concepts:
 - IP pricing for non-convex block orders
 - PUN (Italy's single national price)
@@ -37,7 +37,7 @@ Comprehensive guide mapping this codebase to Euphemia concepts:
 
 ## Connection to Euphemia
 
-Euphemia (EUropean PHase I Market coupling Algorithm) is the algorithm developed for European market coupling that:
+Euphemia (EUropean PHase I Market coupling Algorithm) is the algorithm developed by  that:
 - Couples 25+ European power exchanges into a single market
 - Handles **1M+ orders** per hour of trading
 - Runs a **MIP optimization** every hour for day-ahead and intraday markets
@@ -46,7 +46,7 @@ Euphemia (EUropean PHase I Market coupling Algorithm) is the algorithm developed
 
 This module demonstrates understanding of the **core LP** that powers Euphemia, with extensions to the full MIP formulation.
 
-## Why This Matters
+## Why This Matters for 
 
 | Concept | This Module | Real Euphemia |
 |---------|-------------|---------------|

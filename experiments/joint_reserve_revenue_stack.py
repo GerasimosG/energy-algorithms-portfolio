@@ -9,7 +9,7 @@ beat pure energy arbitrage for a Belgian 100 MWh / 50 MW BESS over
 
 Why this matters
 ----------------
-This is the single most important experiment for energy (Algorithmic
+This is the single most important experiment for the Energy (Algorithmic
 Trader) role. The JD mentions "revenue stacking for BESS" and the
 interview prep (`docs/INTERVIEW_PREP.md`) has a candidate question on
 joint energy + aFRR bidding. After this experiment you can answer from
@@ -91,7 +91,7 @@ DEFAULT_FCR_PRICE = 20.0
 DEFAULT_AFRR_UP_PRICE = 15.0
 DEFAULT_AFRR_DOWN_PRICE = 12.0
 
-# BESS configuration — matches engie_demo defaults.
+# BESS configuration — matches institutional_trading_demo defaults.
 BESS_CAPACITY_MWH = 100.0
 BESS_MAX_POWER_MW = 50.0
 BESS_EFF_IN = 0.92
@@ -99,7 +99,7 @@ BESS_EFF_OUT = 0.92
 BESS_INITIAL_SOC = 50.0
 
 # aFRR "committed" threshold: any hour with capacity > this is
-# considered committed in the aggregate count.
+# cored committed in the aggregate count.
 AFRR_COMMITMENT_TOLERANCE_MW = 1e-3
 
 # Data path — Belgian ENTSO-E day-ahead prices, 30 days, quarter-hourly.

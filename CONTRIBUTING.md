@@ -17,17 +17,17 @@ Thank you for your interest in contributing! This project is a public portfolio 
 1. **Issues first** — Open an issue describing the bug, feature, or improvement before writing code. This avoids duplicated effort and allows discussion.
 
 2. **Fork the repository** — Create your own fork, then clone locally:
- ```bash
- git clone https://github.com/YOUR_USERNAME/Energy_Algorithms.git
- cd Energy_Algorithms
- ```
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/Energy_Algorithms.git
+   cd Energy_Algorithms
+   ```
 
 3. **Create a branch** — Use a descriptive branch name:
- ```bash
- git checkout -b feat/my-feature # new feature
- git checkout -b fix/my-bug-fix # bug fix
- git checkout -b docs/my-doc-update # documentation
- ```
+   ```bash
+   git checkout -b feat/my-feature     # new feature
+   git checkout -b fix/my-bug-fix      # bug fix
+   git checkout -b docs/my-doc-update  # documentation
+   ```
 
 4. **Make your changes** — Follow the code style and testing guidelines below.
 
@@ -85,8 +85,8 @@ pre-commit install
 ### Optional Extras
 
 ```bash
-pip install -e ".[live]" # ENTSO-E live data (requests)
-pip install -e ".[docs]" # Sphinx documentation
+pip install -e ".[live]"   # ENTSO-E live data (requests)
+pip install -e ".[docs]"   # Sphinx documentation
 ```
 
 ### Verify
@@ -180,15 +180,15 @@ import pytest
 
 
 def test_basic_functionality():
- """Describe what this test verifies."""
- result = my_function(input_data)
- assert result == expected_output
+    """Describe what this test verifies."""
+    result = my_function(input_data)
+    assert result == expected_output
 
 
 @pytest.mark.slow
 def test_expensive_operation():
- """Mark slow tests with @pytest.mark.slow."""
- ...
+    """Mark slow tests with @pytest.mark.slow."""
+    ...
 ```
 
 ## Commit Conventions
@@ -203,15 +203,15 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### Types
 
-| Type | Usage |
+| Type     | Usage                                      |
 |----------|--------------------------------------------|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
+| `feat:`  | New feature                                |
+| `fix:`   | Bug fix                                    |
 | `refactor:` | Code change without feature/bug change |
-| `docs:` | Documentation only |
-| `test:` | Adding or improving tests |
-| `chore:` | Build, CI, dependencies, tooling |
-| `style:` | Formatting, imports, lint fixes |
+| `docs:`  | Documentation only                        |
+| `test:`  | Adding or improving tests                  |
+| `chore:` | Build, CI, dependencies, tooling           |
+| `style:` | Formatting, imports, lint fixes            |
 
 ### Examples
 

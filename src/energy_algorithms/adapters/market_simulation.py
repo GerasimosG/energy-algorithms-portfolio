@@ -6,12 +6,12 @@ adapt their bidding over multiple sessions.
 
 Inspired by:
 - OpenSpace / Energy Market Games (agent-based power market simulation)
-- Euphemia: multiple participants submit orders → welfare maximization
+- 's Euphemia: multiple participants submit orders → welfare maximization
 - Reinforcement learning for bidding in electricity markets
 
 This is NOT a full OpenSpace port — it's a demo of the concept that shows
 understanding of agent-based power market simulation, which is highly relevant
-for energy-market interviews.
+for  and Energy interviews.
 """
 from __future__ import annotations
 

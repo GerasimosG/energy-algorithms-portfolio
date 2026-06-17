@@ -1,6 +1,6 @@
 # Portfolio experiments
 
-Two trackable ML experiments targeting the **energy market** and **energy trading** JDs.
+Two trackable ML experiments targeting the **** and **Energy** JDs.
 Each experiment logs runs to the SQLite-backed experiment tracker
 (default `~/.hermes/experiments.db`).
 
@@ -10,8 +10,8 @@ Each experiment logs runs to the SQLite-backed experiment tracker
 
 | File | Maps to JD bullet | What it shows |
 |---|---|---|
-| `joint_reserve_revenue_stack.py` (exp1) | energy trading: "revenue stacking for BESS" | 4 scenarios on ~30 days BE prices: arbitrage / +FCR / +aFRR / full stack. Total revenue per scenario + revenue split. |
-| `strategy_head_to_head.py` (exp2) | energy trading: "3 signal strategies" + "backtesting" | 3 strategies (hour-of-day, solar-duck, calendar-spread) × 4 regimes (all / spring / summer / other). 7-metric risk suite per (strategy, regime). |
+| `joint_reserve_revenue_stack.py` (exp1) | Energy: "revenue stacking for BESS" | 4 scenarios on ~30 days BE prices: arbitrage / +FCR / +aFRR / full stack. Total revenue per scenario + revenue split. |
+| `strategy_head_to_head.py` (exp2) | Energy: "3 signal strategies" + "backtesting" | 3 strategies (hour-of-day, solar-duck, calendar-spread) × 4 regimes (all / spring / summer / other). 7-metric risk suite per (strategy, regime). |
 | `runner.py` | n/a | Single CLI to run one or all experiments. |
 | `__init__.py` | n/a | Package marker so cross-imports between exp1 and exp2 work. |
 
@@ -130,7 +130,7 @@ To change defaults, edit the constants at the top of
 
 ## Caveats (for interview honesty)
 
-These are documented inside each experiment file's docstring. Quick
+These are documented i each experiment file's docstring. Quick
 recap:
 
 **exp1**:

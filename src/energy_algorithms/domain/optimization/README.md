@@ -29,7 +29,7 @@ MIP model for generator scheduling with:
 - Demand balance
 - Reserve margin
 
-**Why it matters:** Directly relevant to — Euphemia handles unit commitment constraints in power markets. This simplified model shows understanding of the MIP structure.
+**Why it matters:** Directly relevant to  — Euphemia handles unit commitment constraints in power markets. This simplified model shows understanding of the MIP structure.
 
 ## Key Libraries
 

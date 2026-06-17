@@ -9,7 +9,7 @@ on real Belgian day-ahead prices, and is the choice robust to regime?
 
 Why this matters
 ----------------
-This experiment maps directly to two energy-trading JD bullets:
+This experiment maps directly to two Energy JD bullets:
 - "3 signal strategies" — we need to show head-to-head comparison.
 - "Backtesting: look-ahead, transaction costs, walk-forward" — we
   need to show the *framework* not just one curve.

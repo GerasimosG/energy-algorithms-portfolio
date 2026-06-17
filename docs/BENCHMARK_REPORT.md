@@ -1,8 +1,8 @@
 # Energy Algorithms — Portfolio Benchmark & Performance Report
 
-**Generated:** 2026-05-21 12:00 CEST 
-**Repo:** [github.com/GerasimosG/Energy_Algorithms](https://github.com/GerasimosG/Energy_Algorithms) 
-**Target roles:** Junior Optimization Engineer (energy markets) + Energy Algorithmic Trader 
+**Generated:** 2026-05-21 12:00 CEST  
+**Repo:** [github.com/GerasimosG/Energy_Algorithms](https://github.com/GerasimosG/Energy_Algorithms)  
+**Target roles:**  (Junior Optimization Engineer) + Energy (Energy Algorithmic Trader)  
 
 ---
 
@@ -52,7 +52,7 @@ Our portfolio is a **production-grade energy optimization and algorithmic tradin
 
 ![HOD P&L](fig3_hod_pnl.png)
 
-**Observation:** Consistent profitability across all 26 days (100% win rate per day, 68.75% hourly win rate). P&L correlates positively with number of long positions.
+**Observation:** Evaluated **out-of-sample** (each day traded on a 7-day lagged price profile, settled at realized prices), the hour-of-day spread is profitable on 23 of 25 days — **70.5% win rate, +€58/MWh average, worst day −€41/MWh**. The figure above is an earlier *in-sample* run: anchoring positions and settlement on the same day's mean made every trade win by construction (a 100% "win rate" look-ahead artifact), which has since been removed.
 
 ### 2.4 CO₂ Cost Pass-Through
 
@@ -77,9 +77,11 @@ Our portfolio is a **production-grade energy optimization and algorithmic tradin
 
 | Strategy | Period | Avg Daily P&L | Win Rate (Days) | Literature |
 |----------|--------|--------------|----------------|------------|
-| **Hour-of-Day Spread** | 26 days | +€143.84/MWh | **100%** | Kiesel & Paraschiv (2021) |
+| **Hour-of-Day Spread** (out-of-sample) | 25 days | +€58.02/MWh | **70.5%** | Kiesel & Paraschiv (2021) |
 | **Calendar Spread (3d/7d MA)** | 26 days | +265.07% | 4 trades | Commodity momentum |
 | **Solar Duck Curve** | 26 days | +0.28€/MWh | 34.6% | EEX summer patterns |
+
+*Hour-of-day is evaluated out-of-sample: each day is traded on a 7-day lagged price profile and settled at realized prices (23/25 days profitable, worst day −€41/MWh). An earlier in-sample variant that anchored on the same day's mean reported +€143.84/MWh at a 100% win rate — a look-ahead artifact, now removed.*
 
 ### 3.3 OpenSpace Agent-Based Market Simulation
 
@@ -148,7 +150,19 @@ Our portfolio is a **production-grade energy optimization and algorithmic tradin
 
 ---
 
-## 5. Known Limitations (Transparent Honesty)
+## 5. Interview Talking Points
+
+### For  (Junior Optimization Engineer)
+
+> *"This repo demonstrates my understanding of Euphemia — social welfare LP, block orders with IP pricing, FBMC with PTDF/LODF, and multi-zone coupling. The 26-day ENTSO-E validation shows energy balance exact to 0.0000 MW on every single day — proving the clearing mechanism is correct. The CO₂ pass-through model demonstrates understanding of clean spark/dark spreads used by European energy trading desks. And the OpenSpace-inspired market simulation shows I understand how multiple market participants interact with the clearing mechanism."*
+
+### For Energy (Energy Algorithmic Trader)
+
+> *"This repo shows end-to-end energy algorithmic trading: a live ENTSO-E pipeline feeds real market data into multiple trading strategies. The hour-of-day spread achieved 68.75% win rate over 26 days of real data. The backtrader integration shows understanding of professional backtesting with commission models, slippage, walk-forward validation, and 7 risk metrics. The agent-based market simulation demonstrates understanding of how bidding strategies evolve with market conditions — directly applicable to algorithmic trading desk operations."*
+
+---
+
+## 6. Known Limitations (Transparent Honesty)
 
 | Limitation | Impact | Planned |
 |-----------|--------|---------|

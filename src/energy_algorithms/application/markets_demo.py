@@ -17,7 +17,7 @@ from energy_algorithms.domain.markets.pcr_model import PCRModel
 def main():
     print("=" * 65)
     print("  ★ ENERGY MARKETS MODULE — PCR Coupling, Block Orders, Market Clearing")
-    print("  ★ Built for optimization-engineer applications")
+    print("  ★ Built for  Junior Optimization Engineer applications")
     print("=" * 65)
 
     # 1. Simple PCR Market
@@ -156,7 +156,7 @@ def main():
 
     print(f"\n{'=' * 65}")
     print("  Energy markets module complete. Euphemia connection documented.")
-    print("  This module distinguishes the repo for energy market roles at market-coupling firms.")
+    print("  This module distinguishes the repo for energy market roles at .")
     print(f"{'=' * 65}")
 
 
