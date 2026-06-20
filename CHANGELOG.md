@@ -5,6 +5,35 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-20
+
+### Added
+- Interactive Plotly dashboard (`scripts/generate_dashboard.py` → `docs/dashboard.html`): six linked
+  panels (price heatmap, price-duration curve, PCR model vs market, social welfare, **live BESS
+  dispatch** running the real `solve_storage`, hour-of-day strategy), standalone via Plotly CDN.
+- Reproducible committed sample dataset under `data/` (`sample_entsoe_prices.csv`,
+  `sample_entsoe_summary.csv`, `sample_bt_hourly.csv`, `README.md`) + shared resolver
+  `scripts/_viz_data.py`, so every figure and the dashboard reproduce from a fresh clone.
+- Shared visual identity `scripts/_viz_theme.py` (one palette/template across matplotlib + Plotly).
+- `tests/test_dashboard.py` — 8 smoke tests for the dashboard panels and HTML output.
+- `plotly` added to the `dev` extra plus a new `viz` extra.
+- README front-page "Interactive dashboard" section; refreshed `FRAMEWORK.md`.
+
+### Changed
+- `scripts/generate_figures.py` refactored onto `_viz_data`/`_viz_theme`; fig4 corrected to show
+  fuel marginal cost vs CO₂ price with the coal→gas switching point.
+- `infrastructure/solver_config.py`: the default `PuLPSolverAdapter` wiring is now an explicit
+  module-top-level import (was a hidden lazy in-function import); verified no import cycle.
+- README architecture narrative corrected to the honest version (the domain builds PuLP models and
+  routes solving through `solve_model()` → `SolverPort`).
+
+### Fixed
+- `domain/optimization/storage.py` and `domain/markets/gsk.py`: `from __future__ import annotations`
+  was trapped inside the module docstring (inert) — moved to a real statement after the docstring.
+- README: "Microsservices" → "Microservices"; test/coverage figures updated (600 tests, 92.63%).
+- `scripts/update_framework_metrics.sh`: removed a hardcoded developer-machine Python path; now
+  resolves the interpreter portably via `command -v`.
+
 ## [0.4.1] - 2026-06-11
 
 ### Fixed

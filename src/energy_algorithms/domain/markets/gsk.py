@@ -1,6 +1,4 @@
 """GSK (Generation Shift Key) strategies for zonal-to-nodal mapping.
-from __future__ import annotations
-
 
 In European electricity market coupling (Euphemia), the GSK matrix maps
 zonal net positions to nodal generation injections. Different GSK
@@ -23,6 +21,7 @@ References
 - pomato framework (github.com/FRESNA/pomato)
 """
 
+from __future__ import annotations
 
 import numpy as np
 

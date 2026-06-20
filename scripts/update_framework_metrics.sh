@@ -7,11 +7,7 @@
 set -e
 cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 if [ -z "${PYTHON_BIN:-}" ]; then
-    if [ -x /home/ggiachos/anaconda3/bin/python ]; then
-        PYTHON_BIN=/home/ggiachos/anaconda3/bin/python
-    else
-        PYTHON_BIN=$(command -v python || command -v python3)
-    fi
+    PYTHON_BIN=$(command -v python || command -v python3)
 fi
 
 echo "=== Energy_Algorithms Framework Metrics Update ==="

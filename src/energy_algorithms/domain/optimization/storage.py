@@ -1,6 +1,4 @@
 """
-from __future__ import annotations
-
 Battery Energy Storage System (BESS) — Revenue-maximizing LP.
 
 Models a single battery over T periods given a price forecast.
@@ -21,6 +19,8 @@ revenue figure is still valid (simultaneous charge+discharge nets zero
 energy change with a loss).  This is a known simplification for LP
 storage models and is acceptable for the vast majority of price profiles.
 """
+
+from __future__ import annotations
 
 import pulp
 

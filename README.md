@@ -11,6 +11,29 @@
 
 ---
 
+## ▶ Interactive dashboard
+
+[![Energy Algorithms — interactive market dashboard](docs/dashboard_preview.png)](docs/dashboard.html)
+
+A standalone **interactive** Plotly report — six linked panels: price heatmap (day × hour),
+price-duration curve, PCR model vs market, social welfare, a **live BESS dispatch** (runs the real
+`solve_storage` optimiser on the most volatile day), and the hour-of-day strategy. Hover any chart
+for detail. Reproducible from the committed sample dataset — no network, no server.
+
+```bash
+# the file is committed — open it directly:
+xdg-open docs/dashboard.html        # Linux  ·  macOS: open docs/dashboard.html  ·  Windows: start docs\dashboard.html
+
+# …or rebuild it from the committed sample data:
+pip install -e ".[dev]"             # pulls in plotly
+python scripts/generate_dashboard.py
+```
+
+> GitHub can't render HTML inline, so the image above is a static preview. Clone the repo and open
+> [`docs/dashboard.html`](docs/dashboard.html) locally to interact with it.
+
+---
+
 ## What it does — at a glance
 
 | Capability | Module | Why it matters |
@@ -28,7 +51,7 @@
 | **ML experiment tracking** | `infrastructure/experiment_tracker.py` | Track signal research runs in SQLite |
 | **Solver-agnostic core** | `ports/solver.py`, `infrastructure/solver_config.py` | All 11 domain files route through `solve_model()` — swap CBC↔HiGHS↔Gurobi by config |
 
-**578 tests passing, 92.55% coverage, 90% gate enforced in CI.** 3 Python versions (3.11/3.12/3.13).
+**600 tests passing, 92.63% coverage, 90% gate enforced in CI.** 3 Python versions (3.11/3.12/3.13).
 
 ---
 
@@ -44,7 +67,18 @@
 *Fig 3: Hour-of-day strategy profit & loss breakdown*
 
 ![CO₂ impact](docs/fig4_co2_impact.png)
-*Fig 4: Carbon impact analysis across trading strategies*
+*Fig 4: Carbon impact analysis — fuel marginal cost vs CO₂ price with the coal→gas switching point*
+
+### Reproducing the visuals
+
+```bash
+python scripts/generate_figures.py        # the 4 static PNGs above
+python scripts/generate_dashboard.py      # the interactive docs/dashboard.html (see top of README)
+```
+
+Both read the small committed sample dataset in [`data/`](data/) via `scripts/_viz_data.py` and share
+one visual theme (`scripts/_viz_theme.py`), so every figure and the dashboard reproduce from a fresh
+clone.
 
 ---
 
@@ -62,7 +96,7 @@ python -m energy_algorithms.application.trading_demo        # Backtesting, signa
 python -m energy_algorithms.application.energy_data_demo    # ENTSO-E pipeline
 
 # Tests
-pytest tests/ -v                                            # 578 tests
+pytest tests/ -v                                            # 600 tests
 pytest tests/ --cov=energy_algorithms --cov-fail-under=90   # coverage gate
 ```
 
@@ -80,17 +114,22 @@ src/energy_algorithms/
 │   ├── markets/           PCR, FBMC, block orders, intraday, multi-zone
 │   ├── optimization/      UC, BESS, ancillary, portfolio, stochastic
 │   └── trading/           backtesting, signals, risk metrics
-├── ports/                 SolverPort — domain depends on this ABC, not on PuLP
+├── ports/                 SolverPort — the solver contract (ABC); adapters implement it
 ├── adapters/              pulp_solver, entsoe_client, sqlite_store, bt_feeds
 ├── application/           use-case demos (markets, optimization, trading)
 └── infrastructure/        solver_config, experiment_tracker, metadata
 ```
 
-**Why this matters:** every LP/MIP in the codebase is a PuLP problem that goes through `solve_model()`. Swapping solvers is a one-line config. **All 11 domain files route through the SolverPort.**
+**Why this matters:** the domain builds each LP/MIP as a PuLP model (PuLP is the modelling DSL) and
+routes *solving* through `infrastructure.solver_config.solve_model()`, which delegates to a
+`SolverPort` adapter. The default is PuLP/CBC; swap CBC↔HiGHS↔Gurobi with `solver_id="highs"`, or
+inject any `SolverPort` via `solver=`. **All 11 domain solve sites go through `solve_model()` →
+`SolverPort`**, so the backend is swappable without touching domain logic. The `SolverPort` ABC
+(`ports/solver.py`) is the contract; `adapters/pulp_solver.py` is the implementation.
 
 ---
 
-## Microsservices / infrastructure shipped
+## Microservices / infrastructure shipped
 
 | Service | Module | Status |
 |---|---|---|
@@ -115,12 +154,12 @@ The first three are the production services a trading desk or optimisation team 
 
 ```bash
 pytest tests/ -v --tb=short
-# ============= 578 passed, 3 skipped, 0 failed in ~50s ==============
+# ============= 600 passed, 3 skipped, 0 failed in ~20s ==============
 ```
 
 ```bash
 PYTHONPATH="$(pwd)/src" python -m coverage report
-# Required test coverage of 90% reached. Total coverage: 92.55%
+# Required test coverage of 90% reached. Total coverage: 92.63%
 ```
 
 ---

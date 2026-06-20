@@ -15,6 +15,12 @@ from typing import Any
 
 import pulp
 
+# Infrastructure is an outer hexagonal layer, so it may depend on adapters: this
+# import is the explicit wiring of the default SolverPort implementation. Kept at
+# module top-level — adapters.pulp_solver imports only ports.solver, so there is no
+# import cycle. (Previously a lazy in-function import that hid this seam.)
+from energy_algorithms.adapters.pulp_solver import PuLPSolverAdapter
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -208,8 +214,6 @@ def solve_model(prob, *, solver=None, solver_id: str | None = None, **kwargs: An
         ``solve_time`` (float | None), ``solver_name`` (str),
         ``solver_result`` (SolverResult).
     """
-    from energy_algorithms.adapters.pulp_solver import PuLPSolverAdapter
-
     if solver is None:
         solver = PuLPSolverAdapter(solver_id or "cbc")
 
