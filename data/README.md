@@ -5,7 +5,7 @@ committed so a fresh clone can reproduce every figure (`scripts/generate_figures
 interactive dashboard (`scripts/generate_dashboard.py`) without network access or API credentials.
 
 > The full live pipeline lives in `src/energy_algorithms/adapters/entsoe_client.py`. These CSVs are a
-> trimmed, de-duplicated snapshot — not the live source of truth.
+> trimmed canonical snapshot — not the live source of truth.
 
 ## Files
 

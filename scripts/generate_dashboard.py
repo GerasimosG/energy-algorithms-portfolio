@@ -40,8 +40,17 @@ COLORWAY = theme.PLOTLY_COLORWAY
 TEMPLATE = theme.PLOTLY_TEMPLATE
 
 
-def _style(fig: go.Figure, title: str, subtitle: str = "") -> go.Figure:
-    """Apply the shared template + title convention to a figure."""
+def _style(fig: go.Figure, title: str, subtitle: str = "",
+           hovermode: str | None = None) -> go.Figure:
+    """Apply the shared template + title convention to a figure.
+
+    Parameters
+    ----------
+    hovermode : str | None
+        Plotly hovermode.  ``None`` defaults to ``"x unified"``; pass a
+        different string (e.g. ``"closest"``) for specialised panels such
+        as the 2-D heatmap.
+    """
     head = f"<b>{title}</b>"
     if subtitle:
         head += f"<br><span style='font-size:13px;color:{C['neutral']}'>{subtitle}</span>"
@@ -50,7 +59,7 @@ def _style(fig: go.Figure, title: str, subtitle: str = "") -> go.Figure:
         colorway=COLORWAY,
         title=dict(text=head, x=0.01, xanchor="left", font=dict(color=C["ink"], size=20)),
         margin=dict(l=70, r=40, t=78, b=72),
-        hovermode="x unified",
+        hovermode=hovermode or "x unified",
         legend=dict(orientation="h", yanchor="top", y=-0.16, xanchor="center", x=0.5),
         font=dict(family="Inter, Segoe UI, system-ui, sans-serif", color=C["ink"]),
         height=450,
@@ -69,10 +78,10 @@ def panel_heatmap() -> go.Figure:
         colorbar=dict(title="€/MWh", thickness=14),
         hovertemplate="Date %{y}<br>Hour %{x}<br>%{z:.1f} €/MWh<extra></extra>",
     ))
-    fig.update_layout(hovermode="closest")
     fig.update_xaxes(title_text="Hour of day")
     return _style(fig, "Price Heatmap — Day × Hour",
-                  "Diverging scale centred at €0: deep blue = negative prices (renewable gluts)")
+                  "Diverging scale centred at €0: deep blue = negative prices (renewable gluts)",
+                  hovermode="closest")
 
 
 def panel_duration_curve() -> go.Figure:
@@ -95,7 +104,6 @@ def panel_duration_curve() -> go.Figure:
                        font=dict(color=C["loss"], size=13))
     fig.update_xaxes(title_text="% of hours (sorted, highest → lowest)")
     fig.update_yaxes(title_text="Price (€/MWh)")
-    fig.update_layout(hovermode="x")
     return _style(fig, "Price-Duration Curve",
                   "How often prices are high vs negative — the shape that sizes flexible assets")
 
@@ -131,7 +139,6 @@ def panel_welfare() -> go.Figure:
     fig.add_hline(y=float(welfare_m.mean()), line=dict(color=C["accent"], dash="dash"),
                   annotation_text=f"mean €{welfare_m.mean():.2f} M", annotation_position="top left")
     fig.update_yaxes(title_text="Social welfare (€ millions)")
-    fig.update_layout(hovermode="x")
     return _style(fig, "Social Welfare Cleared per Day",
                   "Objective the PCR auction maximises — total surplus from each daily clearing")
 
