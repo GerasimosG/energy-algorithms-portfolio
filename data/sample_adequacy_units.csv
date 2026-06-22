@@ -1,0 +1,15 @@
+unit,technology,capacity_mw,for
+NUC1,nuclear,1000,0.06
+NUC2,nuclear,1000,0.06
+CCGT1,gas_ccgt,450,0.04
+CCGT2,gas_ccgt,450,0.04
+CCGT3,gas_ccgt,450,0.04
+CCGT4,gas_ccgt,450,0.04
+CCGT5,gas_ccgt,450,0.04
+CCGT6,gas_ccgt,450,0.04
+CCGT7,gas_ccgt,450,0.04
+OCGT1,gas_ocgt,150,0.08
+OCGT2,gas_ocgt,150,0.08
+OCGT3,gas_ocgt,150,0.08
+OCGT4,gas_ocgt,150,0.08
+BIO1,biomass,200,0.05
