@@ -1,8 +1,11 @@
 # tests/test_viz_data_adequacy.py
-import importlib.util, os
+import importlib.util
+import os
+
 spec = importlib.util.spec_from_file_location(
     "_viz_data", os.path.join(os.path.dirname(__file__), "..", "scripts", "_viz_data.py"))
-viz = importlib.util.module_from_spec(spec); spec.loader.exec_module(viz)
+viz = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(viz)
 
 def test_units_loader():
     df = viz.load_adequacy_units()

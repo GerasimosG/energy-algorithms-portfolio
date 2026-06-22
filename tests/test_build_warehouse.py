@@ -1,7 +1,10 @@
-import importlib.util, os
+import importlib.util
+import os
+
 spec = importlib.util.spec_from_file_location(
     "build_warehouse", os.path.join(os.path.dirname(__file__), "..", "scripts", "build_warehouse.py"))
-bw = importlib.util.module_from_spec(spec); spec.loader.exec_module(bw)
+bw = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bw)
 
 def test_build_warehouse_emits_star_schema(tmp_path):
     tables = bw.build_warehouse(str(tmp_path), n_years=5, seed=1)

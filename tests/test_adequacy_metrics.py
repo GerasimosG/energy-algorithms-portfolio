@@ -1,9 +1,15 @@
 import numpy as np
 import pytest
+
 from energy_algorithms.domain.adequacy.metrics import (
-    energy_not_served, hourly_margin, loss_of_load_expectation,
-    expected_energy_not_served, reserve_margin, duration_curve,
+    duration_curve,
+    energy_not_served,
+    expected_energy_not_served,
+    hourly_margin,
+    loss_of_load_expectation,
+    reserve_margin,
 )
+
 
 def test_no_shortfall_is_zero():
     avail, dem = [100, 100, 100], [90, 80, 100]

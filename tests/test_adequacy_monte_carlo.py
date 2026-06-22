@@ -1,7 +1,11 @@
 import numpy as np
+
 from energy_algorithms.domain.adequacy.monte_carlo import (
-    AdequacyInputs, AdequacyResult, run_monte_carlo,
+    AdequacyInputs,
+    AdequacyResult,
+    run_monte_carlo,
 )
+
 
 def _inp(cap, for_, demand, vre):
     return AdequacyInputs(

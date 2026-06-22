@@ -37,7 +37,8 @@ def check_consistency(fact_hourly: pd.DataFrame) -> pd.DataFrame:
 def build_warehouse(out_dir: str, n_years: int = 50, seed: int = 42) -> dict[str, pd.DataFrame]:
     os.makedirs(out_dir, exist_ok=True)
     _spec = importlib.util.spec_from_file_location("_viz_data", os.path.join(ROOT, "scripts", "_viz_data.py"))
-    _viz = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_viz)
+    _viz = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_viz)
     units = _viz.load_adequacy_units()
     load = _viz.load_load_8760()
     vre = _viz.load_vre_8760()

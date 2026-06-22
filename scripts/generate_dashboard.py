@@ -27,10 +27,15 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from energy_algorithms.domain.adequacy import (  # noqa: E402
+    AdequacyInputs,
+    duration_curve,
+    run_monte_carlo,
+)
+
 # Domain solver (read-only) — runs the real BESS optimisation in the dashboard. Resolved via
 # the editable install (``pip install -e .``); no sys.path manipulation in package-adjacent code.
 from energy_algorithms.domain.optimization.storage import solve_storage
-from energy_algorithms.domain.adequacy import AdequacyInputs, run_monte_carlo, duration_curve  # noqa: E402
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DOCS_DIR = os.path.join(PROJECT_ROOT, "docs")

@@ -1,7 +1,10 @@
-import importlib.util, os
+import importlib.util
+import os
+
 spec = importlib.util.spec_from_file_location(
     "gen_adq", os.path.join(os.path.dirname(__file__), "..", "scripts", "generate_adequacy_figures.py"))
-gen = importlib.util.module_from_spec(spec); spec.loader.exec_module(gen)
+gen = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gen)
 
 def test_generates_all_figures(tmp_path):
     gen.main(out_dir=str(tmp_path))

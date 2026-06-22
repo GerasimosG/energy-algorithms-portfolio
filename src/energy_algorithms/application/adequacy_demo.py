@@ -14,13 +14,17 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 def _viz():
     import importlib.util
     spec = importlib.util.spec_from_file_location("_viz_data", os.path.join(ROOT, "scripts", "_viz_data.py"))
-    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); return m
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
 
 
 def main(argv=None) -> int:
     from energy_algorithms.domain.adequacy import AdequacyInputs, run_monte_carlo
     viz = _viz()
-    units = viz.load_adequacy_units(); load = viz.load_load_8760(); vre = viz.load_vre_8760()
+    units = viz.load_adequacy_units()
+    load = viz.load_load_8760()
+    vre = viz.load_vre_8760()
     res = run_monte_carlo(AdequacyInputs(
         units["capacity_mw"].to_numpy(float), units["for"].to_numpy(float),
         load["load_mw"].to_numpy(float),

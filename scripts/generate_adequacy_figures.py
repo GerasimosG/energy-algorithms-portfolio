@@ -21,7 +21,9 @@ import _viz_theme as theme  # noqa: E402
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from energy_algorithms.domain.adequacy import (  # noqa: E402
-    AdequacyInputs, run_monte_carlo, duration_curve,
+    AdequacyInputs,
+    duration_curve,
+    run_monte_carlo,
 )
 
 theme.apply_theme()

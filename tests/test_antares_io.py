@@ -1,8 +1,12 @@
-import pytest
 import pandas as pd
+import pytest
+
 from energy_algorithms.adapters.antares_io import (
-    read_values_hourly, write_values_hourly, ANTARES_VARIABLE_MAP,
+    ANTARES_VARIABLE_MAP,
+    read_values_hourly,
+    write_values_hourly,
 )
+
 
 def test_round_trip(tmp_path):
     df = pd.DataFrame({
