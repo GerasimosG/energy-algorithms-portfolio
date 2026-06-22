@@ -27,6 +27,12 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from energy_algorithms.domain.adequacy import (  # noqa: E402
+    AdequacyInputs,
+    duration_curve,
+    run_monte_carlo,
+)
+
 # Domain solver (read-only) — runs the real BESS optimisation in the dashboard. Resolved via
 # the editable install (``pip install -e .``); no sys.path manipulation in package-adjacent code.
 from energy_algorithms.domain.optimization.storage import solve_storage
@@ -230,6 +236,44 @@ def panel_hod_pnl() -> go.Figure:
                   "(in-sample; see backtest caveats)")
 
 
+def panel_adequacy() -> go.Figure:
+    """Build the Adequacy panel: ENS duration curve from Monte-Carlo simulation."""
+    units = data.load_adequacy_units()
+    load = data.load_load_8760()
+    vre = data.load_vre_8760()
+    res = run_monte_carlo(
+        AdequacyInputs(
+            units["capacity_mw"].to_numpy(float),
+            units["for"].to_numpy(float),
+            load["load_mw"].to_numpy(float),
+            (vre["wind_mw"] + vre["solar_mw"]).to_numpy(float),
+        ),
+        n_years=30,
+        seed=42,
+    )
+    ens_dc = duration_curve(res.ens_by_hour_mean)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=ens_dc, fill="tozeroy", name="expected ENS (MWh)"))
+    fig = _style(
+        fig,
+        "Adequacy — Security of Supply",
+        f"LOLE {res.lole_h:.1f} h/yr · EENS {res.eens_mwh:.0f} MWh/yr · Monte-Carlo (synthetic)",
+    )
+    fig.update_layout(xaxis_title="hours (sorted)", yaxis_title="expected ENS (MWh)")
+    return fig
+
+
+def adequacy_panel_html() -> str:
+    """Return a self-contained HTML fragment for the Adequacy dashboard section."""
+    fig = panel_adequacy()
+    frag = fig.to_html(
+        full_html=False,
+        include_plotlyjs=False,
+        config={"displayModeBar": True, "responsive": True},
+    )
+    return f"<div class='card'><section id=\"adequacy\"><h2>Adequacy</h2>{frag}</section></div>"
+
+
 # ── KPIs + assembly ──────────────────────────────────────────────────────────
 
 def _kpis() -> list[tuple[str, str]]:
@@ -311,6 +355,7 @@ def build_dashboard(output_path: str = OUTPUT) -> str:
                                  include_plotlyjs="cdn" if i == 0 else False,
                                  config={"displayModeBar": True, "responsive": True}))
         parts.append("</div>")
+    parts.append(adequacy_panel_html())
     parts.append(_HTML_FOOT)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

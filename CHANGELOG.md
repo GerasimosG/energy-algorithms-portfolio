@@ -5,6 +5,27 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-22
+
+### Added
+- **Resource-adequacy capability** (additive — no existing behaviour changed):
+  - `domain/adequacy/` — pure-numpy adequacy metrics (hourly margin, ENS, **LOLE**, **EENS**, reserve
+    margin, duration curve) + a two-state forced-outage **Monte-Carlo** (`run_monte_carlo`). No LP, no I/O.
+  - `adapters/antares_io.py` — ANTARES economy `values-hourly` reader/writer (round-trip; raises on
+    empty/headerless input).
+  - `scripts/build_warehouse.py` — PowerBI-ready star-schema warehouse (`fact_hourly`, `fact_adequacy`,
+    `dim_date/hour/zone/technology`) + `check_consistency()` data-quality report.
+  - `scripts/generate_adequacy_figures.py` — four adequacy figures: `fig_adequacy_lole`,
+    `fig_adequacy_ens_duration`, `fig_adequacy_margin_heatmap`, `fig_adequacy_scenarios` (themed via
+    `_viz_theme`); the interactive dashboard gains a live **Adequacy** section.
+  - `application/adequacy_demo.py` + `ea-adequacy` console script — end-to-end demo on the synthetic sample.
+  - `scripts/_gen_sample_adequacy.py` + new `_viz_data` loaders; synthetic adequacy sample under `data/`.
+  - Docs: `docs/POWERBI_MODEL.md` (schema + DAX), `docs/VIZ_BENCHMARK.md` (adequacy visualization patterns).
+- Base-case result on the synthetic sample: LOLE 5.2 h/yr, EENS 1,432 MWh/yr, min mean margin 930 MW.
+
+### Changed
+- Test suite 600 → **622** passing; coverage ~92.8% (90% gate held). README / FRAMEWORK / data README updated.
+
 ## [0.5.0] - 2026-06-20
 
 ### Added

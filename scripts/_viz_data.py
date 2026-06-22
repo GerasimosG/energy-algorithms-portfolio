@@ -64,6 +64,36 @@ def prices_hourly_matrix() -> pd.DataFrame:
     return hourly.pivot(index="date", columns="hod", values="price_eur_mwh").sort_index()
 
 
+# --- Resource-adequacy sample loaders (synthetic; see data/README.md) -----------
+
+def load_adequacy_units() -> pd.DataFrame:
+    """Synthetic thermal fleet: unit, technology, capacity_mw, for (forced-outage rate)."""
+    return pd.read_csv(_resolve("sample_adequacy_units.csv"))
+
+
+def load_load_8760() -> pd.DataFrame:
+    """Synthetic one-year hourly demand: datetime, load_mw."""
+    df = pd.read_csv(_resolve("sample_load_8760.csv"))
+    df["datetime"] = pd.to_datetime(df["datetime"])
+    return df
+
+
+def load_vre_8760() -> pd.DataFrame:
+    """Synthetic one-year hourly VRE availability: datetime, wind_mw, solar_mw."""
+    df = pd.read_csv(_resolve("sample_vre_8760.csv"))
+    df["datetime"] = pd.to_datetime(df["datetime"])
+    return df
+
+
+def load_antares_sample() -> pd.DataFrame:
+    """Tidy ANTARES economy hourly sample (delegates to the adapter reader)."""
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
+    from energy_algorithms.adapters.antares_io import read_values_hourly
+    return read_values_hourly(
+        _resolve("antares_sample/economy/mc-all/areas/be/values-hourly.txt"))
+
+
 if __name__ == "__main__":  # pragma: no cover - manual smoke check
     print("summary:", load_summary().shape)
     print("prices :", load_prices().shape)

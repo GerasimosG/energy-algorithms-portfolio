@@ -1,0 +1,2 @@
+scenario,zone,n_years,lole_h,eens_mwh,peak_load_mw,total_capacity_mw,reserve_margin
+base,BE,50,5.18,1431.9,4927.1,5950.0,0.208

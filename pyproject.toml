@@ -58,6 +58,7 @@ ea-live = "energy_algorithms.application.live_pipeline:demo_live_pipeline"
 ea-europe = "energy_algorithms.application.european_coupling:main"
 ea-history = "energy_algorithms.application.historical_analysis:main"
 ea-experiments = "energy_algorithms.application.experiment_cli:main"
+ea-adequacy = "energy_algorithms.application.adequacy_demo:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

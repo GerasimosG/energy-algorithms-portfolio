@@ -1,0 +1,6 @@
+check,n_failures,ok
+load_non_negative,0,True
+vre_non_negative,0,True
+ens_non_negative,0,True
+lolp_in_unit_interval,0,True
+ens_implies_shortfall_risk,0,True

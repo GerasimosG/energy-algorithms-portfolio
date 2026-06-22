@@ -18,6 +18,22 @@ interactive dashboard (`scripts/generate_dashboard.py`) without network access o
 `model_mcp` is this repo's PCR market-clearing model output; `entsoe_avg_price` is the published
 ENTSO-E day-ahead price — the dashboard compares the two.
 
+## Resource-adequacy sample (synthetic)
+
+A fully **synthetic** sample for the resource-adequacy pipeline (`domain/adequacy/`,
+`scripts/build_warehouse.py`, `scripts/generate_adequacy_figures.py`). Generated deterministically by
+`scripts/_gen_sample_adequacy.py` (fixed seed — re-runs are byte-stable). Not real market data.
+
+| File | Rows | Schema |
+|---|---|---|
+| `sample_adequacy_units.csv` | 14 | `unit, technology, capacity_mw, for` — thermal fleet with forced-outage rates |
+| `sample_load_8760.csv` | 8,760 | `datetime, load_mw` — one synthetic year of hourly demand |
+| `sample_vre_8760.csv` | 8,760 | `datetime, wind_mw, solar_mw` — one synthetic year of hourly VRE availability |
+| `antares_sample/economy/mc-all/areas/be/values-hourly.txt` | 168 | ANTARES economy `values-hourly` format (1 week), read by `adapters/antares_io.py` |
+| `warehouse/*.csv` (+ `.parquet` if `pyarrow` present) | — | PowerBI star schema (`fact_hourly`, `fact_adequacy`, `dim_date/hour/zone/technology`) + `data_quality_report.csv`, built by `scripts/build_warehouse.py` |
+
+Rebuild: `python scripts/_gen_sample_adequacy.py && python scripts/build_warehouse.py`.
+
 ## Provenance & reproduction
 
 Snapshot of the local ENTSO-E disk cache (Belgian bidding zone, ~26-day window, 2026). Loaded via

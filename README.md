@@ -50,8 +50,9 @@ python scripts/generate_dashboard.py
 | **ENTSO-E live data + cache** | `adapters/entsoe_client.py` | Real Belgian market data |
 | **ML experiment tracking** | `infrastructure/experiment_tracker.py` | Track signal research runs in SQLite |
 | **Solver-agnostic core** | `ports/solver.py`, `infrastructure/solver_config.py` | All 11 domain files route through `solve_model()` — swap CBC↔HiGHS↔Gurobi by config |
+| **Resource adequacy** (Monte-Carlo) | `domain/adequacy/`, `adapters/antares_io.py` | LOLE / EENS / capacity margin; ANTARES economy I/O; PowerBI star-schema warehouse |
 
-**600 tests passing, 92.63% coverage, 90% gate enforced in CI.** 3 Python versions (3.11/3.12/3.13).
+**622 tests passing, 92.83% coverage, 90% gate enforced in CI.** 3 Python versions (3.11/3.12/3.13).
 
 ---
 
@@ -82,6 +83,40 @@ clone.
 
 ---
 
+## Resource adequacy & security of supply
+
+A Monte-Carlo resource-adequacy model (2-state forced-outage sampling) computes the standard
+security-of-supply metrics on a synthetic one-year fleet: **LOLE** (loss-of-load expectation, h/yr),
+**EENS** (expected energy not served, MWh/yr), and the hourly capacity margin / duration curve. The
+domain core is pure numpy (`domain/adequacy/`); an ANTARES economy reader (`adapters/antares_io.py`)
+ingests `values-hourly.txt`, and a star-schema warehouse (`scripts/build_warehouse.py`) feeds a
+PowerBI model documented in [`docs/POWERBI_MODEL.md`](docs/POWERBI_MODEL.md).
+
+![LOLE sensitivity by technology](docs/fig_adequacy_lole.png)
+*Fig A1: Adequacy sensitivity — LOLE if a technology is removed from the fleet*
+
+![Energy-not-served duration curve](docs/fig_adequacy_ens_duration.png)
+*Fig A2: Energy-not-served duration curve — expected ENS by sorted hour*
+
+![Mean capacity-margin heatmap](docs/fig_adequacy_margin_heatmap.png)
+*Fig A3: Mean capacity margin (MW) across day-of-year × hour-of-day*
+
+![Need-for-capacity scenarios](docs/fig_adequacy_scenarios.png)
+*Fig A4: Need-for-capacity — LOLE vs added firm capacity*
+
+```bash
+ea-adequacy                                  # Monte-Carlo LOLE/EENS demo (synthetic fleet)
+python scripts/_gen_sample_adequacy.py       # regenerate the synthetic sample (seed 42)
+python scripts/build_warehouse.py            # build the PowerBI star-schema warehouse
+python scripts/generate_adequacy_figures.py  # the 4 static adequacy PNGs above
+```
+
+All adequacy figures and metrics come from the committed **synthetic** sample (Monte-Carlo seed 42) —
+not real market data. See [`docs/VIZ_BENCHMARK.md`](docs/VIZ_BENCHMARK.md) for the visualization
+patterns.
+
+---
+
 ## Quick start
 
 ```bash
@@ -94,13 +129,14 @@ python -m energy_algorithms.application.markets_demo        # PCR, block orders,
 python -m energy_algorithms.application.optimization_demo   # BESS, UC, FCR+aFRR
 python -m energy_algorithms.application.trading_demo        # Backtesting, signals
 python -m energy_algorithms.application.energy_data_demo    # ENTSO-E pipeline
+python -m energy_algorithms.application.adequacy_demo       # LOLE/EENS Monte-Carlo
 
 # Tests
-pytest tests/ -v                                            # 600 tests
+pytest tests/ -v                                            # 622 tests
 pytest tests/ --cov=energy_algorithms --cov-fail-under=90   # coverage gate
 ```
 
-CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`.
+CLIs after install: `ea-markets`, `ea-optimization`, `ea-trading`, `ea-live`, `ea-experiments`, `ea-adequacy`.
 
 > **Solver note:** PuLP bundles the CBC solver automatically on most platforms. If you hit a solver error, install HiGHS: `pip install highspy`. On Debian/Ubuntu: `sudo apt install coinor-cbc`.
 
@@ -159,7 +195,7 @@ pytest tests/ -v --tb=short
 
 ```bash
 PYTHONPATH="$(pwd)/src" python -m coverage report
-# Required test coverage of 90% reached. Total coverage: 92.63%
+# Required test coverage of 90% reached. Total coverage: 92.83%
 ```
 
 ---

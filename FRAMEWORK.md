@@ -16,6 +16,8 @@ domain/           pure problem logic — builds PuLP models, no I/O
                   portfolio, stochastic, transportation
    trading/       backtest_engine, risk_metrics, momentum, mean_reversion, sma_crossover,
                   energy_strategies
+   adequacy/      metrics (LOLE/EENS/margin/duration curve), monte_carlo (forced-outage
+                  sampling) — pure numpy, no LP, no I/O
    (root)         emissions, hooks, options
    │  solves via
    ▼
@@ -23,7 +25,7 @@ infrastructure/   solver_config (solve_model facade), experiment_tracker, metada
    │  delegates to
    ▼
 adapters/         pulp_solver (SolverPort impl), entsoe_client, sqlite_store, bt_feeds,
-                  bt_strategies, market_simulation, yfinance_fetcher, config
+                  bt_strategies, market_simulation, yfinance_fetcher, antares_io, config
    │  implements
    ▼
 ports/            solver.py — SolverPort ABC + SolverResult (the contract)
@@ -67,7 +69,7 @@ adapters/entsoe_client.py  →  data/ (cache, gitignored)  →  scripts/_viz_dat
 
 ## Testing
 
-- 600 tests under `tests/`, ~92.6% coverage, 90% gate enforced in CI (`--cov-fail-under=90`).
+- 622 tests under `tests/`, ~92.8% coverage, 90% gate enforced in CI (`--cov-fail-under=90`).
 - Markers: `slow` (>5s) and `pc` (PC-only stress sizes) — skip with `-m "not slow and not pc"` in
   resource-constrained environments.
 - `conftest.py` skips the `.env` auto-loader for the whole session so tests never depend on a local
@@ -81,3 +83,4 @@ adapters/entsoe_client.py  →  data/ (cache, gitignored)  →  scripts/_viz_dat
 | A new solver backend | register it in `infrastructure/solver_config.py` (`_SOLVER_REGISTRY` / resolver) — adapter already generic |
 | A non-PuLP modelling backend | a new `ports.SolverPort` adapter under `adapters/`, wired in `solver_config` |
 | A new chart | a panel builder in `scripts/generate_dashboard.py` (or figure in `generate_figures.py`) using `_viz_data` + `_viz_theme` |
+| A new adequacy metric/scenario | a function in `domain/adequacy/` (pure numpy) + a `tests/test_*.py`; surface it via `scripts/build_warehouse.py` or `generate_adequacy_figures.py` |
